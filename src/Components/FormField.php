@@ -88,6 +88,7 @@ class FormField {
         return new self( array_merge( [ 'type' => 'text', 'name' => $name, 'label' => $label ], $args ) );
     }
 
+
     /**
      * Create a select field
      *
@@ -124,6 +125,32 @@ class FormField {
                 'label' => $label,
                 'ajax'  => $ajax
         ], $args ) );
+    }
+
+    /**
+     * Create an email field
+     *
+     * @param string $name  Field name
+     * @param string $label Field label
+     * @param array  $args  Additional arguments
+     *
+     * @return self
+     */
+    public static function email( string $name, string $label, array $args = [] ): self {
+        return new self( array_merge( [ 'type' => 'email', 'name' => $name, 'label' => $label ], $args ) );
+    }
+
+    /**
+     * Create a textarea field
+     *
+     * @param string $name  Field name
+     * @param string $label Field label
+     * @param array  $args  Additional arguments
+     *
+     * @return self
+     */
+    public static function textarea( string $name, string $label, array $args = [] ): self {
+        return new self( array_merge( [ 'type' => 'textarea', 'name' => $name, 'label' => $label ], $args ) );
     }
 
     /**
@@ -189,11 +216,12 @@ class FormField {
      * @return string Generated HTML
      */
     private function render_text(): string {
+        $type       = in_array( $this->field['type'], [ 'email', 'url', 'tel' ] ) ? $this->field['type'] : 'text';
         $attributes = $this->get_input_attributes();
 
         ob_start();
         ?>
-        <input type="text" <?php echo $this->render_attributes( $attributes ); ?> />
+        <input type="<?php echo esc_attr( $type ); ?>" <?php echo $this->render_attributes( $attributes ); ?> />
         <?php
         return ob_get_clean();
     }

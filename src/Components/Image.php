@@ -24,188 +24,194 @@ use ArrayPress\WPFlyout\Traits\Renderable;
  * Renders images with proper sizing and fallback handling.
  */
 class Image {
-	use Renderable;
+    use Renderable;
 
-	/**
-	 * Image source URL
-	 *
-	 * @var string
-	 */
-	private string $src;
+    /**
+     * Image source URL
+     *
+     * @var string
+     */
+    private string $src;
 
-	/**
-	 * Alternative text for accessibility
-	 *
-	 * @var string
-	 */
-	private string $alt = '';
+    /**
+     * Alternative text for accessibility
+     *
+     * @var string
+     */
+    private string $alt = '';
 
-	/**
-	 * Image configuration
-	 *
-	 * @var array
-	 */
-	private array $config = [
-		'size'        => 'thumbnail', // thumbnail, medium, large, full, or custom dimensions
-		'class'       => '',
-		'width'       => null,
-		'height'      => null,
-		'fallback'    => '',
-		'lazy'        => true,
-		'link'        => null,
-		'link_class'  => '',
-		'link_target' => '',
-		'rounded'     => false
-	];
+    /**
+     * Image configuration
+     *
+     * @var array
+     */
+    private array $config = [
+        'size'        => 'thumbnail',
+        'shape'       => 'square', // square, rounded, circle
+        'class'       => '',
+        'width'       => null,
+        'height'      => null,
+        'fallback'    => '',
+        'lazy'        => true,
+        'link'        => null,
+        'link_class'  => '',
+        'link_target' => '',
+        'rounded'     => false // deprecated, use shape instead
+    ];
 
-	/**
-	 * Constructor
-	 *
-	 * @param string $src    Image source URL
-	 * @param string $alt    Alternative text
-	 * @param array  $config Optional configuration
-	 */
-	public function __construct( string $src, string $alt = '', array $config = [] ) {
-		$this->src    = $src;
-		$this->alt    = $alt;
-		$this->config = array_merge( $this->config, $config );
-	}
+    /**
+     * Constructor
+     *
+     * @param string $src    Image source URL
+     * @param string $alt    Alternative text
+     * @param array  $config Optional configuration
+     */
+    public function __construct( string $src, string $alt = '', array $config = [] ) {
+        $this->src    = $src;
+        $this->alt    = $alt;
+        $this->config = array_merge( $this->config, $config );
+    }
 
-	/**
-	 * Create a thumbnail image
-	 *
-	 * @param string $src Image source
-	 * @param string $alt Alternative text
-	 *
-	 * @return self
-	 */
-	public static function thumbnail( string $src, string $alt = '' ): self {
-		return new self( $src, $alt, [
-			'size'    => 'thumbnail',
-			'class'   => 'wp-flyout-thumbnail',
-			'rounded' => true
-		] );
-	}
+    /**
+     * Create a thumbnail image
+     *
+     * @param string $src Image source
+     * @param string $alt Alternative text
+     *
+     * @return self
+     */
+    public static function thumbnail( string $src, string $alt = '' ): self {
+        return new self( $src, $alt, [
+                'size'    => 'thumbnail',
+                'class'   => 'wp-flyout-thumbnail',
+                'rounded' => true
+        ] );
+    }
 
-	/**
-	 * Create a product image
-	 *
-	 * @param string $src Image source
-	 * @param string $alt Alternative text
-	 *
-	 * @return self
-	 */
-	public static function product( string $src, string $alt = '' ): self {
-		return new self( $src, $alt, [
-			'size'    => 'medium',
-			'class'   => 'wp-flyout-product-image',
-			'rounded' => true
-		] );
-	}
+    /**
+     * Create a product image
+     *
+     * @param string $src Image source
+     * @param string $alt Alternative text
+     *
+     * @return self
+     */
+    public static function product( string $src, string $alt = '' ): self {
+        return new self( $src, $alt, [
+                'size'    => 'medium',
+                'class'   => 'wp-flyout-product-image',
+                'rounded' => true
+        ] );
+    }
 
-	/**
-	 * Render the image
-	 *
-	 * @return string Generated HTML
-	 */
-	public function render(): string {
-		$src = $this->src ?: $this->config['fallback'];
+    /**
+     * Render the image
+     *
+     * @return string Generated HTML
+     */
+    public function render(): string {
+        $src = $this->src ?: $this->config['fallback'];
 
-		if ( empty( $src ) ) {
-			return $this->render_placeholder();
-		}
+        if ( empty( $src ) ) {
+            return $this->render_placeholder();
+        }
 
-		$classes = [ 'wp-flyout-image' ];
-		if ( $this->config['class'] ) {
-			$classes[] = $this->config['class'];
-		}
-		if ( $this->config['rounded'] ) {
-			$classes[] = 'rounded';
-		}
-		$classes[] = 'size-' . $this->config['size'];
+        $classes = [ 'wp-flyout-image' ];
+        if ( $this->config['class'] ) {
+            $classes[] = $this->config['class'];
+        }
 
-		$attributes = [
-			'src'   => esc_url( $src ),
-			'alt'   => esc_attr( $this->alt ),
-			'class' => implode( ' ', $classes )
-		];
+        // Handle shape classes
+        if ( $this->config['shape'] ) {
+            $classes[] = 'shape-' . $this->config['shape'];
+        } elseif ( $this->config['rounded'] ) {
+            $classes[] = 'rounded';
+        }
 
-		// Add dimensions if specified
-		if ( $this->config['width'] ) {
-			$attributes['width'] = $this->config['width'];
-		}
-		if ( $this->config['height'] ) {
-			$attributes['height'] = $this->config['height'];
-		}
+        $classes[] = 'size-' . $this->config['size'];
 
-		// Add lazy loading
-		if ( $this->config['lazy'] ) {
-			$attributes['loading'] = 'lazy';
-		}
+        $attributes = [
+                'src'   => esc_url( $src ),
+                'alt'   => esc_attr( $this->alt ),
+                'class' => implode( ' ', $classes )
+        ];
 
-		ob_start();
+        // Add dimensions if specified
+        if ( $this->config['width'] ) {
+            $attributes['width'] = $this->config['width'];
+        }
+        if ( $this->config['height'] ) {
+            $attributes['height'] = $this->config['height'];
+        }
 
-		if ( $this->config['link'] ) {
-			$link_attrs = [
-				'href'  => esc_url( $this->config['link'] ),
-				'class' => esc_attr( $this->config['link_class'] )
-			];
-			if ( $this->config['link_target'] ) {
-				$link_attrs['target'] = esc_attr( $this->config['link_target'] );
-			}
-			?>
+        // Add lazy loading
+        if ( $this->config['lazy'] ) {
+            $attributes['loading'] = 'lazy';
+        }
+
+        ob_start();
+
+        if ( $this->config['link'] ) {
+            $link_attrs = [
+                    'href'  => esc_url( $this->config['link'] ),
+                    'class' => esc_attr( $this->config['link_class'] )
+            ];
+            if ( $this->config['link_target'] ) {
+                $link_attrs['target'] = esc_attr( $this->config['link_target'] );
+            }
+            ?>
             <a <?php echo $this->render_attributes( $link_attrs ); ?>>
                 <img <?php echo $this->render_attributes( $attributes ); ?> />
             </a>
-			<?php
-		} else {
-			?>
+            <?php
+        } else {
+            ?>
             <img <?php echo $this->render_attributes( $attributes ); ?> />
-			<?php
-		}
+            <?php
+        }
 
-		return ob_get_clean();
-	}
+        return ob_get_clean();
+    }
 
-	/**
-	 * Render a placeholder when no image is available
-	 *
-	 * @return string Generated HTML
-	 */
-	private function render_placeholder(): string {
-		$classes = [ 'wp-flyout-image-placeholder' ];
-		if ( $this->config['class'] ) {
-			$classes[] = $this->config['class'];
-		}
-		if ( $this->config['rounded'] ) {
-			$classes[] = 'rounded';
-		}
+    /**
+     * Render a placeholder when no image is available
+     *
+     * @return string Generated HTML
+     */
+    private function render_placeholder(): string {
+        $classes = [ 'wp-flyout-image-placeholder' ];
+        if ( $this->config['class'] ) {
+            $classes[] = $this->config['class'];
+        }
+        if ( $this->config['rounded'] ) {
+            $classes[] = 'rounded';
+        }
 
-		ob_start();
-		?>
+        ob_start();
+        ?>
         <div class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>">
             <span class="dashicons dashicons-format-image"></span>
         </div>
-		<?php
-		return ob_get_clean();
-	}
+        <?php
+        return ob_get_clean();
+    }
 
-	/**
-	 * Render HTML attributes
-	 *
-	 * @param array $attributes Attributes array
-	 *
-	 * @return string HTML attributes string
-	 */
-	private function render_attributes( array $attributes ): string {
-		$output = [];
-		foreach ( $attributes as $key => $value ) {
-			if ( $value !== null && $value !== '' ) {
-				$output[] = sprintf( '%s="%s"', $key, $value );
-			}
-		}
+    /**
+     * Render HTML attributes
+     *
+     * @param array $attributes Attributes array
+     *
+     * @return string HTML attributes string
+     */
+    private function render_attributes( array $attributes ): string {
+        $output = [];
+        foreach ( $attributes as $key => $value ) {
+            if ( $value !== null && $value !== '' ) {
+                $output[] = sprintf( '%s="%s"', $key, $value );
+            }
+        }
 
-		return implode( ' ', $output );
-	}
+        return implode( ' ', $output );
+    }
 
 }

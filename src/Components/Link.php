@@ -68,7 +68,7 @@ class Link {
         $this->config = array_merge( $this->config, $config );
 
         // Auto-detect external links
-        if ( strpos( $href, 'http' ) === 0 && strpos( $href, home_url() ) === false ) {
+        if ( str_starts_with( $href, 'http' ) && ! str_contains( $href, home_url() ) ) {
             $this->config['external'] = true;
             if ( empty( $this->config['target'] ) ) {
                 $this->config['target'] = '_blank';
@@ -91,6 +91,39 @@ class Link {
                 'button_style' => true,
                 'button_type'  => 'secondary'
         ] );
+    }
+
+    /**
+     * Create an email link
+     *
+     * @param string $email Email address
+     * @param string $text  Optional text (defaults to email)
+     *
+     * @return self
+     */
+    public static function email( string $email, string $text = '' ): self {
+        $text = $text ?: $email;
+        return new self( $text, 'mailto:' . $email, [
+                'icon' => 'email-alt'
+        ] );
+    }
+
+    /**
+     * Create a standard link
+     *
+     * @param string $text   Link text
+     * @param string $href   Link URL
+     * @param array  $config Optional configuration
+     *
+     * @return self
+     */
+    public static function create( string $text, string $href, array $config = [] ): self {
+        // Handle new_tab shorthand
+        if ( isset( $config['new_tab'] ) && $config['new_tab'] ) {
+            $config['target'] = '_blank';
+            unset( $config['new_tab'] );
+        }
+        return new self( $text, $href, $config );
     }
 
     /**

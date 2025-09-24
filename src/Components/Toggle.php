@@ -109,6 +109,20 @@ class Toggle {
     }
 
     /**
+     * Create a basic toggle
+     *
+     * @param string $name    Field name
+     * @param string $label   Toggle label
+     * @param bool   $checked Whether checked
+     * @param array  $config  Optional configuration
+     *
+     * @return self
+     */
+    public static function create( string $name, string $label, bool $checked = false, array $config = [] ): self {
+        return new self( $name, $label, array_merge( [ 'checked' => $checked ], $config ) );
+    }
+
+    /**
      * Render the toggle
      *
      * @return string Generated HTML
