@@ -201,7 +201,7 @@ class FileManager {
                     <!-- Clear button for first item -->
                     <button type="button" class="button-link clear-file"
                             title="<?php esc_attr_e( 'Clear file', 'wp-flyout' ); ?>">
-                        <span class="dashicons dashicons-dismiss"></span>
+                        <span class="dashicons dashicons-trash"></span>
                     </button>
                 <?php else: ?>
                     <!-- Remove button for other items -->
