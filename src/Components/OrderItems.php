@@ -130,8 +130,6 @@ class OrderItems {
      * @return string Generated HTML
      */
     public function render(): string {
-        Flyout::enqueue_component_assets( 'order-items' );
-
         $is_edit = $this->config['mode'] === 'edit';
 
         ob_start();

@@ -2,7 +2,7 @@
 /**
  * Asset Management Trait for WP Flyout
  *
- * Handles smart asset loading and centralized localization for the WP Flyout library
+ * Handles asset loading and centralized localization for the WP Flyout library
  *
  * @package     ArrayPress\WPFlyout
  * @copyright   Copyright (c) 2025, ArrayPress Limited
@@ -13,14 +13,9 @@ declare( strict_types=1 );
 
 namespace ArrayPress\WPFlyout\Traits;
 
-trait AssetManager {
+use ArrayPress\WPFlyout\Flyout;
 
-	/**
-	 * Track which component assets have been enqueued
-	 *
-	 * @var array
-	 */
-	private static array $enqueued_components = [];
+trait AssetManager {
 
 	/**
 	 * Flag to track if core assets are enqueued
@@ -62,7 +57,7 @@ trait AssetManager {
 	}
 
 	/**
-	 * Enqueue core flyout assets
+	 * Enqueue core flyout assets and all components
 	 *
 	 * @return void
 	 */
@@ -88,10 +83,68 @@ trait AssetManager {
 			[ 'jquery', 'jquery-ui-sortable' ]
 		);
 
+		// Load all component assets (needed for AJAX content)
+		self::enqueue_all_component_assets();
+
 		// Centralized localization for all components
 		self::localize_scripts();
 
 		self::$core_enqueued = true;
+	}
+
+	/**
+	 * Enqueue all component assets
+	 * Since flyouts load via AJAX, all component assets must be available
+	 *
+	 * @return void
+	 */
+	private static function enqueue_all_component_assets(): void {
+		$base_file = self::get_base_file();
+
+		// File Manager Component
+		wp_enqueue_style_from_composer_file(
+			'wp-flyout-file-manager',
+			$base_file,
+			'css/components/file-manager.css',
+			[ 'wp-flyout' ]
+		);
+
+		wp_enqueue_script_from_composer_file(
+			'wp-flyout-file-manager',
+			$base_file,
+			'js/components/file-manager.js',
+			[ 'wp-flyout', 'jquery-ui-sortable', 'wp-media' ]
+		);
+
+		// Notes Component
+		wp_enqueue_style_from_composer_file(
+			'wp-flyout-notes',
+			$base_file,
+			'css/components/notes.css',
+			[ 'wp-flyout' ]
+		);
+
+		wp_enqueue_script_from_composer_file(
+			'wp-flyout-notes',
+			$base_file,
+			'js/components/notes.js',
+			[ 'wp-flyout' ]
+		);
+
+		// Order Items Component
+		wp_enqueue_style_from_composer_file(
+			'wp-flyout-order-items',
+			$base_file,
+			'css/components/order-items.css',
+			[ 'wp-flyout' ]
+		);
+
+		wp_enqueue_script_from_composer_file(
+			'wp-flyout-order-items',
+			$base_file,
+			'js/components/order-items.js',
+			[ 'wp-flyout' ]
+		);
 	}
 
 	/**
@@ -165,7 +218,7 @@ trait AssetManager {
 		$configs = [];
 
 		// Access the Flyout class's registered instances
-		$registered = \ArrayPress\WPFlyout\Flyout::get_registered();
+		$registered = Flyout::get_registered();
 
 		foreach ( $registered as $id => $flyout ) {
 			$ajax = $flyout->get_ajax_config();
@@ -185,105 +238,12 @@ trait AssetManager {
 	}
 
 	/**
-	 * Enqueue component assets on demand
-	 *
-	 * @param string $component Component name
-	 *
-	 * @return void
-	 */
-	public static function enqueue_component_assets( string $component ): void {
-		if ( isset( self::$enqueued_components[ $component ] ) ) {
-			return;
-		}
-
-		// Ensure core is loaded first (includes localization)
-		self::enqueue_core_assets();
-
-		$base_file = self::get_base_file();
-
-		switch ( $component ) {
-			case 'file-manager':
-				wp_enqueue_style_from_composer_file(
-					'wp-flyout-file-manager',
-					$base_file,
-					'css/components/file-manager.css',
-					[ 'wp-flyout' ]
-				);
-
-				wp_enqueue_script_from_composer_file(
-					'wp-flyout-file-manager',
-					$base_file,
-					'js/components/file-manager.js',
-					[ 'wp-flyout', 'jquery-ui-sortable', 'wp-mediaelement' ]
-				);
-				break;
-
-			case 'notes':
-				wp_enqueue_style_from_composer_file(
-					'wp-flyout-notes',
-					$base_file,
-					'css/components/notes.css',
-					[ 'wp-flyout' ]
-				);
-
-				wp_enqueue_script_from_composer_file(
-					'wp-flyout-notes',
-					$base_file,
-					'js/components/notes.js',
-					[ 'wp-flyout' ]
-				);
-				break;
-
-			case 'order-items':
-				wp_enqueue_style_from_composer_file(
-					'wp-flyout-order-items',
-					$base_file,
-					'css/components/order-items.css',
-					[ 'wp-flyout' ]
-				);
-
-				wp_enqueue_script_from_composer_file(
-					'wp-flyout-order-items',
-					$base_file,
-					'js/components/order-items.js',
-					[ 'wp-flyout' ]
-				);
-				break;
-		}
-
-		self::$enqueued_components[ $component ] = true;
-	}
-
-	/**
-	 * Detect and enqueue required component assets based on content
-	 *
-	 * @param string $content HTML content to scan
-	 *
-	 * @return void
-	 */
-	protected function auto_enqueue_from_content( string $content ): void {
-		// Map of CSS classes/identifiers to component names
-		$component_map = [
-			'wp-flyout-file-manager' => 'file-manager',
-			'wp-flyout-notes-panel'  => 'notes',
-			'wp-flyout-order-items'  => 'order-items'
-		];
-
-		foreach ( $component_map as $identifier => $component ) {
-			if ( str_contains( $content, $identifier ) ) {
-				self::enqueue_component_assets( $component );
-			}
-		}
-	}
-
-	/**
 	 * Reset enqueued tracking (useful for testing)
 	 *
 	 * @return void
 	 */
 	public static function reset_enqueued(): void {
-		self::$enqueued_components = [];
-		self::$core_enqueued       = false;
+		self::$core_enqueued = false;
 	}
 
 }

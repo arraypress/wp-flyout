@@ -95,8 +95,6 @@ class NotesPanel {
      * @return string Generated HTML
      */
     public function render(): string {
-        Flyout::enqueue_component_assets( 'notes' );
-
         $attributes = [];
 
         if ( $this->config['editable'] ) {

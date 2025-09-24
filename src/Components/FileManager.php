@@ -112,8 +112,6 @@ class FileManager {
      * @return string Generated HTML
      */
     public function render(): string {
-        Flyout::enqueue_component_assets( 'file-manager' );
-
         $classes = [
                 $this->config['class'],
                 $this->config['reorderable'] ? 'reorderable' : ''
