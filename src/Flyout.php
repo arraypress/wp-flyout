@@ -440,12 +440,7 @@ class Flyout {
      */
     public function render(): string {
         // Generate HTML first
-        $html = $this->generate_html();
-
-        // Auto-enqueue component assets based on content
-        $this->auto_enqueue_from_content( $html );
-
-        return $html;
+        return $this->generate_html();
     }
 
     /**
