@@ -43,7 +43,8 @@ class InfoGrid {
             'columns'    => 2,
             'class'      => 'wp-flyout-info-grid',
             'show_empty' => true,
-            'empty_text' => '—'
+            'empty_text' => '—',
+            'escape'     => true  // Add this as a default
     ];
 
     /**
@@ -70,12 +71,15 @@ class InfoGrid {
      * @return self
      */
     public function add_item( string $label, mixed $value, array $args = [] ): self {
+        // Use the global escape setting if not specified for item
+        $escape = $args['escape'] ?? $this->config['escape'];
+
         $this->items[] = array_merge( [
                 'label'  => $label,
                 'value'  => $value,
                 'type'   => 'text',
                 'class'  => '',
-                'escape' => true
+                'escape' => $escape
         ], $args );
 
         return $this;
@@ -131,7 +135,12 @@ class InfoGrid {
             return $this->render_separator( $item );
         }
 
-        $value = $this->format_value( $item['value'], $item );
+        // Don't format if we're not escaping (HTML content)
+        if ( ! $item['escape'] && is_string( $item['value'] ) ) {
+            $value = $item['value'];
+        } else {
+            $value = $this->format_value( $item['value'], $item );
+        }
 
         if ( ! $this->config['show_empty'] && empty( $value ) ) {
             return '';
@@ -142,7 +151,14 @@ class InfoGrid {
         <div class="wp-flyout-info-item <?php echo esc_attr( $item['class'] ); ?>">
             <span class="wp-flyout-info-label"><?php echo esc_html( $item['label'] ); ?></span>
             <span class="wp-flyout-info-value">
-                <?php echo $item['escape'] ? esc_html( $value ) : $value; ?>
+                <?php
+                // THE FIX: Actually check the escape flag
+                if ( $item['escape'] ) {
+                    echo esc_html( $value );
+                } else {
+                    echo $value; // Output raw HTML when escape is false
+                }
+                ?>
             </span>
         </div>
         <?php
@@ -196,5 +212,4 @@ class InfoGrid {
 
         return (string) $value;
     }
-
 }

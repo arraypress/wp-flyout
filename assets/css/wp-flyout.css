@@ -89,6 +89,7 @@
     flex-direction: column;
     transform: translateX(100%);
     transition: transform 0.3s ease-out;
+    height: calc(100vh - 32px);
 }
 
 .wp-flyout.active {
@@ -216,7 +217,7 @@
 
 /* Body */
 .wp-flyout-body {
-    flex: 1;
+    flex: 1 1 auto;
     overflow-y: auto;
     padding: 30px;
     min-height: 0;
@@ -263,17 +264,31 @@
     bottom: 0;
     background: var(--wp-flyout-bg);
     border-top: 1px solid var(--wp-flyout-header-border);
-    padding: 20px 30px;
-    margin-top: auto;
+    padding: 15px 30px;
     flex-shrink: 0;
     z-index: 10;
     box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.05);
+    margin-top: auto;
+}
+
+/* Form Structure */
+.wp-flyout-form {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+}
+
+.wp-flyout-form .wp-flyout-body {
+    flex: 1 1 auto;
+    overflow-y: auto;
 }
 
 /* Action Bar */
 .wp-flyout-actions {
     display: flex;
     gap: 12px;
+    align-items: center;
 }
 
 .wp-flyout-actions.align-right {
@@ -282,6 +297,36 @@
 
 .wp-flyout-actions.align-center {
     justify-content: center;
+}
+
+.wp-flyout-actions .button {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    line-height: normal;
+    min-height: 30px;
+}
+
+.wp-flyout-actions .button .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    line-height: 1;
+    margin-top: -2px;
+}
+
+.wp-flyout-footer .button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 6px 12px;
+    line-height: normal;
+}
+
+.wp-flyout-footer .button .dashicons {
+    margin-top: 0;
+    vertical-align: middle;
 }
 
 /* Form Fields */
@@ -351,6 +396,60 @@
     font-size: 13px;
     font-style: italic;
     color: var(--wp-flyout-text-muted);
+}
+
+/* Form validation */
+.wp-flyout-tab-content:not(.active) input:required,
+.wp-flyout-tab-content:not(.active) select:required,
+.wp-flyout-tab-content:not(.active) textarea:required {
+    box-shadow: none !important;
+    border-color: #8c8f94 !important;
+}
+
+/* Form Notices */
+.wp-flyout-form-notice {
+    padding: 12px;
+    margin: 0 0 20px 0;
+    border-left: 4px solid;
+    background: #fff;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.wp-flyout-form-notice.error {
+    border-left-color: #d63638;
+    color: #d63638;
+}
+
+.wp-flyout-form-notice.success {
+    border-left-color: #00a32a;
+    color: #00a32a;
+}
+
+/* Links */
+.wp-flyout-link,
+.wp-flyout a:not(.button):not(.wp-flyout-tab) {
+    color: var(--wp-flyout-primary);
+    text-decoration: none;
+    transition: color 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.wp-flyout-link:hover,
+.wp-flyout a:not(.button):not(.wp-flyout-tab):hover {
+    color: var(--wp-flyout-primary-hover);
+    text-decoration: underline;
+}
+
+.wp-flyout-link .dashicons,
+.wp-flyout a:not(.button) .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    line-height: 1;
 }
 
 /* Badges */
@@ -474,6 +573,18 @@
     color: var(--wp-flyout-text);
     margin: 0;
     line-height: 1.5;
+}
+
+.wp-flyout-info-separator {
+    grid-column: 1 / -1;
+    border-top: 1px solid var(--wp-flyout-border);
+    padding-top: 20px;
+    margin-top: 10px;
+}
+
+.wp-flyout-info-separator span {
+    font-weight: 600;
+    color: var(--wp-flyout-text);
 }
 
 /* Toggle Switch */
@@ -602,26 +713,6 @@
     height: 32px;
 }
 
-/* Links */
-.wp-flyout-link {
-    color: var(--wp-flyout-primary);
-    text-decoration: none;
-    transition: color 0.2s;
-}
-
-.wp-flyout-link:hover {
-    color: var(--wp-flyout-primary-hover);
-    text-decoration: underline;
-}
-
-.wp-flyout-link .dashicons {
-    font-size: 16px;
-    width: 16px;
-    height: 16px;
-    vertical-align: text-bottom;
-    margin-right: 4px;
-}
-
 /* Empty State */
 .wp-flyout-empty-state {
     text-align: center;
@@ -743,12 +834,90 @@
 }
 
 .file-list li {
-    padding: 8px 0;
+    padding: 10px 0;
     border-bottom: 1px solid #f0f0f1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .file-list li:last-child {
     border-bottom: none;
+}
+
+.file-list a {
+    color: var(--wp-flyout-primary);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 500;
+}
+
+.file-list a:hover {
+    color: var(--wp-flyout-primary-hover);
+    text-decoration: underline;
+}
+
+.file-list .dashicons-pdf {
+    color: #dc3232;
+}
+
+.file-list .dashicons-external {
+    font-size: 14px;
+    color: var(--wp-flyout-text-muted);
+}
+
+.file-list small {
+    color: var(--wp-flyout-text-muted);
+    margin-left: 4px;
+}
+
+/* File Manager */
+.wp-flyout-file-manager {
+    margin-bottom: 20px;
+}
+
+.file-manager-list {
+    border: 1px solid var(--wp-flyout-border);
+    border-radius: 4px;
+    background: #fafafa;
+    padding: 10px;
+    min-height: 100px;
+}
+
+.file-manager-item {
+    background: white;
+    border: 1px solid var(--wp-flyout-border);
+    border-radius: 4px;
+    padding: 10px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.file-manager-item:last-child {
+    margin-bottom: 0;
+}
+
+.file-handle {
+    cursor: move;
+    color: var(--wp-flyout-text-muted);
+}
+
+.file-manager-item-placeholder {
+    border: 2px dashed var(--wp-flyout-border);
+    background: var(--wp-flyout-bg);
+    height: 50px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+}
+
+.file-manager-empty {
+    text-align: center;
+    color: var(--wp-flyout-text-muted);
+    padding: 20px;
 }
 
 /* Responsive */
@@ -757,10 +926,12 @@
         width: 100%;
         max-width: 100%;
         top: 46px;
+        height: calc(100vh - 46px);
     }
 
     .admin-bar .wp-flyout {
         top: 46px;
+        height: calc(100vh - 46px);
     }
 
     .wp-flyout-header,
@@ -784,14 +955,10 @@
     }
 }
 
-/* WordPress Admin Bar Adjustment */
-.admin-bar .wp-flyout {
-    top: 32px;
-}
-
 @media screen and (max-width: 600px) {
     .admin-bar .wp-flyout {
         top: 0;
+        height: 100vh;
     }
 }
 
