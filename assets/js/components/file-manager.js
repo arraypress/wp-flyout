@@ -31,18 +31,28 @@
         },
 
         bindEvents: function () {
+            // Add file
             $(document).on('click', '.add-file-button', function (e) {
                 e.preventDefault();
                 const $manager = $(this).closest('.wp-flyout-file-manager');
                 FileManager.addFile($manager);
             });
 
+            // Remove file (not first)
             $(document).on('click', '.remove-file', function (e) {
                 e.preventDefault();
                 const $item = $(this).closest('.file-manager-item');
                 FileManager.removeFile($item);
             });
 
+            // Clear file (first item only)
+            $(document).on('click', '.clear-file', function (e) {
+                e.preventDefault();
+                const $item = $(this).closest('.file-manager-item');
+                FileManager.clearFile($item);
+            });
+
+            // Media picker
             $(document).on('click', '.select-file-media', function (e) {
                 e.preventDefault();
                 const $button = $(this);
@@ -66,15 +76,6 @@
         addFile: function ($manager) {
             const $list = $manager.find('.file-manager-list');
             const $template = $manager.find('.file-item-template');
-            const maxFiles = parseInt($manager.data('max-files')) || 0;
-
-            const currentCount = $list.find('.file-manager-item').length;
-            if (maxFiles > 0 && currentCount >= maxFiles) {
-                alert('Maximum number of files reached');
-                return;
-            }
-
-            $list.find('.file-manager-empty').remove();
 
             let template = $template.html() || $template.text();
             if (!template) {
@@ -82,7 +83,7 @@
                 return;
             }
 
-            const newIndex = currentCount;
+            const newIndex = $list.find('.file-manager-item').length;
             const html = template.replace(/{{index}}/g, newIndex);
             $list.append(html);
 
@@ -90,26 +91,33 @@
                 $list.sortable('refresh');
             }
 
+            // Update first item status
+            FileManager.updateFirstItemStatus($list);
+
+            // Focus on new item
             $list.find('.file-manager-item:last .file-name-input').focus();
         },
 
         removeFile: function ($item) {
             const $list = $item.closest('.file-manager-list');
-            const $manager = $list.closest('.wp-flyout-file-manager');
-            const minFiles = parseInt($manager.data('min-files')) || 0;
-            const currentCount = $list.find('.file-manager-item').length;
 
-            if (minFiles > 0 && currentCount <= minFiles) {
-                alert('Minimum number of files required: ' + minFiles);
+            // Don't remove if it's the only item
+            if ($list.find('.file-manager-item').length <= 1) {
+                FileManager.clearFile($item);
                 return;
             }
 
             $item.remove();
             FileManager.reindexFiles($list);
+            FileManager.updateFirstItemStatus($list);
+        },
 
-            if ($list.find('.file-manager-item').length === 0 && minFiles === 0) {
-                $list.html('<p class="file-manager-empty">No files added yet.</p>');
-            }
+        clearFile: function ($item) {
+            // Clear all inputs but keep the item
+            $item.find('.file-name-input').val('');
+            $item.find('.file-url-input').val('');
+            $item.find('.file-attachment-id').val('');
+            // Don't clear lookup_key - keep it for tracking
         },
 
         reindexFiles: function ($list) {
@@ -118,14 +126,40 @@
             $list.find('.file-manager-item').each(function (index) {
                 const $item = $(this);
                 $item.attr('data-index', index);
+                $item.attr('data-first', index === 0 ? 'true' : 'false');
 
-                $item.find('input, select, textarea').each(function () {
+                $item.find('input').each(function () {
                     const name = $(this).attr('name');
                     if (name) {
                         const newName = name.replace(/\[\d+\]/, '[' + index + ']');
                         $(this).attr('name', newName);
                     }
                 });
+            });
+        },
+
+        updateFirstItemStatus: function ($list) {
+            const $items = $list.find('.file-manager-item');
+
+            $items.each(function (index) {
+                const $item = $(this);
+                const $actions = $item.find('.file-actions');
+
+                if (index === 0) {
+                    // First item - show clear button
+                    $actions.html(
+                        '<button type="button" class="button-link clear-file" title="Clear file">' +
+                        '<span class="dashicons dashicons-dismiss"></span>' +
+                        '</button>'
+                    );
+                } else {
+                    // Other items - show remove button
+                    $actions.html(
+                        '<button type="button" class="button-link remove-file" title="Remove file">' +
+                        '<span class="dashicons dashicons-trash"></span>' +
+                        '</button>'
+                    );
+                }
             });
         },
 
@@ -149,10 +183,11 @@
 
                 $item.find('.file-name-input').val(attachment.filename || attachment.title);
                 $item.find('.file-url-input').val(attachment.url);
-                $item.find('[name*="[attachment_id]"]').val(attachment.id);
+                $item.find('.file-attachment-id').val(attachment.id);
 
-                if (attachment.filesizeInBytes) {
-                    $item.find('[name*="[size]"]').val(attachment.filesizeInBytes);
+                // If this is a new item, generate a lookup key
+                if (!$item.find('.file-lookup-key').val()) {
+                    $item.find('.file-lookup-key').val('file_' + Date.now());
                 }
             });
 

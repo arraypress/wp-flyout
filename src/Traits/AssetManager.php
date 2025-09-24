@@ -101,6 +101,9 @@ trait AssetManager {
 	private static function enqueue_all_component_assets(): void {
 		$base_file = self::get_base_file();
 
+		// Enqueue WordPress Media Library
+		wp_enqueue_media();
+
 		// File Manager Component
 		wp_enqueue_style_from_composer_file(
 			'wp-flyout-file-manager',
