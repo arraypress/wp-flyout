@@ -144,7 +144,7 @@ class FileManager {
      */
     private function render_file_item( array $file, int $index ): string {
         $lookup_key = $file['lookup_key'] ?? '';
-        $is_first   = $index === 0;
+        $is_first = $index === 0;
 
         ob_start();
         ?>
@@ -197,19 +197,10 @@ class FileManager {
             </div>
 
             <div class="file-actions">
-                <?php if ( $is_first ): ?>
-                    <!-- Clear button for first item -->
-                    <button type="button" class="button-link clear-file"
-                            title="<?php esc_attr_e( 'Clear file', 'wp-flyout' ); ?>">
-                        <span class="dashicons dashicons-trash"></span>
-                    </button>
-                <?php else: ?>
-                    <!-- Remove button for other items -->
-                    <button type="button" class="button-link remove-file"
-                            title="<?php esc_attr_e( 'Remove file', 'wp-flyout' ); ?>">
-                        <span class="dashicons dashicons-trash"></span>
-                    </button>
-                <?php endif; ?>
+                <button type="button" class="button-link remove-file"
+                        title="<?php esc_attr_e( 'Remove file', 'wp-flyout' ); ?>">
+                    <span class="dashicons dashicons-trash"></span>
+                </button>
             </div>
         </div>
         <?php

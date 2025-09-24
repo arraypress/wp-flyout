@@ -38,18 +38,18 @@
                 FileManager.addFile($manager);
             });
 
-            // Remove file (not first)
+            // Remove file
             $(document).on('click', '.remove-file', function (e) {
                 e.preventDefault();
                 const $item = $(this).closest('.file-manager-item');
-                FileManager.removeFile($item);
-            });
+                const isFirst = $item.attr('data-first') === 'true';
 
-            // Clear file (first item only)
-            $(document).on('click', '.clear-file', function (e) {
-                e.preventDefault();
-                const $item = $(this).closest('.file-manager-item');
-                FileManager.clearFile($item);
+                if (isFirst) {
+                    // Clear first item instead of removing
+                    FileManager.clearFile($item);
+                } else {
+                    FileManager.removeFile($item);
+                }
             });
 
             // Media picker
@@ -91,9 +91,6 @@
                 $list.sortable('refresh');
             }
 
-            // Update first item status
-            FileManager.updateFirstItemStatus($list);
-
             // Focus on new item
             $list.find('.file-manager-item:last .file-name-input').focus();
         },
@@ -109,7 +106,6 @@
 
             $item.remove();
             FileManager.reindexFiles($list);
-            FileManager.updateFirstItemStatus($list);
         },
 
         clearFile: function ($item) {
@@ -135,31 +131,6 @@
                         $(this).attr('name', newName);
                     }
                 });
-            });
-        },
-
-        updateFirstItemStatus: function ($list) {
-            const $items = $list.find('.file-manager-item');
-
-            $items.each(function (index) {
-                const $item = $(this);
-                const $actions = $item.find('.file-actions');
-
-                if (index === 0) {
-                    // First item - show clear button
-                    $actions.html(
-                        '<button type="button" class="button-link clear-file" title="Clear file">' +
-                        '<span class="dashicons dashicons-dismiss"></span>' +
-                        '</button>'
-                    );
-                } else {
-                    // Other items - show remove button
-                    $actions.html(
-                        '<button type="button" class="button-link remove-file" title="Remove file">' +
-                        '<span class="dashicons dashicons-trash"></span>' +
-                        '</button>'
-                    );
-                }
             });
         },
 
