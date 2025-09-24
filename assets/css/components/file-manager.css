@@ -1,0 +1,133 @@
+/**
+ * WP Flyout - File Manager Component
+ */
+
+.wp-flyout-file-manager {
+    margin-top: 10px;
+    margin-bottom: 20px;
+}
+
+.file-manager-list {
+    margin-bottom: 15px;
+    min-height: 60px;
+    border: 1px solid var(--wp-flyout-border);
+    border-radius: 4px;
+    padding: 8px;
+    background: #f6f7f7;
+}
+
+.file-manager-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    padding: 12px;
+    margin-bottom: 10px;
+    transition: all 0.2s;
+}
+
+.file-manager-item:last-child {
+    margin-bottom: 0;
+}
+
+.file-manager-item:hover {
+    border-color: #2271b1;
+    box-shadow: 0 0 0 1px rgba(34, 113, 177, 0.1);
+}
+
+.file-handle {
+    cursor: move;
+    color: #787c82;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.file-handle:hover {
+    color: #2271b1;
+}
+
+.file-info {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.file-details {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.file-name-input {
+    flex: 0 0 35%;
+    min-width: 200px;
+}
+
+.file-url-wrapper {
+    flex: 1;
+    position: relative;
+    display: flex;
+}
+
+.file-url-input {
+    width: 100%;
+    padding-right: 42px;
+}
+
+.file-url-wrapper .select-file-media {
+    position: absolute;
+    right: 1px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 34px;
+    height: calc(100% - 2px);
+    padding: 0;
+    background: #f0f0f1;
+    border: 1px solid #8c8f94;
+    border-radius: 0 3px 3px 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.file-url-wrapper .select-file-media:hover {
+    background: #e0e0e0;
+}
+
+.file-actions .remove-file {
+    padding: 6px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #787c82;
+    transition: color 0.2s;
+}
+
+.file-actions .remove-file:hover {
+    color: #d63638;
+}
+
+.add-file-button {
+    width: 100%;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.add-file-button .dashicons {
+    display: inline-block;
+    vertical-align: text-bottom;
+    margin-top: -3px;
+    margin-right: 4px;
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    line-height: 16px;
+}

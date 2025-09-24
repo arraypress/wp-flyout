@@ -1,0 +1,332 @@
+/**
+ * Order Items Component - Modern Styles
+ */
+
+/* Container */
+.wp-flyout-order-items {
+    padding: 0;
+}
+
+/* Product Selector */
+.order-items-selector {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+}
+
+.order-items-selector .product-selector {
+    flex: 1;
+    padding: 10px 14px;
+    border: 2px solid #e5e7eb;
+    border-radius: 6px;
+    font-size: 14px;
+    background: #fff;
+    transition: all 0.2s;
+}
+
+.order-items-selector .product-selector:focus {
+    border-color: #2271b1;
+    box-shadow: 0 0 0 3px rgba(34, 113, 177, 0.1);
+    outline: none;
+}
+
+.order-items-selector .add-product-btn {
+    padding: 10px 20px;
+    background: #2271b1;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-weight: 500;
+    white-space: nowrap;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+/*.order-items-selector .add-product-btn:hover {*/
+/*    background: #135e96;*/
+/*    transform: translateY(-1px);*/
+/*    box-shadow: 0 4px 12px rgba(34, 113, 177, 0.15);*/
+/*}*/
+
+.order-items-selector .add-product-btn .dashicons {
+    margin-right: 6px;
+    vertical-align: middle;
+    margin-top: -2px;
+}
+
+/* Table */
+.order-items-table {
+    margin-bottom: 24px;
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+}
+
+.order-items-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.order-items-table thead {
+    background: #f8f9fa;
+}
+
+.order-items-table th {
+    padding: 14px 20px;
+    text-align: left;
+    font-size: 12px;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.order-items-table td {
+    padding: 16px 20px;
+    vertical-align: middle;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.order-items-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.order-items-table tbody tr:hover {
+    background: #f8f9fa;
+}
+
+/* Columns */
+.column-product {
+    width: auto;
+    min-width: 250px;
+}
+
+.column-quantity {
+    width: 100px;
+    text-align: center !important;
+}
+
+.column-price,
+.column-subtotal {
+    width: 120px;
+    text-align: right !important;
+}
+
+.column-actions {
+    width: 50px;
+    text-align: center !important;
+}
+
+/* Product Info */
+.product-info {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.product-thumbnail {
+    width: 48px;
+    height: 48px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid #e5e7eb;
+    flex-shrink: 0;
+    background: #f8f9fa;
+}
+
+.product-name {
+    font-weight: 500;
+    color: #111827;
+    font-size: 14px;
+}
+
+/* Quantity Input */
+.quantity-input {
+    width: 70px;
+    padding: 8px 12px;
+    text-align: center;
+    border: 2px solid #e5e7eb;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.quantity-input:focus {
+    border-color: #2271b1;
+    box-shadow: 0 0 0 3px rgba(34, 113, 177, 0.1);
+    outline: none;
+}
+
+/* Price Display */
+.column-price,
+.column-subtotal {
+    font-size: 15px;
+    font-weight: 500;
+    color: #111827;
+}
+
+/* Remove Button */
+.remove-item {
+    background: none;
+    border: none;
+    color: #9ca3af;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.remove-item:hover {
+    color: #ef4444;
+    background: #fee2e2;
+}
+
+.remove-item .dashicons {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+}
+
+/* Empty State */
+.order-items-empty {
+    padding: 60px 20px;
+    text-align: center;
+    background: #f8f9fa;
+    border: 2px dashed #e5e7eb;
+    border-radius: 8px;
+}
+
+.order-items-empty p {
+    margin: 0;
+    color: #9ca3af;
+    font-size: 14px;
+}
+
+/* Totals Section */
+.order-items-totals {
+    background: #fff;
+    border-radius: 8px;
+    padding: 1rem;
+    border: 1px solid #e5e7eb;
+}
+
+.totals-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    font-size: 15px;
+}
+
+.totals-row.total {
+    margin-top: 12px;
+    padding-top: 20px;
+    border-top: 2px solid #e5e7eb;
+}
+
+.totals-row .label {
+    font-weight: 500;
+    color: #6b7280;
+}
+
+.totals-row .value {
+    font-weight: 600;
+    color: #111827;
+}
+
+.totals-row.discount .value {
+    color: #10b981;
+}
+
+.totals-row.total .label {
+    font-size: 16px;
+    font-weight: 600;
+    color: #111827;
+}
+
+.totals-row.total .value {
+    font-size: 20px;
+    font-weight: 700;
+    color: #2271b1;
+}
+
+/* View Mode */
+.wp-flyout-order-items[data-mode="view"] .order-items-table {
+    border: 1px solid #e5e7eb;
+}
+
+.wp-flyout-order-items[data-mode="view"] .column-quantity,
+.wp-flyout-order-items[data-mode="view"] .column-price {
+    color: #6b7280;
+}
+
+/* Loading State */
+.add-product-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Animations */
+.order-item-new {
+    animation: slideIn 0.3s ease-out;
+}
+
+.product-thumbnail-placeholder {
+    width: 48px;
+    height: 48px;
+    background: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.product-thumbnail-placeholder .dashicons {
+    color: #d1d5db;
+    font-size: 20px;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive */
+@media screen and (max-width: 782px) {
+    .order-items-selector {
+        flex-direction: column;
+    }
+
+    .order-items-table {
+        overflow-x: auto;
+    }
+
+    .order-items-table table {
+        min-width: 600px;
+    }
+
+    .product-info {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .product-thumbnail {
+        width: 36px;
+        height: 36px;
+    }
+}
