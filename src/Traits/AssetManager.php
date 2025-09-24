@@ -101,7 +101,7 @@ trait AssetManager {
 	private static function enqueue_all_component_assets(): void {
 		$base_file = self::get_base_file();
 
-		// Enqueue WordPress Media Library
+		// Enqueue WordPress Media Library - must be called first
 		wp_enqueue_media();
 
 		// File Manager Component
@@ -116,7 +116,7 @@ trait AssetManager {
 			'wp-flyout-file-manager',
 			$base_file,
 			'js/components/file-manager.js',
-			[ 'wp-flyout', 'jquery-ui-sortable', 'wp-media' ]
+			[ 'wp-flyout', 'jquery-ui-sortable' ] // Remove 'wp-media' - it's not a valid handle
 		);
 
 		// Notes Component
