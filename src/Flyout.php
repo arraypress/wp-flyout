@@ -1,13 +1,13 @@
 <?php
 /**
- * WP Flyout Library - Simplified Version
+ * WP Flyout Library - Complete Version with Extensibility
  *
  * Modern, accessible flyout panels for WordPress admin interfaces.
  *
  * @package     ArrayPress\WPFlyout
  * @copyright   Copyright (c) 2025, ArrayPress Limited
  * @license     GPL2+
- * @version     2.0.0
+ * @version     2.1.0
  * @author      David Sherlock
  */
 
@@ -20,10 +20,9 @@ use ArrayPress\WPFlyout\Traits\AssetManager;
 /**
  * Class Flyout
  *
- * Main flyout container with simplified configuration and full AJAX support.
+ * Main flyout container with simplified configuration, full AJAX support, and extensibility hooks.
  */
 class Flyout {
-
     use AssetManager;
 
     /**
@@ -180,6 +179,40 @@ class Flyout {
     }
 
     /**
+     * Get sanitized ID for use in hook names
+     * Replaces hyphens with underscores for valid WordPress hook names
+     *
+     * @return string
+     */
+    private function get_hook_id(): string {
+        return str_replace( '-', '_', $this->id );
+    }
+
+    /**
+     * Verify AJAX request security
+     * Checks nonce and user capabilities
+     *
+     * @param string $nonce_action Nonce action to verify
+     *
+     * @return bool|void Returns true if valid, sends JSON error and exits if not
+     */
+    private function verify_ajax_request( string $nonce_action ): bool {
+        // Verify nonce
+        if ( ! wp_verify_nonce( $_POST['_wpnonce'] ?? '', $nonce_action ) ) {
+            wp_send_json_error( 'Invalid security token' );
+            exit;
+        }
+
+        // Check capabilities
+        if ( ! current_user_can( $this->ajax['capability'] ?? 'manage_options' ) ) {
+            wp_send_json_error( 'Insufficient permissions' );
+            exit;
+        }
+
+        return true;
+    }
+
+    /**
      * Setup AJAX handlers with simplified configuration
      *
      * @param string $prefix    Action prefix (e.g., 'product' generates 'product_load', 'product_save', etc.)
@@ -199,19 +232,13 @@ class Flyout {
         // Use closures to preserve context
         $flyout       = $this;
         $nonce_action = $prefix . '_nonce';
+        $hook_id      = $this->get_hook_id();
 
         // Register WordPress AJAX actions with closures
         if ( $this->ajax['on_load'] ) {
-            add_action( 'wp_ajax_' . $prefix . '_load', function () use ( $flyout, $nonce_action ) {
-                // Verify nonce
-                if ( ! wp_verify_nonce( $_POST['_wpnonce'] ?? '', $nonce_action ) ) {
-                    wp_send_json_error( 'Invalid security token' );
-                }
-
-                // Check capabilities
-                if ( ! current_user_can( $flyout->ajax['capability'] ?? 'manage_options' ) ) {
-                    wp_send_json_error( 'Insufficient permissions' );
-                }
+            add_action( 'wp_ajax_' . $prefix . '_load', function () use ( $flyout, $nonce_action, $hook_id ) {
+                // Verify request security
+                $flyout->verify_ajax_request( $nonce_action );
 
                 // Clear any previous content
                 $flyout->clear_content();
@@ -220,6 +247,16 @@ class Flyout {
                 if ( $flyout->ajax['on_load'] ) {
                     call_user_func( $flyout->ajax['on_load'], $flyout, $_POST );
                 }
+
+                /**
+                 * After flyout content has been loaded
+                 * Allows extensions to modify tabs and content
+                 *
+                 * @param Flyout $flyout  The flyout instance
+                 * @param array  $request Request data
+                 */
+                do_action( 'wp_flyout_after_load', $flyout, $_POST );
+                do_action( "wp_flyout_after_load_{$hook_id}", $flyout, $_POST );
 
                 // Send response
                 wp_send_json_success( [
@@ -230,24 +267,36 @@ class Flyout {
         }
 
         if ( $this->ajax['on_save'] ) {
-            add_action( 'wp_ajax_' . $prefix . '_save', function () use ( $flyout, $nonce_action ) {
-                // Verify nonce
-                if ( ! wp_verify_nonce( $_POST['_wpnonce'] ?? '', $nonce_action ) ) {
-                    wp_send_json_error( 'Invalid security token' );
-                }
+            add_action( 'wp_ajax_' . $prefix . '_save', function () use ( $flyout, $nonce_action, $hook_id ) {
+                // Verify request security
+                $flyout->verify_ajax_request( $nonce_action );
 
-                // Check capabilities
-                if ( ! current_user_can( $flyout->ajax['capability'] ?? 'manage_options' ) ) {
-                    wp_send_json_error( 'Insufficient permissions' );
-                }
+                /**
+                 * Filter save data before processing
+                 *
+                 * @param array  $data   Data to save
+                 * @param Flyout $flyout The flyout instance
+                 */
+                $data = apply_filters( 'wp_flyout_before_save', $_POST, $flyout );
+                $data = apply_filters( "wp_flyout_before_save_{$hook_id}", $data, $flyout );
 
                 // Call save callback
                 if ( $flyout->ajax['on_save'] ) {
-                    $result = call_user_func( $flyout->ajax['on_save'], $_POST );
+                    $result = call_user_func( $flyout->ajax['on_save'], $data );
 
                     if ( is_wp_error( $result ) ) {
                         wp_send_json_error( $result->get_error_message() );
                     }
+
+                    /**
+                     * After successful save
+                     *
+                     * @param mixed  $result The save result (usually ID)
+                     * @param array  $data   Data that was saved
+                     * @param Flyout $flyout The flyout instance
+                     */
+                    do_action( 'wp_flyout_after_save', $result, $data, $flyout );
+                    do_action( "wp_flyout_after_save_{$hook_id}", $result, $data, $flyout );
 
                     $response = [
                             'id'      => $result,
@@ -267,16 +316,9 @@ class Flyout {
         }
 
         if ( $this->ajax['on_delete'] ) {
-            add_action( 'wp_ajax_' . $prefix . '_delete', function () use ( $flyout, $nonce_action ) {
-                // Verify nonce
-                if ( ! wp_verify_nonce( $_POST['_wpnonce'] ?? '', $nonce_action ) ) {
-                    wp_send_json_error( 'Invalid security token' );
-                }
-
-                // Check capabilities
-                if ( ! current_user_can( $flyout->ajax['capability'] ?? 'manage_options' ) ) {
-                    wp_send_json_error( 'Insufficient permissions' );
-                }
+            add_action( 'wp_ajax_' . $prefix . '_delete', function () use ( $flyout, $nonce_action, $hook_id ) {
+                // Verify request security
+                $flyout->verify_ajax_request( $nonce_action );
 
                 // Call delete handler if configured
                 if ( $flyout->ajax['on_delete'] ) {
@@ -285,11 +327,29 @@ class Flyout {
                         wp_send_json_error( 'Invalid ID' );
                     }
 
+                    /**
+                     * Before delete processing
+                     *
+                     * @param int    $id     Item ID to delete
+                     * @param Flyout $flyout The flyout instance
+                     */
+                    do_action( 'wp_flyout_before_delete', $id, $flyout );
+                    do_action( "wp_flyout_before_delete_{$hook_id}", $id, $flyout );
+
                     $result = call_user_func( $flyout->ajax['on_delete'], $id );
 
                     if ( is_wp_error( $result ) ) {
                         wp_send_json_error( $result->get_error_message() );
                     }
+
+                    /**
+                     * After successful delete
+                     *
+                     * @param int    $id     Deleted item ID
+                     * @param Flyout $flyout The flyout instance
+                     */
+                    do_action( 'wp_flyout_after_delete', $id, $flyout );
+                    do_action( "wp_flyout_after_delete_{$hook_id}", $id, $flyout );
 
                     wp_send_json_success( [
                             'id'      => $id,
@@ -353,6 +413,18 @@ class Flyout {
         if ( ! isset( $this->tab_content[ $id ] ) ) {
             $this->tab_content[ $id ] = [];
         }
+
+        $hook_id = $this->get_hook_id();
+
+        /**
+         * Tab has been added to flyout
+         *
+         * @param string $tab_id Tab ID
+         * @param array  $tab    Tab configuration
+         * @param Flyout $flyout The flyout instance
+         */
+        do_action( 'wp_flyout_tab_added', $id, $this->tabs[ $id ], $this );
+        do_action( "wp_flyout_tab_added_{$hook_id}", $id, $this->tabs[ $id ], $this );
 
         return $this;
     }
@@ -439,8 +511,29 @@ class Flyout {
      * @return string Generated HTML
      */
     public function render(): string {
-        // Generate HTML first
-        return $this->generate_html();
+        $hook_id = $this->get_hook_id();
+
+        /**
+         * Before flyout renders
+         *
+         * @param Flyout $flyout The flyout instance
+         */
+        do_action( 'wp_flyout_before_render', $this );
+        do_action( "wp_flyout_before_render_{$hook_id}", $this );
+
+        // Generate HTML
+        $html = $this->generate_html();
+
+        /**
+         * Filter the generated HTML
+         *
+         * @param string $html   Generated HTML
+         * @param Flyout $flyout The flyout instance
+         */
+        $html = apply_filters( 'wp_flyout_html', $html, $this );
+        $html = apply_filters( "wp_flyout_html_{$hook_id}", $html, $this );
+
+        return $html;
     }
 
     /**
@@ -530,6 +623,17 @@ class Flyout {
      * @return string Generated HTML
      */
     private function render_tabs(): string {
+        $hook_id = $this->get_hook_id();
+
+        /**
+         * Filter tabs before rendering
+         *
+         * @param array  $tabs   Tabs array
+         * @param Flyout $flyout The flyout instance
+         */
+        $this->tabs = apply_filters( 'wp_flyout_tabs', $this->tabs, $this );
+        $this->tabs = apply_filters( "wp_flyout_tabs_{$hook_id}", $this->tabs, $this );
+
         ob_start();
         ?>
         <div class="wp-flyout-tabs">
@@ -607,6 +711,19 @@ class Flyout {
      * @return string Generated HTML
      */
     private function render_tab_content( string $tab_id ): string {
+        $hook_id     = $this->get_hook_id();
+        $tab_hook_id = str_replace( '-', '_', $tab_id );
+
+        /**
+         * Before rendering tab content
+         *
+         * @param string $tab_id Tab ID
+         * @param Flyout $flyout The flyout instance
+         */
+        do_action( 'wp_flyout_before_tab_content', $tab_id, $this );
+        do_action( "wp_flyout_before_tab_content_{$hook_id}", $tab_id, $this );
+        do_action( "wp_flyout_before_tab_content_{$hook_id}_{$tab_hook_id}", $this );
+
         $content = $this->tab_content[ $tab_id ] ?? [];
 
         if ( empty( $content ) ) {
@@ -623,8 +740,20 @@ class Flyout {
         foreach ( $content as $item ) {
             echo $this->render_content_item( $item );
         }
+        $html = ob_get_clean();
 
-        return ob_get_clean();
+        /**
+         * Filter tab content HTML
+         *
+         * @param string $html   Tab content HTML
+         * @param string $tab_id Tab ID
+         * @param Flyout $flyout The flyout instance
+         */
+        $html = apply_filters( 'wp_flyout_tab_content', $html, $tab_id, $this );
+        $html = apply_filters( "wp_flyout_tab_content_{$hook_id}", $html, $tab_id, $this );
+        $html = apply_filters( "wp_flyout_tab_content_{$hook_id}_{$tab_hook_id}", $html, $this );
+
+        return $html;
     }
 
     /**
@@ -688,4 +817,23 @@ class Flyout {
     public static function get_instance( string $id ): ?self {
         return self::$registered[ $id ] ?? null;
     }
+
+    /**
+     * Get the flyout ID
+     *
+     * @return string
+     */
+    public function get_id(): string {
+        return $this->id;
+    }
+
+    /**
+     * Get tabs array
+     *
+     * @return array
+     */
+    public function get_tabs(): array {
+        return $this->tabs;
+    }
+
 }
