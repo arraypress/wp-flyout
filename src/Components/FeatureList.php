@@ -164,16 +164,27 @@ class FeatureList {
         ?>
         <<?php echo $tag; ?> class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>">
         <?php foreach ( $this->items as $item ): ?>
-            <li <?php echo $item['highlight'] ? 'class="highlight"' : ''; ?>>
-                <?php if ( $item['icon'] ): ?>
-                    <span class="dashicons dashicons-<?php echo esc_attr( $item['icon'] ); ?>"></span>
+            <?php
+            // Handle both string items and array items
+            if ( is_string( $item ) ) {
+                $text      = $item;
+                $icon      = $this->config['icon'];
+                $highlight = false;
+            } else {
+                $text      = $item['text'] ?? '';
+                $icon      = $item['icon'] ?? $this->config['icon'];
+                $highlight = $item['highlight'] ?? false;
+            }
+            ?>
+            <li <?php echo $highlight ? 'class="highlight"' : ''; ?>>
+                <?php if ( $icon ): ?>
+                    <span class="dashicons dashicons-<?php echo esc_attr( $icon ); ?>"></span>
                 <?php endif; ?>
-                <span class="list-text"><?php echo esc_html( $item['text'] ); ?></span>
+                <span class="list-text"><?php echo esc_html( $text ); ?></span>
             </li>
         <?php endforeach; ?>
         </<?php echo $tag; ?>>
         <?php
         return ob_get_clean();
     }
-
 }
