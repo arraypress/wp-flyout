@@ -1,0 +1,165 @@
+/**
+ * WP Flyout - Section Components
+ * Styles for SectionHeader, FeatureList, and DataTable components
+ */
+
+/* Section Header Component */
+.wp-flyout-section-header {
+    margin-bottom: 20px;
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 15px;
+}
+
+.wp-flyout-section-header .section-header-main {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.wp-flyout-section-header .section-title {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1e1e1e;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.wp-flyout-section-header .section-title .dashicons {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    color: #646970;
+}
+
+.wp-flyout-section-header .section-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.wp-flyout-section-header .description {
+    margin: 0;
+    font-size: 13px;
+    font-style: italic;
+    color: #646970;
+}
+
+/* Feature List Component */
+.wp-flyout-feature-list {
+    list-style: none;
+    margin: 0 0 20px 0;
+    padding: 0;
+}
+
+.wp-flyout-feature-list li {
+    padding: 8px 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    border-bottom: 1px solid #f0f0f1;
+}
+
+.wp-flyout-feature-list li:last-child {
+    border-bottom: none;
+}
+
+.wp-flyout-feature-list li.highlight {
+    background: #f6f7f7;
+    padding: 12px;
+    border-radius: 4px;
+    margin: 4px 0;
+    border: 1px solid #dcdcde;
+}
+
+.wp-flyout-feature-list .dashicons {
+    flex-shrink: 0;
+    margin-top: 2px;
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+}
+
+/* Icon colors */
+.wp-flyout-feature-list.icon-color-success .dashicons {
+    color: #00a32a;
+}
+
+.wp-flyout-feature-list.icon-color-warning .dashicons {
+    color: #dba617;
+}
+
+.wp-flyout-feature-list.icon-color-error .dashicons {
+    color: #d63638;
+}
+
+.wp-flyout-feature-list.icon-color-info .dashicons {
+    color: #72aee6;
+}
+
+.wp-flyout-feature-list.icon-color-default .dashicons {
+    color: #646970;
+}
+
+/* Multi-column support */
+.wp-flyout-feature-list.columns-2 {
+    column-count: 2;
+    column-gap: 30px;
+}
+
+.wp-flyout-feature-list.columns-3 {
+    column-count: 3;
+    column-gap: 30px;
+}
+
+.wp-flyout-feature-list.columns-2 li,
+.wp-flyout-feature-list.columns-3 li {
+    break-inside: avoid;
+}
+
+/* Data Table Component */
+.wp-flyout-data-table {
+    margin-bottom: 20px;
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+}
+
+.wp-flyout-data-table thead th {
+    font-weight: 600;
+    background: #f6f7f7;
+}
+
+.wp-flyout-data-table tbody tr:hover {
+    background: #f6f7f7;
+}
+
+.wp-flyout-data-table td:first-child {
+    width: 35%;
+    font-weight: 600;
+    color: #1e1e1e;
+}
+
+.wp-flyout-data-table code {
+    font-family: Consolas, Monaco, monospace;
+    padding: 2px 5px;
+    background: #f0f0f1;
+    border-radius: 3px;
+    font-size: 13px;
+    word-break: break-all;
+}
+
+/* Responsive */
+@media screen and (max-width: 782px) {
+    .wp-flyout-feature-list.columns-2,
+    .wp-flyout-feature-list.columns-3 {
+        column-count: 1;
+    }
+
+    .wp-flyout-section-header .section-header-main {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+}

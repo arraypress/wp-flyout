@@ -116,7 +116,7 @@ trait AssetManager {
 			'wp-flyout-file-manager',
 			$base_file,
 			'js/components/file-manager.js',
-			[ 'wp-flyout', 'jquery-ui-sortable' ] // Remove 'wp-media' - it's not a valid handle
+			[ 'wp-flyout', 'jquery-ui-sortable' ]
 		);
 
 		// Notes Component
@@ -146,6 +146,14 @@ trait AssetManager {
 			'wp-flyout-order-items',
 			$base_file,
 			'js/components/order-items.js',
+			[ 'wp-flyout' ]
+		);
+
+		// Sections Component
+		wp_enqueue_style_from_composer_file(
+			'wp-flyout-sections',
+			$base_file,
+			'css/components/sections.css',
 			[ 'wp-flyout' ]
 		);
 	}
