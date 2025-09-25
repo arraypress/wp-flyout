@@ -156,6 +156,21 @@ trait AssetManager {
 			'css/components/sections.css',
 			[ 'wp-flyout' ]
 		);
+
+		// Order Items Component
+		wp_enqueue_style_from_composer_file(
+			'wp-flyout-ajax-button',
+			$base_file,
+			'css/components/ajax-button.css',
+			[ 'wp-flyout' ]
+		);
+
+		wp_enqueue_script_from_composer_file(
+			'wp-flyout-ajax-button',
+			$base_file,
+			'js/components/ajax-button.js',
+			[ 'wp-flyout' ]
+		);
 	}
 
 	/**
