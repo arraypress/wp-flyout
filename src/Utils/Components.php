@@ -19,6 +19,7 @@ use ArrayPress\WPFlyout\Components\FeatureList;
 use ArrayPress\WPFlyout\Components\FormField;
 use ArrayPress\WPFlyout\Components\InfoGrid;
 use ArrayPress\WPFlyout\Components\SectionHeader;
+use ArrayPress\WPFlyout\Components\DataTable;
 use ArrayPress\WPFlyout\Components\Toggle;
 
 if ( ! function_exists( 'wp_flyout_action_bar' ) ) {
@@ -207,5 +208,20 @@ if ( ! function_exists( 'wp_flyout_form_security' ) ) {
 	 */
 	function wp_flyout_form_security( string $nonce_action, bool $include_referer = false ): string {
 		return FormField::security( $nonce_action, $include_referer );
+	}
+}
+
+if ( ! function_exists( 'wp_flyout_data_table' ) ) {
+	/**
+	 * Create a data table component
+	 *
+	 * @since 3.0.0
+	 *
+	 * @param array $data   Data array (key => value pairs).
+	 * @param array $config Optional configuration.
+	 * @return DataTable
+	 */
+	function wp_flyout_data_table( array $data = [], array $config = [] ): DataTable {
+		return new DataTable( $data, $config );
 	}
 }
