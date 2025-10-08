@@ -58,6 +58,7 @@
     flex-direction: column;
     transform: translateX(100%);
     transition: transform 0.3s ease-out;
+    max-height: calc(100vh - 32px); /* Add this for safety */
 }
 
 .wp-flyout.active {
@@ -184,6 +185,7 @@
     flex: 1 1 auto;
     overflow-y: auto;
     padding: 30px;
+    min-height: 0; /* Important for Firefox */
 }
 
 /* Tab Content */
@@ -210,14 +212,18 @@
     background: var(--wp-flyout-bg);
     border-top: 1px solid var(--wp-flyout-border);
     padding: 15px 30px;
-    flex-shrink: 0;
+    flex-shrink: 0; /* Don't shrink */
+    position: sticky; /* Keep visible */
+    bottom: 0;
+    z-index: 10;
 }
 
 /* Form wrapper for auto-detection */
 .wp-flyout-form {
     display: flex;
     flex-direction: column;
-    height: 100%;
+    flex: 1 1 auto;
+    min-height: 0; /* Important for Firefox */
 }
 
 /* Responsive */
@@ -631,6 +637,10 @@
 
 /* Responsive adjustments for components */
 @media screen and (max-width: 782px) {
+    .wp-flyout {
+        max-height: calc(100vh - 46px); /* Admin bar is taller on mobile */
+    }
+
     .wp-flyout-info-grid[data-columns="2"],
     .wp-flyout-info-grid[data-columns="3"] {
         grid-template-columns: 1fr;
