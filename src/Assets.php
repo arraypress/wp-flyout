@@ -20,14 +20,14 @@ namespace ArrayPress\WPFlyout;
  *
  * Manages script and style registration for the flyout library.
  *
- * @since 1.0.0
+ * @since 3.0.0
  */
 class Assets {
 
 	/**
 	 * Initialize assets
 	 *
-	 * @since 1.0.0
+	 * @since 3.0.0
 	 *
 	 * @return void
 	 */
@@ -38,9 +38,7 @@ class Assets {
 	/**
 	 * Register assets for use by plugins
 	 *
-	 * WordPress will handle duplicate registrations, so we don't need to track.
-	 *
-	 * @since 1.0.0
+	 * @since 3.0.0
 	 *
 	 * @return void
 	 */
@@ -48,8 +46,8 @@ class Assets {
 		$base_file = __FILE__;
 		$version   = defined( 'WP_DEBUG' ) && WP_DEBUG ? false : '3.0.0';
 
-		// Register core CSS using wp-composer-assets.
-		wp_register_style_from_composer_file(
+		// Register core CSS.
+		wp_register_composer_style_from_file(
 			'wp-flyout',
 			$base_file,
 			'css/wp-flyout.css',
@@ -57,8 +55,8 @@ class Assets {
 			$version
 		);
 
-		// Register core JavaScript using wp-composer-assets.
-		wp_register_script_from_composer_file(
+		// Register core JavaScript.
+		wp_register_composer_script_from_file(
 			'wp-flyout',
 			$base_file,
 			'js/wp-flyout.js',
@@ -80,7 +78,7 @@ class Assets {
 	 *
 	 * Call this in your plugin when you need flyout functionality.
 	 *
-	 * @since 1.0.0
+	 * @since 3.0.0
 	 *
 	 * @return void
 	 */
@@ -88,5 +86,4 @@ class Assets {
 		wp_enqueue_style( 'wp-flyout' );
 		wp_enqueue_script( 'wp-flyout' );
 	}
-
 }
