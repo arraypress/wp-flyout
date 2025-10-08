@@ -285,6 +285,61 @@
     height: 16px;
 }
 
+/* Modern stacked action bar */
+.wp-flyout-actions.stacked {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 20px;
+}
+
+.wp-flyout-actions.stacked .button {
+    width: 100%;
+    margin: 0;
+    padding: 12px 24px;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 6px;
+    justify-content: center;
+    min-height: 44px;
+}
+
+/* Primary action - full color */
+.wp-flyout-actions.stacked .button-primary {
+    background: #5850ec;
+    border-color: #5850ec;
+    color: #fff;
+}
+
+.wp-flyout-actions.stacked .button-primary:hover {
+    background: #4840d4;
+    border-color: #4840d4;
+}
+
+/* Secondary action - outlined */
+.wp-flyout-actions.stacked .button-secondary {
+    background: transparent;
+    border: 2px solid #e5e7eb;
+    color: #374151;
+}
+
+.wp-flyout-actions.stacked .button-secondary:hover {
+    background: #f9fafb;
+    border-color: #d1d5db;
+}
+
+/* Footer adjustments for modern look */
+.wp-flyout-footer {
+    background: #fff;
+    border-top: 1px solid #e5e7eb;
+    padding: 0;
+}
+
+/* Remove extra padding when using stacked layout */
+.wp-flyout-footer .wp-flyout-actions.stacked {
+    border-top: none;
+}
+
 /* Badge Component */
 .wp-flyout-badge {
     display: inline-block;

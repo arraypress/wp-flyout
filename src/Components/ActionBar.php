@@ -38,9 +38,10 @@ class ActionBar {
      * @var array
      */
     private array $config = [
-            'class'  => 'wp-flyout-actions',
-            'align'  => 'left', // left, right, center, space-between
-            'sticky' => false
+            'class'   => 'wp-flyout-actions',
+            'align'   => 'left', // left, right, center, space-between, stretch
+            'sticky'  => false,
+            'stacked' => false,   // Enable full-width stacked buttons
     ];
 
     /**
@@ -50,6 +51,31 @@ class ActionBar {
      */
     public function __construct( array $config = [] ) {
         $this->config = array_merge( $this->config, $config );
+    }
+
+    /**
+     * Create a modern stacked action bar
+     *
+     * @param string $primary_text   Primary button text
+     * @param string $secondary_text Secondary button text
+     * @return self
+     */
+    public static function modern( string $primary_text = 'Save', string $secondary_text = 'Cancel' ): self {
+        $bar = new self( [
+                'stacked' => true,
+                'align'   => 'stretch'
+        ] );
+
+        if ( $secondary_text ) {
+            $bar->add_action( $secondary_text, [
+                    'style' => 'secondary',
+                    'class' => 'wp-flyout-cancel'
+            ] );
+        }
+
+        $bar->add_submit( $primary_text );
+
+        return $bar;
     }
 
     /**
@@ -75,6 +101,7 @@ class ActionBar {
                 'disabled'     => false,
                 'loading_text' => null,
                 'confirm'      => null,
+                'full_width'   => false,
                 'attributes'   => []
         ], $config );
 
@@ -131,6 +158,10 @@ class ActionBar {
             $classes[] = 'sticky';
         }
 
+        if ( $this->config['stacked'] ) {
+            $classes[] = 'stacked';
+        }
+
         ob_start();
         ?>
         <div class="<?php echo esc_attr( implode( ' ', array_filter( $classes ) ) ); ?>">
@@ -150,7 +181,7 @@ class ActionBar {
      * @return string Generated HTML
      */
     private function render_action( array $action ): string {
-        if ( $action['type'] === 'link' ) {
+        if ( $action['type'] === 'link' && ! empty( $action['href'] ) && $action['href'] !== '#' ) {
             return $this->render_link( $action );
         }
 
@@ -167,10 +198,18 @@ class ActionBar {
     private function render_button( array $action ): string {
         $classes = [ 'button' ];
 
+        // Apply style classes
         if ( $action['style'] === 'primary' ) {
             $classes[] = 'button-primary';
+        } elseif ( $action['style'] === 'secondary' ) {
+            $classes[] = 'button-secondary';
         } elseif ( $action['style'] === 'link' ) {
             $classes = [ 'button-link' ];
+        }
+
+        // Add full-width class if stacked or explicitly set
+        if ( $this->config['stacked'] || $action['full_width'] ) {
+            $classes[] = 'full-width';
         }
 
         if ( $action['class'] ) {
@@ -233,8 +272,15 @@ class ActionBar {
 
         if ( $action['style'] === 'primary' ) {
             $classes[] = 'button-primary';
+        } elseif ( $action['style'] === 'secondary' ) {
+            $classes[] = 'button-secondary';
         } elseif ( $action['style'] === 'link' ) {
             $classes = [ 'button-link' ];
+        }
+
+        // Add full-width class if stacked or explicitly set
+        if ( $this->config['stacked'] || $action['full_width'] ) {
+            $classes[] = 'full-width';
         }
 
         if ( $action['class'] ) {
@@ -287,5 +333,4 @@ class ActionBar {
 
         return implode( ' ', $output );
     }
-
 }
