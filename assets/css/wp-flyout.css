@@ -362,6 +362,10 @@
     min-height: 80px;
 }
 
+.wp-flyout-field select {
+    max-width: none;
+}
+
 .wp-flyout-field .description {
     margin-top: 5px;
     font-size: 13px;
