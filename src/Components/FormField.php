@@ -1,13 +1,13 @@
 <?php
 /**
- * Form Field Component
+ * Form Field Component with Helper Methods
  *
- * Consistent form field rendering with labels, descriptions, and validation states.
+ * Basic form field rendering and utility methods for form handling.
  *
  * @package     ArrayPress\WPFlyout\Components
  * @copyright   Copyright (c) 2025, ArrayPress Limited
  * @license     GPL2+
- * @version     1.0.0
+ * @version     3.0.0
  * @author      David Sherlock
  */
 
@@ -20,416 +20,361 @@ use ArrayPress\WPFlyout\Traits\Renderable;
 /**
  * Class FormField
  *
- * Renders consistent form fields with various input types and configurations.
+ * Renders form fields and provides form utility methods.
+ *
+ * @since 3.0.0
  */
 class FormField {
-    use Renderable;
+	use Renderable;
 
-    /**
-     * Field configuration
-     *
-     * @var array
-     */
-    private array $field = [];
+	/**
+	 * Field configuration
+	 *
+	 * @since 3.0.0
+	 * @var array
+	 */
+	private array $field = [];
 
-    /**
-     * Default field configuration
-     *
-     * @var array
-     */
-    private static array $defaults = [
-            'type'          => 'text',
-            'name'          => '',
-            'id'            => '',
-            'label'         => '',
-            'value'         => '',
-            'description'   => '',
-            'placeholder'   => '',
-            'required'      => false,
-            'disabled'      => false,
-            'readonly'      => false,
-            'class'         => '',
-            'wrapper_class' => '',
-            'options'       => [],
-            'multiple'      => false,
-            'rows'          => 5,
-            'min'           => null,
-            'max'           => null,
-            'step'          => null,
-            'pattern'       => null,
-            'ajax'          => null, // For wp-ajax-select integration
-            'nonce'         => ''
-    ];
+	/**
+	 * Constructor
+	 *
+	 * @param array $field Field configuration.
+	 *
+	 * @since 3.0.0
+	 *
+	 */
+	public function __construct( array $field ) {
+		$defaults = [
+			'type'        => 'text',
+			'name'        => '',
+			'id'          => '',
+			'label'       => '',
+			'value'       => '',
+			'description' => '',
+			'placeholder' => '',
+			'required'    => false,
+			'disabled'    => false,
+			'class'       => 'regular-text',
+			'options'     => [],
+			'rows'        => 5,
+		];
 
-    /**
-     * Constructor
-     *
-     * @param array $field Field configuration
-     */
-    public function __construct( array $field ) {
-        $this->field = array_merge( self::$defaults, $field );
+		$this->field = array_merge( $defaults, $field );
 
-        // Auto-generate ID if not provided
-        if ( empty( $this->field['id'] ) && ! empty( $this->field['name'] ) ) {
-            $this->field['id'] = sanitize_key( $this->field['name'] );
-        }
-    }
+		// Auto-generate ID if not provided.
+		if ( empty( $this->field['id'] ) && ! empty( $this->field['name'] ) ) {
+			$this->field['id'] = sanitize_key( $this->field['name'] );
+		}
+	}
 
-    /**
-     * Create a text field
-     *
-     * @param string $name  Field name
-     * @param string $label Field label
-     * @param array  $args  Additional arguments
-     *
-     * @return self
-     */
-    public static function text( string $name, string $label, array $args = [] ): self {
-        return new self( array_merge( [ 'type' => 'text', 'name' => $name, 'label' => $label ], $args ) );
-    }
+	/**
+	 * Create a text field
+	 *
+	 * @param string $name  Field name.
+	 * @param string $label Field label.
+	 * @param array  $args  Additional arguments.
+	 *
+	 * @return self
+	 * @since 3.0.0
+	 *
+	 */
+	public static function text( string $name, string $label, array $args = [] ): self {
+		return new self( array_merge( [
+			'type'  => 'text',
+			'name'  => $name,
+			'label' => $label
+		], $args ) );
+	}
 
+	/**
+	 * Create a select field
+	 *
+	 * @param string $name    Field name.
+	 * @param string $label   Field label.
+	 * @param array  $options Options array.
+	 * @param array  $args    Additional arguments.
+	 *
+	 * @return self
+	 * @since 3.0.0
+	 *
+	 */
+	public static function select( string $name, string $label, array $options, array $args = [] ): self {
+		return new self( array_merge( [
+			'type'    => 'select',
+			'name'    => $name,
+			'label'   => $label,
+			'options' => $options
+		], $args ) );
+	}
 
-    /**
-     * Create a select field
-     *
-     * @param string $name    Field name
-     * @param string $label   Field label
-     * @param array  $options Options array
-     * @param array  $args    Additional arguments
-     *
-     * @return self
-     */
-    public static function select( string $name, string $label, array $options, array $args = [] ): self {
-        return new self( array_merge( [
-                'type'    => 'select',
-                'name'    => $name,
-                'label'   => $label,
-                'options' => $options
-        ], $args ) );
-    }
+	/**
+	 * Create a textarea field
+	 *
+	 * @param string $name  Field name.
+	 * @param string $label Field label.
+	 * @param array  $args  Additional arguments.
+	 *
+	 * @return self
+	 * @since 3.0.0
+	 *
+	 */
+	public static function textarea( string $name, string $label, array $args = [] ): self {
+		return new self( array_merge( [
+			'type'  => 'textarea',
+			'name'  => $name,
+			'label' => $label
+		], $args ) );
+	}
 
-    /**
-     * Create an AJAX select field
-     *
-     * @param string $name  Field name
-     * @param string $label Field label
-     * @param string $ajax  AJAX action
-     * @param array  $args  Additional arguments
-     *
-     * @return self
-     */
-    public static function ajax_select( string $name, string $label, string $ajax, array $args = [] ): self {
-        return new self( array_merge( [
-                'type'  => 'ajax_select',
-                'name'  => $name,
-                'label' => $label,
-                'ajax'  => $ajax
-        ], $args ) );
-    }
+	/* =========================================
+	   FORM HELPER METHODS (Static Utilities)
+	   ========================================= */
 
-    /**
-     * Create an email field
-     *
-     * @param string $name  Field name
-     * @param string $label Field label
-     * @param array  $args  Additional arguments
-     *
-     * @return self
-     */
-    public static function email( string $name, string $label, array $args = [] ): self {
-        return new self( array_merge( [ 'type' => 'email', 'name' => $name, 'label' => $label ], $args ) );
-    }
+	/**
+	 * Generate a hidden field
+	 *
+	 * @param string $name  Field name.
+	 * @param mixed  $value Field value.
+	 *
+	 * @return string HTML for hidden field.
+	 * @since 3.0.0
+	 *
+	 */
+	public static function hidden( string $name, $value ): string {
+		return sprintf(
+			'<input type="hidden" name="%s" value="%s" />',
+			esc_attr( $name ),
+			esc_attr( (string) $value )
+		);
+	}
 
-    /**
-     * Create a textarea field
-     *
-     * @param string $name  Field name
-     * @param string $label Field label
-     * @param array  $args  Additional arguments
-     *
-     * @return self
-     */
-    public static function textarea( string $name, string $label, array $args = [] ): self {
-        return new self( array_merge( [ 'type' => 'textarea', 'name' => $name, 'label' => $label ], $args ) );
-    }
+	/**
+	 * Generate a nonce field
+	 *
+	 * @param string $action Nonce action.
+	 * @param string $name   Field name (defaults to '_wpnonce').
+	 *
+	 * @return string HTML for nonce field.
+	 * @since 3.0.0
+	 *
+	 */
+	public static function nonce( string $action, string $name = '_wpnonce' ): string {
+		return self::hidden( $name, wp_create_nonce( $action ) );
+	}
 
-    /**
-     * Render the form field
-     *
-     * @return string Generated HTML
-     */
-    public function render(): string {
-        $wrapper_classes = [ 'wp-flyout-form-field', $this->field['wrapper_class'] ];
-        if ( $this->field['required'] ) {
-            $wrapper_classes[] = 'required';
-        }
+	/**
+	 * Generate multiple hidden fields
+	 *
+	 * @param array $fields Array of name => value pairs.
+	 *
+	 * @return string HTML for all hidden fields.
+	 * @since 3.0.0
+	 *
+	 */
+	public static function hidden_fields( array $fields ): string {
+		$output = '';
+		foreach ( $fields as $name => $value ) {
+			$output .= self::hidden( $name, $value ) . "\n";
+		}
 
-        ob_start();
-        ?>
-        <div class="<?php echo esc_attr( implode( ' ', array_filter( $wrapper_classes ) ) ); ?>">
-            <?php if ( $this->field['label'] ): ?>
+		return $output;
+	}
+
+	/**
+	 * Generate form metadata fields (ID and nonce)
+	 *
+	 * @param string     $id_field_name Name of the ID field.
+	 * @param int|string $id_value      Value of the ID.
+	 * @param string     $nonce_action  Nonce action.
+	 * @param string     $nonce_name    Nonce field name.
+	 *
+	 * @return string HTML for metadata fields.
+	 * @since 3.0.0
+	 *
+	 */
+	public static function metadata(
+		string $id_field_name,
+		$id_value,
+		string $nonce_action,
+		string $nonce_name = '_wpnonce'
+	): string {
+		return self::hidden( $id_field_name, $id_value ) . "\n" .
+		       self::nonce( $nonce_action, $nonce_name );
+	}
+
+	/**
+	 * Generate referer field
+	 *
+	 * @param string $name Field name (defaults to '_wp_http_referer').
+	 *
+	 * @return string HTML for referer field.
+	 * @since 3.0.0
+	 *
+	 */
+	public static function referer( string $name = '_wp_http_referer' ): string {
+		$referer = wp_unslash( $_SERVER['REQUEST_URI'] ?? '' );
+
+		return self::hidden( $name, esc_url( $referer ) );
+	}
+
+	/**
+	 * Generate action field for admin forms
+	 *
+	 * @param string $action Action value.
+	 *
+	 * @return string HTML for action field.
+	 * @since 3.0.0
+	 *
+	 */
+	public static function action( string $action ): string {
+		return self::hidden( 'action', $action );
+	}
+
+	/**
+	 * Generate a complete set of form security fields
+	 *
+	 * @param string $nonce_action    Nonce action.
+	 * @param bool   $include_referer Whether to include referer field.
+	 *
+	 * @return string HTML for security fields.
+	 * @since 3.0.0
+	 *
+	 */
+	public static function security( string $nonce_action, bool $include_referer = false ): string {
+		$output = self::nonce( $nonce_action );
+
+		if ( $include_referer ) {
+			$output .= "\n" . self::referer();
+		}
+
+		return $output;
+	}
+
+	/* =========================================
+	   INSTANCE METHODS (For rendering fields)
+	   ========================================= */
+
+	/**
+	 * Render the form field
+	 *
+	 * @return string Generated HTML.
+	 * @since 3.0.0
+	 *
+	 */
+	public function render(): string {
+		ob_start();
+		?>
+        <div class="wp-flyout-field">
+			<?php if ( $this->field['label'] ) : ?>
                 <label for="<?php echo esc_attr( $this->field['id'] ); ?>">
-                    <?php echo esc_html( $this->field['label'] ); ?>
-                    <?php if ( $this->field['required'] ): ?>
+					<?php echo esc_html( $this->field['label'] ); ?>
+					<?php if ( $this->field['required'] ) : ?>
                         <span class="required">*</span>
-                    <?php endif; ?>
+					<?php endif; ?>
                 </label>
-            <?php endif; ?>
+			<?php endif; ?>
 
-            <?php echo $this->render_input(); ?>
+			<?php echo $this->render_input(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 
-            <?php if ( $this->field['description'] ): ?>
+			<?php if ( $this->field['description'] ) : ?>
                 <p class="description"><?php echo esc_html( $this->field['description'] ); ?></p>
-            <?php endif; ?>
+			<?php endif; ?>
         </div>
-        <?php
-        return ob_get_clean();
-    }
+		<?php
+		return ob_get_clean();
+	}
 
-    /**
-     * Render the input element
-     *
-     * @return string Generated HTML
-     */
-    private function render_input(): string {
-        switch ( $this->field['type'] ) {
-            case 'select':
-                return $this->render_select();
-            case 'ajax_select':
-                return $this->render_ajax_select();
-            case 'textarea':
-                return $this->render_textarea();
-            case 'checkbox':
-                return $this->render_checkbox();
-            case 'radio':
-                return $this->render_radio();
-            case 'number':
-                return $this->render_number();
-            default:
-                return $this->render_text();
-        }
-    }
+	/**
+	 * Render the input element
+	 *
+	 * @return string Generated HTML.
+	 * @since 3.0.0
+	 *
+	 */
+	private function render_input(): string {
+		switch ( $this->field['type'] ) {
+			case 'select':
+				return $this->render_select();
+			case 'textarea':
+				return $this->render_textarea();
+			default:
+				return $this->render_text_input();
+		}
+	}
 
-    /**
-     * Render text input
-     *
-     * @return string Generated HTML
-     */
-    private function render_text(): string {
-        $type       = in_array( $this->field['type'], [ 'email', 'url', 'tel' ] ) ? $this->field['type'] : 'text';
-        $attributes = $this->get_input_attributes();
+	/**
+	 * Render text input
+	 *
+	 * @return string Generated HTML.
+	 * @since 3.0.0
+	 *
+	 */
+	private function render_text_input(): string {
+		$type = in_array( $this->field['type'], [ 'email', 'url', 'number', 'tel' ], true )
+			? $this->field['type']
+			: 'text';
 
-        ob_start();
-        ?>
-        <input type="<?php echo esc_attr( $type ); ?>" <?php echo $this->render_attributes( $attributes ); ?> />
-        <?php
-        return ob_get_clean();
-    }
+		return sprintf(
+			'<input type="%s" id="%s" name="%s" value="%s" class="%s" placeholder="%s" %s %s>',
+			esc_attr( $type ),
+			esc_attr( $this->field['id'] ),
+			esc_attr( $this->field['name'] ),
+			esc_attr( $this->field['value'] ),
+			esc_attr( $this->field['class'] ),
+			esc_attr( $this->field['placeholder'] ),
+			$this->field['required'] ? 'required' : '',
+			$this->field['disabled'] ? 'disabled' : ''
+		);
+	}
 
-    /**
-     * Render number input
-     *
-     * @return string Generated HTML
-     */
-    private function render_number(): string {
-        $attributes = $this->get_input_attributes();
-
-        if ( $this->field['min'] !== null ) {
-            $attributes['min'] = $this->field['min'];
-        }
-        if ( $this->field['max'] !== null ) {
-            $attributes['max'] = $this->field['max'];
-        }
-        if ( $this->field['step'] !== null ) {
-            $attributes['step'] = $this->field['step'];
-        }
-
-        ob_start();
-        ?>
-        <input type="number" <?php echo $this->render_attributes( $attributes ); ?> />
-        <?php
-        return ob_get_clean();
-    }
-
-    /**
-     * Render textarea
-     *
-     * @return string Generated HTML
-     */
-    private function render_textarea(): string {
-        $attributes         = $this->get_input_attributes();
-        $attributes['rows'] = $this->field['rows'];
-
-        ob_start();
-        ?>
-        <textarea <?php echo $this->render_attributes( $attributes ); ?>><?php echo esc_textarea( $this->field['value'] ); ?></textarea>
-        <?php
-        return ob_get_clean();
-    }
-
-    /**
-     * Render select
-     *
-     * @return string Generated HTML
-     */
-    private function render_select(): string {
-        $attributes = $this->get_input_attributes();
-
-        if ( $this->field['multiple'] ) {
-            $attributes['multiple'] = 'multiple';
-            $attributes['name']     .= '[]';
-        }
-
-        ob_start();
-        ?>
-        <select <?php echo $this->render_attributes( $attributes ); ?>>
-            <?php if ( ! $this->field['multiple'] && $this->field['placeholder'] ): ?>
+	/**
+	 * Render select
+	 *
+	 * @return string Generated HTML.
+	 * @since 3.0.0
+	 *
+	 */
+	private function render_select(): string {
+		ob_start();
+		?>
+        <select id="<?php echo esc_attr( $this->field['id'] ); ?>"
+                name="<?php echo esc_attr( $this->field['name'] ); ?>"
+                class="<?php echo esc_attr( $this->field['class'] ); ?>"
+			<?php echo $this->field['required'] ? 'required' : ''; ?>
+			<?php echo $this->field['disabled'] ? 'disabled' : ''; ?>>
+			<?php if ( $this->field['placeholder'] ) : ?>
                 <option value=""><?php echo esc_html( $this->field['placeholder'] ); ?></option>
-            <?php endif; ?>
-
-            <?php foreach ( $this->field['options'] as $value => $label ): ?>
-                <?php
-                $selected = $this->field['multiple']
-                        ? in_array( $value, (array) $this->field['value'] )
-                        : $value == $this->field['value'];
-                ?>
-                <option value="<?php echo esc_attr( $value ); ?>" <?php selected( $selected ); ?>>
-                    <?php echo esc_html( $label ); ?>
+			<?php endif; ?>
+			<?php foreach ( $this->field['options'] as $value => $label ) : ?>
+                <option value="<?php echo esc_attr( $value ); ?>"
+					<?php selected( $this->field['value'], $value ); ?>>
+					<?php echo esc_html( $label ); ?>
                 </option>
-            <?php endforeach; ?>
+			<?php endforeach; ?>
         </select>
-        <?php
-        return ob_get_clean();
-    }
+		<?php
+		return ob_get_clean();
+	}
 
-    /**
-     * Render AJAX select
-     *
-     * @return string Generated HTML
-     */
-    private function render_ajax_select(): string {
-        // Use wp-ajax-select if available
-        if ( function_exists( 'wp_ajax_select' ) ) {
-            return wp_ajax_select( [
-                    'name'        => $this->field['name'],
-                    'id'          => $this->field['id'],
-                    'ajax'        => $this->field['ajax'],
-                    'placeholder' => $this->field['placeholder'],
-                    'value'       => $this->field['value'],
-                    'nonce'       => $this->field['nonce'] ?: wp_create_nonce( $this->field['ajax'] ),
-                    'required'    => $this->field['required'],
-                    'disabled'    => $this->field['disabled'],
-                    'class'       => $this->field['class']
-            ] );
-        }
-
-        // Fallback to regular select
-        return $this->render_select();
-    }
-
-    /**
-     * Render checkbox
-     *
-     * @return string Generated HTML
-     */
-    private function render_checkbox(): string {
-        ob_start();
-        ?>
-        <label class="checkbox-label">
-            <input type="checkbox"
-                   name="<?php echo esc_attr( $this->field['name'] ); ?>"
-                   id="<?php echo esc_attr( $this->field['id'] ); ?>"
-                   value="1"
-                    <?php checked( $this->field['value'] ); ?>
-                    <?php disabled( $this->field['disabled'] ); ?> />
-            <?php if ( $this->field['description'] ): ?>
-                <?php echo esc_html( $this->field['description'] ); ?>
-            <?php endif; ?>
-        </label>
-        <?php
-        return ob_get_clean();
-    }
-
-    /**
-     * Render radio buttons
-     *
-     * @return string Generated HTML
-     */
-    private function render_radio(): string {
-        ob_start();
-        ?>
-        <div class="radio-group">
-            <?php foreach ( $this->field['options'] as $value => $label ): ?>
-                <label class="radio-label">
-                    <input type="radio"
-                           name="<?php echo esc_attr( $this->field['name'] ); ?>"
-                           value="<?php echo esc_attr( $value ); ?>"
-                            <?php checked( $this->field['value'], $value ); ?>
-                            <?php disabled( $this->field['disabled'] ); ?> />
-                    <?php echo esc_html( $label ); ?>
-                </label>
-            <?php endforeach; ?>
-        </div>
-        <?php
-        return ob_get_clean();
-    }
-
-    /**
-     * Get input attributes
-     *
-     * @return array Attributes array
-     */
-    private function get_input_attributes(): array {
-        $attributes = [
-                'name'  => $this->field['name'],
-                'id'    => $this->field['id'],
-                'value' => $this->field['value'],
-                'class' => $this->field['class'] ?: 'regular-text'
-        ];
-
-        if ( $this->field['placeholder'] ) {
-            $attributes['placeholder'] = $this->field['placeholder'];
-        }
-
-        if ( $this->field['required'] ) {
-            $attributes['required'] = 'required';
-        }
-
-        if ( $this->field['disabled'] ) {
-            $attributes['disabled'] = 'disabled';
-        }
-
-        if ( $this->field['readonly'] ) {
-            $attributes['readonly'] = 'readonly';
-        }
-
-        if ( $this->field['pattern'] ) {
-            $attributes['pattern'] = $this->field['pattern'];
-        }
-
-        return $attributes;
-    }
-
-    /**
-     * Render HTML attributes
-     *
-     * @param array $attributes Attributes array
-     *
-     * @return string HTML attributes string
-     */
-    private function render_attributes( array $attributes ): string {
-        $output = [];
-        foreach ( $attributes as $key => $value ) {
-            if ( is_bool( $value ) ) {
-                if ( $value ) {
-                    $output[] = $key;
-                }
-            } else {
-                $output[] = sprintf( '%s="%s"', $key, esc_attr( $value ) );
-            }
-        }
-
-        return implode( ' ', $output );
-    }
+	/**
+	 * Render textarea
+	 *
+	 * @return string Generated HTML.
+	 * @since 3.0.0
+	 *
+	 */
+	private function render_textarea(): string {
+		return sprintf(
+			'<textarea id="%s" name="%s" class="%s" rows="%d" placeholder="%s" %s %s>%s</textarea>',
+			esc_attr( $this->field['id'] ),
+			esc_attr( $this->field['name'] ),
+			esc_attr( $this->field['class'] ),
+			absint( $this->field['rows'] ),
+			esc_attr( $this->field['placeholder'] ),
+			$this->field['required'] ? 'required' : '',
+			$this->field['disabled'] ? 'disabled' : '',
+			esc_textarea( $this->field['value'] )
+		);
+	}
 
 }

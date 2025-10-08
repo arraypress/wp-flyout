@@ -1,0 +1,211 @@
+<?php
+/**
+ * WP Flyout Component Helper Functions
+ *
+ * Helper functions for quickly creating flyout UI components.
+ *
+ * @package     ArrayPress\WPFlyout
+ * @copyright   Copyright (c) 2025, ArrayPress Limited
+ * @license     GPL2+
+ * @version     3.0.0
+ */
+
+declare( strict_types=1 );
+
+use ArrayPress\WPFlyout\Components\ActionBar;
+use ArrayPress\WPFlyout\Components\Badge;
+use ArrayPress\WPFlyout\Components\EmptyState;
+use ArrayPress\WPFlyout\Components\FeatureList;
+use ArrayPress\WPFlyout\Components\FormField;
+use ArrayPress\WPFlyout\Components\InfoGrid;
+use ArrayPress\WPFlyout\Components\SectionHeader;
+use ArrayPress\WPFlyout\Components\Toggle;
+
+if ( ! function_exists( 'wp_flyout_action_bar' ) ) {
+	/**
+	 * Create an action bar component
+	 *
+	 * @param array $config Optional configuration.
+	 *
+	 * @return ActionBar
+	 * @since 3.0.0
+	 *
+	 */
+	function wp_flyout_action_bar( array $config = [] ): ActionBar {
+		return new ActionBar( $config );
+	}
+}
+
+if ( ! function_exists( 'wp_flyout_badge' ) ) {
+	/**
+	 * Create a badge component
+	 *
+	 * @param string $text   Badge text.
+	 * @param array  $config Optional configuration.
+	 *
+	 * @return Badge
+	 * @since 3.0.0
+	 *
+	 */
+	function wp_flyout_badge( string $text, array $config = [] ): Badge {
+		return new Badge( $text, $config );
+	}
+}
+
+if ( ! function_exists( 'wp_flyout_empty_state' ) ) {
+	/**
+	 * Create an empty state component
+	 *
+	 * @param string $title  Title text.
+	 * @param array  $config Optional configuration.
+	 *
+	 * @return EmptyState
+	 * @since 3.0.0
+	 *
+	 */
+	function wp_flyout_empty_state( string $title, array $config = [] ): EmptyState {
+		return new EmptyState( $title, $config );
+	}
+}
+
+if ( ! function_exists( 'wp_flyout_feature_list' ) ) {
+	/**
+	 * Create a feature list component
+	 *
+	 * @param array $items  List items.
+	 * @param array $config Optional configuration.
+	 *
+	 * @return FeatureList
+	 * @since 3.0.0
+	 *
+	 */
+	function wp_flyout_feature_list( array $items, array $config = [] ): FeatureList {
+		return new FeatureList( $items, $config );
+	}
+}
+
+if ( ! function_exists( 'wp_flyout_form_field' ) ) {
+	/**
+	 * Create a form field component
+	 *
+	 * @param string $type  Field type.
+	 * @param string $name  Field name.
+	 * @param string $label Field label.
+	 * @param array  $args  Additional arguments.
+	 *
+	 * @return FormField
+	 * @since 3.0.0
+	 *
+	 */
+	function wp_flyout_form_field( string $type, string $name, string $label, array $args = [] ): FormField {
+		return new FormField( array_merge( [
+			'type'  => $type,
+			'name'  => $name,
+			'label' => $label,
+		], $args ) );
+	}
+}
+
+if ( ! function_exists( 'wp_flyout_info_grid' ) ) {
+	/**
+	 * Create an info grid component
+	 *
+	 * @param array $items  Grid items.
+	 * @param array $config Optional configuration.
+	 *
+	 * @return InfoGrid
+	 * @since 3.0.0
+	 *
+	 */
+	function wp_flyout_info_grid( array $items = [], array $config = [] ): InfoGrid {
+		return new InfoGrid( $items, $config );
+	}
+}
+
+if ( ! function_exists( 'wp_flyout_section_header' ) ) {
+	/**
+	 * Create a section header component
+	 *
+	 * @param string      $title       Section title.
+	 * @param string      $description Optional description.
+	 * @param string|null $icon        Optional dashicon.
+	 *
+	 * @return SectionHeader
+	 * @since 3.0.0
+	 *
+	 */
+	function wp_flyout_section_header( string $title, string $description = '', ?string $icon = null ): SectionHeader {
+		return SectionHeader::create( $title, $description, $icon );
+	}
+}
+
+if ( ! function_exists( 'wp_flyout_toggle' ) ) {
+	/**
+	 * Create a toggle component
+	 *
+	 * @param string $name    Field name.
+	 * @param string $label   Toggle label.
+	 * @param bool   $checked Whether checked.
+	 * @param array  $config  Optional configuration.
+	 *
+	 * @return Toggle
+	 * @since 3.0.0
+	 *
+	 */
+	function wp_flyout_toggle( string $name, string $label, bool $checked = false, array $config = [] ): Toggle {
+		return Toggle::create( $name, $label, $checked, $config );
+	}
+}
+
+/* =========================================
+   FORM HELPER SHORTCUTS
+   Quick access to FormField static methods
+   ========================================= */
+
+if ( ! function_exists( 'wp_flyout_hidden_field' ) ) {
+	/**
+	 * Generate a hidden field
+	 *
+	 * @param string $name  Field name.
+	 * @param mixed  $value Field value.
+	 *
+	 * @return string HTML for hidden field.
+	 * @since 3.0.0
+	 *
+	 */
+	function wp_flyout_hidden_field( string $name, $value ): string {
+		return FormField::hidden( $name, $value );
+	}
+}
+
+if ( ! function_exists( 'wp_flyout_nonce_field' ) ) {
+	/**
+	 * Generate a nonce field
+	 *
+	 * @param string $action Nonce action.
+	 * @param string $name   Field name.
+	 *
+	 * @return string HTML for nonce field.
+	 * @since 3.0.0
+	 *
+	 */
+	function wp_flyout_nonce_field( string $action, string $name = '_wpnonce' ): string {
+		return FormField::nonce( $action, $name );
+	}
+}
+
+if ( ! function_exists( 'wp_flyout_form_security' ) ) {
+	/**
+	 * Generate form security fields (nonce + optional referer)
+	 *
+	 * @param string $nonce_action    Nonce action.
+	 * @param bool   $include_referer Whether to include referer field.
+	 *
+	 * @return string HTML for security fields.
+	 * @since 3.0.0
+	 *
+	 */
+	function wp_flyout_form_security( string $nonce_action, bool $include_referer = false ): string {
+		return FormField::security( $nonce_action, $include_referer );
+	}
+}
