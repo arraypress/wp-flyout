@@ -75,6 +75,14 @@ trait AssetManager {
 			'css/wp-flyout.css'
 		);
 
+		// Table integration CSS
+		wp_enqueue_style_from_composer_file(
+			'wp-flyout-table',
+			$base_file,
+			'css/components/table.css',
+			[ 'wp-flyout' ]
+		);
+
 		// Core JavaScript with dependencies
 		wp_enqueue_script_from_composer_file(
 			'wp-flyout',

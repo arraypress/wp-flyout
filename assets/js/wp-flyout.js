@@ -1,9 +1,9 @@
 /**
  * WP Flyout Core JavaScript
- * Core flyout functionality only
+ * Core flyout functionality with table integration support
  *
  * @package ArrayPress/WPFlyout
- * @version 2.0.0
+ * @version 2.1.0
  */
 (function ($, window, document) {
     'use strict';
@@ -30,6 +30,7 @@
         init: function () {
             this.autoWire();
             FormHandler.init();
+            TableIntegration.init();
         },
 
         /**
@@ -48,6 +49,12 @@
                 // Remove data attributes we don't want to send
                 delete data.flyoutTrigger;
                 delete data.flyoutAction;
+
+                // Get row ID if triggered from table
+                const $row = $trigger.closest('tr');
+                if ($row.length && $row.data('id')) {
+                    data.row_id = $row.data('id');
+                }
 
                 self.load(flyoutId, action, data);
             });
@@ -146,6 +153,12 @@
 
             // Initialize components if they exist
             this.initializeComponents($flyout);
+
+            // Trigger loaded event
+            $(document).trigger('wpflyout:loaded', {
+                flyoutId: flyoutId,
+                element: $flyout
+            });
         },
 
         /**
@@ -255,27 +268,23 @@
          * Handle successful save
          */
         handleSaveSuccess: function (flyoutId, data) {
-            if (data.row_html) {
-                const $existingRow = $('.wp-list-table tbody tr[data-id="' + data.id + '"]');
+            // Trigger save event for table integration
+            $(document).trigger('wpflyout:saved', {
+                flyoutId: flyoutId,
+                itemId: data.id,
+                rowHtml: data.row_html,
+                message: data.message
+            });
 
-                if ($existingRow.length) {
-                    const $newRow = $(data.row_html);
-                    $existingRow.replaceWith($newRow);
-                    $newRow.css('background', '#ffffcc');
-                    setTimeout(function () {
-                        $newRow.css('background', '');
-                    }, 2000);
-                } else {
-                    const $newRow = $(data.row_html);
-                    $('.wp-list-table tbody').prepend($newRow);
-                    $newRow.css('background', '#d4edda');
-                    setTimeout(function () {
-                        $newRow.css('background', '');
-                    }, 2000);
-                }
+            // Update table row if HTML provided
+            if (data.row_html) {
+                TableIntegration.updateRow(data.id, data.row_html);
             }
 
+            // Show success message
             this.showTableNotice(data.message || this.getLocalizedString('success', 'Saved successfully'), 'success');
+
+            // Close flyout
             this.close(flyoutId);
         },
 
@@ -316,6 +325,12 @@
                     .first()
                     .focus();
             }, 350);
+
+            // Trigger opened event
+            $(document).trigger('wpflyout:opened', {
+                flyoutId: id,
+                element: $flyout
+            });
         },
 
         /**
@@ -344,6 +359,11 @@
                 }
 
                 delete self.activeInstances[id];
+
+                // Trigger closed event
+                $(document).trigger('wpflyout:closed', {
+                    flyoutId: id
+                });
             }, 300);
         },
 
@@ -476,7 +496,7 @@
             type = type || 'info';
 
             const $notice = $(
-                '<div class="notice notice-' + type + ' is-dismissible">' +
+                '<div class="notice notice-' + type + ' is-dismissible wp-flyout-table-notice">' +
                 '<p>' + message + '</p>' +
                 '<button type="button" class="notice-dismiss">' +
                 '<span class="screen-reader-text">Dismiss this notice.</span>' +
@@ -527,6 +547,86 @@
     };
 
     /**
+     * Table Integration Component
+     */
+    const TableIntegration = {
+        init: function () {
+            // Listen for save events to update table rows
+            $(document).on('wpflyout:saved', function (e, data) {
+                if (data.rowHtml) {
+                    TableIntegration.updateRow(data.itemId, data.rowHtml);
+                }
+            });
+
+            // Listen for delete events
+            $(document).on('wpflyout:deleted', function (e, data) {
+                TableIntegration.removeRow(data.itemId);
+            });
+        },
+
+        /**
+         * Update a table row after save
+         */
+        updateRow: function (itemId, newHtml) {
+            const $existingRow = $('.wp-list-table tbody tr[data-id="' + itemId + '"]');
+
+            if ($existingRow.length) {
+                // Update existing row
+                const $newRow = $(newHtml);
+                $existingRow.replaceWith($newRow);
+                $newRow.addClass('wp-flyout-updated');
+                setTimeout(function () {
+                    $newRow.removeClass('wp-flyout-updated');
+                }, 2000);
+            } else {
+                // Add new row
+                const $newRow = $(newHtml);
+                $('.wp-list-table tbody').prepend($newRow);
+                $newRow.addClass('wp-flyout-updated');
+                setTimeout(function () {
+                    $newRow.removeClass('wp-flyout-updated');
+                }, 2000);
+            }
+        },
+
+        /**
+         * Remove a table row after delete
+         */
+        removeRow: function (itemId) {
+            const $row = $('.wp-list-table tbody tr[data-id="' + itemId + '"]');
+            if ($row.length) {
+                $row.addClass('wp-flyout-deleting');
+                setTimeout(function () {
+                    $row.fadeOut(400, function () {
+                        $(this).remove();
+                        // Check if table is now empty
+                        if ($('.wp-list-table tbody tr').length === 0) {
+                            TableIntegration.showEmptyState();
+                        }
+                    });
+                }, 300);
+            }
+        },
+
+        /**
+         * Show empty state when no rows
+         */
+        showEmptyState: function () {
+            const colspan = $('.wp-list-table thead th').length;
+            const emptyMessage = wpFlyoutConfig.i18n.noItems || 'No items found';
+            const $emptyRow = $(
+                '<tr class="no-items">' +
+                '<td colspan="' + colspan + '">' +
+                '<div class="empty-icon"><span class="dashicons dashicons-info"></span></div>' +
+                emptyMessage +
+                '</td>' +
+                '</tr>'
+            );
+            $('.wp-list-table tbody').append($emptyRow);
+        }
+    };
+
+    /**
      * Public API
      */
     window.WPFlyout = {
@@ -541,6 +641,9 @@
         },
         load: function (flyoutId, action, data) {
             return WPFlyout.load(flyoutId, action, data);
+        },
+        showNotice: function (message, type) {
+            return WPFlyout.showTableNotice(message, type);
         }
     };
 
