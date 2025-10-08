@@ -273,6 +273,25 @@
     justify-content: space-between;
 }
 
+/* Modern stretch alignment - buttons fill width equally */
+.wp-flyout-actions.align-stretch {
+    gap: 12px;
+    padding: 20px;
+}
+
+.wp-flyout-actions.align-stretch .button {
+    flex: 1;
+    margin: 0;
+    padding: 12px 24px;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 6px;
+    justify-content: center;
+    min-height: 44px;
+    text-align: center;
+}
+
+/* Standard button styles */
 .wp-flyout-actions .button {
     display: inline-flex;
     align-items: center;
@@ -285,9 +304,35 @@
     height: 16px;
 }
 
-/* Modern stacked action bar */
+/* Modern button styles for stretch/stacked layouts */
+.wp-flyout-actions.align-stretch .button-primary,
+.wp-flyout-actions.stacked .button-primary {
+    background: #5850ec;
+    border-color: #5850ec;
+    color: #fff;
+}
+
+.wp-flyout-actions.align-stretch .button-primary:hover,
+.wp-flyout-actions.stacked .button-primary:hover {
+    background: #4840d4;
+    border-color: #4840d4;
+}
+
+.wp-flyout-actions.align-stretch .button-secondary,
+.wp-flyout-actions.stacked .button-secondary {
+    background: #fff;
+    border: 1px solid #d1d5db;
+    color: #374151;
+}
+
+.wp-flyout-actions.align-stretch .button-secondary:hover,
+.wp-flyout-actions.stacked .button-secondary:hover {
+    background: #f9fafb;
+    border-color: #9ca3af;
+}
+
+/* Stacked variant - buttons stack vertically */
 .wp-flyout-actions.stacked {
-    display: flex;
     flex-direction: column;
     gap: 12px;
     padding: 20px;
@@ -304,38 +349,15 @@
     min-height: 44px;
 }
 
-/* Primary action - full color */
-.wp-flyout-actions.stacked .button-primary {
-    background: #5850ec;
-    border-color: #5850ec;
-    color: #fff;
-}
-
-.wp-flyout-actions.stacked .button-primary:hover {
-    background: #4840d4;
-    border-color: #4840d4;
-}
-
-/* Secondary action - outlined */
-.wp-flyout-actions.stacked .button-secondary {
-    background: transparent;
-    border: 2px solid #e5e7eb;
-    color: #374151;
-}
-
-.wp-flyout-actions.stacked .button-secondary:hover {
-    background: #f9fafb;
-    border-color: #d1d5db;
-}
-
-/* Footer adjustments for modern look */
+/* Footer adjustments */
 .wp-flyout-footer {
     background: #fff;
     border-top: 1px solid #e5e7eb;
     padding: 0;
 }
 
-/* Remove extra padding when using stacked layout */
+/* Remove extra padding when using stretch or stacked layout */
+.wp-flyout-footer .wp-flyout-actions.align-stretch,
 .wp-flyout-footer .wp-flyout-actions.stacked {
     border-top: none;
 }

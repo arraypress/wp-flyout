@@ -54,7 +54,7 @@ class ActionBar {
     }
 
     /**
-     * Create a modern stacked action bar
+     * Create a modern side-by-side action bar
      *
      * @param string $primary_text   Primary button text
      * @param string $secondary_text Secondary button text
@@ -62,7 +62,8 @@ class ActionBar {
      */
     public static function modern( string $primary_text = 'Save', string $secondary_text = 'Cancel' ): self {
         $bar = new self( [
-                'stacked' => true,
+                'stacked' => false,  // Keep side-by-side
+                'modern'  => true,   // Add modern styling flag
                 'align'   => 'stretch'
         ] );
 
