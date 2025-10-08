@@ -27,9 +27,9 @@ class Assets {
 	/**
 	 * Initialize assets
 	 *
+	 * @return void
 	 * @since 3.0.0
 	 *
-	 * @return void
 	 */
 	public static function init(): void {
 		add_action( 'admin_enqueue_scripts', [ __CLASS__, 'register_assets' ] );
@@ -38,16 +38,16 @@ class Assets {
 	/**
 	 * Register assets for use by plugins
 	 *
+	 * @return void
 	 * @since 3.0.0
 	 *
-	 * @return void
 	 */
 	public static function register_assets(): void {
 		$base_file = __FILE__;
 		$version   = defined( 'WP_DEBUG' ) && WP_DEBUG ? false : '3.0.0';
 
-		// Register core CSS.
-		wp_register_composer_style_from_file(
+		// Register core CSS - use global namespace with backslash
+		\wp_register_composer_style_from_file(
 			'wp-flyout',
 			$base_file,
 			'css/wp-flyout.css',
@@ -55,18 +55,17 @@ class Assets {
 			$version
 		);
 
-		// Register core JavaScript.
-		wp_register_composer_script_from_file(
+		// Register core JavaScript - use global namespace with backslash
+		\wp_register_composer_script_from_file(
 			'wp-flyout',
 			$base_file,
 			'js/wp-flyout.js',
 			[ 'jquery' ],
-			$version,
-			true
+			$version
 		);
 
-		// Add inline script for global access.
-		wp_add_inline_script(
+		// Add inline script for global access
+		\wp_add_inline_script(
 			'wp-flyout',
 			'window.WPFlyout = window.WPFlyout || {};',
 			'before'
@@ -78,9 +77,9 @@ class Assets {
 	 *
 	 * Call this in your plugin when you need flyout functionality.
 	 *
+	 * @return void
 	 * @since 3.0.0
 	 *
-	 * @return void
 	 */
 	public static function enqueue(): void {
 		wp_enqueue_style( 'wp-flyout' );
