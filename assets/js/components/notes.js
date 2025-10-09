@@ -6,44 +6,52 @@
 
     const NotesPanel = {
         init: function () {
-            $(document).on('click', '[data-action="add-note"]', this.handleAdd.bind(this));
-            $(document).on('click', '[data-action="delete-note"]', this.handleDelete.bind(this));
+            // Use event delegation on body for dynamically loaded content
+            $('body').on('click', '.wp-flyout-notes-panel [data-action="add-note"]', this.handleAdd.bind(this));
+            $('body').on('click', '.wp-flyout-notes-panel [data-action="delete-note"]', this.handleDelete.bind(this));
         },
 
         handleAdd: function (e) {
             e.preventDefault();
-            const $button = $(this);
+
+            // Start from the button and find the panel
+            const $button = $(e.currentTarget);
+            const $form = $button.closest('.note-add-form');
             const $panel = $button.closest('.wp-flyout-notes-panel');
 
-            // More flexible selector - find textarea or input
-            const $input = $panel.find('.note-input, [data-field="content"], textarea').first();
+            // Find the textarea within the same form
+            const $input = $form.find('textarea.note-input');
 
             if (!$input.length) {
-                console.error('Note input field not found');
+                console.error('Textarea not found in form');
                 return;
             }
 
-            const content = ($input.val() || '').trim();
-
+            const content = $input.val().trim();
             if (!content) {
                 $input.focus();
                 return;
             }
 
-            // Generate temporary ID
-            const tempId = 'temp_' + Date.now();
+            // Create note HTML
+            const noteId = 'note_' + Date.now();
+            const noteHtml = `
+                <div class="note-item" data-note-id="${noteId}">
+                    <div class="note-header">
+                        <span class="note-author">You</span>
+                        <span class="note-date">Just now</span>
+                        <button type="button" class="button-link" data-action="delete-note">
+                            <span class="dashicons dashicons-trash"></span>
+                        </button>
+                    </div>
+                    <div class="note-content">${$('<div>').text(content).html()}</div>
+                </div>
+            `;
 
-            // Add note to UI immediately
-            const noteHtml = this.createNoteHtml({
-                id: tempId,
-                content: content,
-                author: $panel.data('current-user') || 'You',
-                date: 'Just now',
-                deletable: true
-            });
-
+            // Add to list
             const $list = $panel.find('.notes-list');
             $list.find('.no-notes').remove();
+
             const $newNote = $(noteHtml).hide();
             $list.prepend($newNote);
             $newNote.slideDown(200);
@@ -51,18 +59,18 @@
             // Clear input
             $input.val('').focus();
 
-            // Trigger event for persistence
-            $panel.trigger('notes:add', {
-                tempId: tempId,
+            // Trigger event for any AJAX handling
+            $panel.trigger('notes:added', {
+                id: noteId,
                 content: content,
-                note: $newNote,
-                panel: $panel
+                note: $newNote
             });
         },
 
         handleDelete: function (e) {
             e.preventDefault();
-            const $button = $(this);
+
+            const $button = $(e.currentTarget);
             const confirm_text = $button.data('confirm');
 
             if (confirm_text && !confirm(confirm_text)) {
@@ -73,64 +81,29 @@
             const $panel = $button.closest('.wp-flyout-notes-panel');
             const noteId = $note.data('note-id');
 
-            // Optimistically remove from UI
+            // Remove with animation
             $note.slideUp(200, function () {
                 $(this).remove();
-                NotesPanel.checkEmpty($panel);
+
+                // Check if list is empty
+                const $list = $panel.find('.notes-list');
+                if ($list.find('.note-item').length === 0) {
+                    const emptyText = $panel.data('empty-text') || 'No notes yet.';
+                    $list.html(`<p class="no-notes">${emptyText}</p>`);
+                }
+
+                // Trigger event
+                $panel.trigger('notes:deleted', {id: noteId});
             });
-
-            // Trigger event for persistence
-            $panel.trigger('notes:delete', {
-                noteId: noteId,
-                note: $note,
-                panel: $panel
-            });
-        },
-
-        createNoteHtml: function (data) {
-            const deletable = data.deletable ?
-                `<button type="button" class="button-link" data-action="delete-note" data-confirm="Delete this note?">
-                    <span class="dashicons dashicons-trash"></span>
-                </button>` : '';
-
-            return `
-                <div class="note-item" data-note-id="${this.escapeHtml(String(data.id))}">
-                    <div class="note-header">
-                        <span class="note-author">${this.escapeHtml(data.author || '')}</span>
-                        <span class="note-date">${this.escapeHtml(data.date || '')}</span>
-                        ${deletable}
-                    </div>
-                    <div class="note-content">${this.escapeHtml(data.content || '')}</div>
-                </div>
-            `;
-        },
-
-        checkEmpty: function ($panel) {
-            const $list = $panel.find('.notes-list');
-            if ($list.find('.note-item').length === 0) {
-                const emptyText = $panel.data('empty-text') || 'No notes yet.';
-                $list.html(`<p class="no-notes">${this.escapeHtml(emptyText)}</p>`);
-            }
-        },
-
-        escapeHtml: function (text) {
-            if (!text) return '';
-            const map = {
-                '&': '&amp;',
-                '<': '&lt;',
-                '>': '&gt;',
-                '"': '&quot;',
-                "'": '&#039;'
-            };
-            return String(text).replace(/[&<>"']/g, m => map[m]);
         }
     };
 
-    // Initialize
+    // Initialize when document is ready
     $(function () {
         NotesPanel.init();
     });
 
     // Export
     window.WPFlyoutNotesPanel = NotesPanel;
+
 })(jQuery);
