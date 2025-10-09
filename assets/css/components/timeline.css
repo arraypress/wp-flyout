@@ -1,0 +1,166 @@
+/**
+ * Timeline Component Styles
+ */
+
+.wp-flyout-timeline {
+    position: relative;
+    padding: 20px 0 10px 0;
+    margin: 20px 0;
+}
+
+/* Connector line */
+.timeline-connector {
+    position: absolute;
+    left: 19px;
+    top: 30px;
+    bottom: 10px;
+    width: 2px;
+    background: #dcdcde;
+}
+
+/* Timeline Item */
+.timeline-item {
+    position: relative;
+    padding-left: 50px;
+    margin-bottom: 25px;
+}
+
+.timeline-item:last-child {
+    margin-bottom: 0;
+}
+
+/* Badge */
+.timeline-badge {
+    position: absolute;
+    left: 10px;
+    top: 0;
+    width: 20px;
+    height: 20px;
+    background: #fff;
+    border: 2px solid #dcdcde;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+}
+
+.timeline-badge .dashicons {
+    font-size: 12px;
+    width: 12px;
+    height: 12px;
+    color: #50575e;
+}
+
+/* Status types */
+.timeline-item-success .timeline-badge {
+    border-color: #00a32a;
+    background: #00a32a;
+}
+
+.timeline-item-success .timeline-badge .dashicons {
+    color: #fff;
+}
+
+.timeline-item-info .timeline-badge {
+    border-color: #2271b1;
+    background: #2271b1;
+}
+
+.timeline-item-info .timeline-badge .dashicons {
+    color: #fff;
+}
+
+.timeline-item-warning .timeline-badge {
+    border-color: #dba617;
+    background: #dba617;
+}
+
+.timeline-item-warning .timeline-badge .dashicons {
+    color: #fff;
+}
+
+.timeline-item-error .timeline-badge {
+    border-color: #d63638;
+    background: #d63638;
+}
+
+.timeline-item-error .timeline-badge .dashicons {
+    color: #fff;
+}
+
+/* Content */
+.timeline-content {
+    background: #f6f7f7;
+    padding: 15px;
+    border-radius: 4px;
+    border: 1px solid #dcdcde;
+}
+
+.timeline-date {
+    font-size: 12px;
+    color: #8c8f94;
+    margin-bottom: 6px;
+    font-weight: 500;
+}
+
+.timeline-title {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e1e1e;
+}
+
+.timeline-description {
+    margin: 0 0 8px 0;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #50575e;
+}
+
+.timeline-meta {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #dcdcde;
+}
+
+.timeline-user {
+    font-size: 12px;
+    color: #8c8f94;
+    font-style: italic;
+}
+
+/* Compact mode for smaller spaces */
+.wp-flyout-timeline.compact .timeline-item {
+    margin-bottom: 15px;
+}
+
+.wp-flyout-timeline.compact .timeline-content {
+    padding: 10px 12px;
+    background: transparent;
+    border: none;
+}
+
+.wp-flyout-timeline.compact .timeline-title {
+    font-size: 13px;
+    margin-bottom: 4px;
+}
+
+.wp-flyout-timeline.compact .timeline-description {
+    font-size: 12px;
+}
+
+/* Responsive */
+@media screen and (max-width: 600px) {
+    .timeline-item {
+        padding-left: 40px;
+    }
+
+    .timeline-connector {
+        left: 14px;
+    }
+
+    .timeline-badge {
+        left: 5px;
+    }
+}

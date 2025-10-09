@@ -52,6 +52,11 @@ class Assets {
 			'script' => '', // No JS needed
 			'style'  => 'css/components/flex-row.css',
 			'deps'   => []
+		],
+		'timeline'        => [
+			'script' => '', // No JS needed
+			'style'  => 'css/components/timeline.css',
+			'deps'   => []
 		]
 	];
 
