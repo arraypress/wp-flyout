@@ -9,6 +9,22 @@
             // Use event delegation on body for dynamically loaded content
             $('body').on('click', '.wp-flyout-notes-panel [data-action="add-note"]', this.handleAdd.bind(this));
             $('body').on('click', '.wp-flyout-notes-panel [data-action="delete-note"]', this.handleDelete.bind(this));
+
+            // Handle Enter key in textarea
+            $('body').on('keydown', '.wp-flyout-notes-panel textarea.note-input', this.handleKeydown.bind(this));
+        },
+
+        handleKeydown: function (e) {
+            // Submit on Enter (without Shift)
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                const $textarea = $(e.currentTarget);
+                const $button = $textarea.siblings('[data-action="add-note"]');
+                if ($button.length) {
+                    $button.click();
+                }
+            }
+            // Shift+Enter allows new line (default behavior)
         },
 
         handleAdd: function (e) {

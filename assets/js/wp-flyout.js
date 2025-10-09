@@ -80,13 +80,6 @@
                     .focus();
             }, 350);
 
-            // Trigger event.
-            // $(document).trigger('wpflyout:opened', {
-            //     id: id,
-            //     element: $flyout
-            // });
-
-
             // Trigger event AFTER animation completes
             setTimeout(function () {
                 $(document).trigger('wpflyout:opened', {
