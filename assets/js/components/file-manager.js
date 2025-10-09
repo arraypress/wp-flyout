@@ -24,7 +24,7 @@
 
         initSortable: function (container) {
             if (!$.fn.sortable) {
-                return; // Silently fail if sortable not loaded
+                return;
             }
 
             $(container).find('.file-manager-list[data-sortable="true"]').each(function () {
@@ -62,8 +62,7 @@
             if (maxItems > 0) {
                 const currentCount = $list.find('.file-manager-item').length;
                 if (currentCount >= maxItems) {
-                    alert('Maximum ' + maxItems + ' files allowed');
-                    return;
+                    return; // Silently prevent adding more
                 }
             }
 
@@ -92,8 +91,7 @@
 
             // Check minimum items
             if (minItems > 0 && $list.find('.file-manager-item').length <= minItems) {
-                alert('Minimum ' + minItems + ' files required');
-                return;
+                return; // Silently prevent removal
             }
 
             $item.fadeOut(200, function () {
@@ -111,8 +109,7 @@
             e.preventDefault();
 
             if (!window.wp || !window.wp.media) {
-                alert('Media library not available');
-                return;
+                return; // Silently fail if media library not available
             }
 
             const $button = $(e.currentTarget);
@@ -140,14 +137,13 @@
             const prefix = $manager.data('prefix');
 
             if (!prefix) {
-                return; // No prefix to update
+                return;
             }
 
             $list.find('.file-manager-item').each(function (index) {
                 $(this).find('input, select, textarea').each(function () {
                     const name = $(this).attr('name');
                     if (name && name.includes(prefix)) {
-                        // Update the index in the name attribute
                         const newName = name.replace(/\[\d+\]/, '[' + index + ']');
                         $(this).attr('name', newName);
                     }
