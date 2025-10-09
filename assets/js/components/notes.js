@@ -1,6 +1,5 @@
 /**
  * WP Flyout Notes Component
- * Handles UI updates internally, triggers events for data persistence
  */
 (function ($) {
     'use strict';
@@ -15,8 +14,16 @@
             e.preventDefault();
             const $button = $(this);
             const $panel = $button.closest('.wp-flyout-notes-panel');
-            const $input = $panel.find('[data-field="content"]');
-            const content = $input.val().trim();
+
+            // More flexible selector - find textarea or input
+            const $input = $panel.find('.note-input, [data-field="content"], textarea').first();
+
+            if (!$input.length) {
+                console.error('Note input field not found');
+                return;
+            }
+
+            const content = ($input.val() || '').trim();
 
             if (!content) {
                 $input.focus();
@@ -26,7 +33,7 @@
             // Generate temporary ID
             const tempId = 'temp_' + Date.now();
 
-            // Add note to UI immediately for better UX
+            // Add note to UI immediately
             const noteHtml = this.createNoteHtml({
                 id: tempId,
                 content: content,
@@ -42,34 +49,14 @@
             $newNote.slideDown(200);
 
             // Clear input
-            $input.val('');
+            $input.val('').focus();
 
-            // Trigger event for persistence - implementation can update the note ID
+            // Trigger event for persistence
             $panel.trigger('notes:add', {
                 tempId: tempId,
                 content: content,
                 note: $newNote,
-                panel: $panel,
-                onSuccess: function (data) {
-                    // Update with real data from server
-                    if (data.id) {
-                        $newNote.attr('data-note-id', data.id);
-                    }
-                    if (data.author) {
-                        $newNote.find('.note-author').text(data.author);
-                    }
-                    if (data.date) {
-                        $newNote.find('.note-date').text(data.date);
-                    }
-                },
-                onError: function () {
-                    // Remove the note if save failed
-                    $newNote.slideUp(200, function () {
-                        $(this).remove();
-                        NotesPanel.checkEmpty($panel);
-                    });
-                    $input.val(content); // Restore content so user doesn't lose it
-                }
+                panel: $panel
             });
         },
 
@@ -87,22 +74,16 @@
             const noteId = $note.data('note-id');
 
             // Optimistically remove from UI
-            $note.slideUp(200);
+            $note.slideUp(200, function () {
+                $(this).remove();
+                NotesPanel.checkEmpty($panel);
+            });
 
             // Trigger event for persistence
             $panel.trigger('notes:delete', {
                 noteId: noteId,
                 note: $note,
-                panel: $panel,
-                onSuccess: function () {
-                    // Complete removal
-                    $note.remove();
-                    NotesPanel.checkEmpty($panel);
-                },
-                onError: function () {
-                    // Restore if delete failed
-                    $note.slideDown(200);
-                }
+                panel: $panel
             });
         },
 
@@ -113,13 +94,13 @@
                 </button>` : '';
 
             return `
-                <div class="note-item" data-note-id="${data.id}">
+                <div class="note-item" data-note-id="${this.escapeHtml(String(data.id))}">
                     <div class="note-header">
-                        <span class="note-author">${this.escapeHtml(data.author)}</span>
-                        <span class="note-date">${this.escapeHtml(data.date)}</span>
+                        <span class="note-author">${this.escapeHtml(data.author || '')}</span>
+                        <span class="note-date">${this.escapeHtml(data.date || '')}</span>
                         ${deletable}
                     </div>
-                    <div class="note-content">${this.escapeHtml(data.content)}</div>
+                    <div class="note-content">${this.escapeHtml(data.content || '')}</div>
                 </div>
             `;
         },
@@ -128,11 +109,12 @@
             const $list = $panel.find('.notes-list');
             if ($list.find('.note-item').length === 0) {
                 const emptyText = $panel.data('empty-text') || 'No notes yet.';
-                $list.html(`<p class="no-notes">${emptyText}</p>`);
+                $list.html(`<p class="no-notes">${this.escapeHtml(emptyText)}</p>`);
             }
         },
 
         escapeHtml: function (text) {
+            if (!text) return '';
             const map = {
                 '&': '&amp;',
                 '<': '&lt;',
@@ -140,7 +122,7 @@
                 '"': '&quot;',
                 "'": '&#039;'
             };
-            return text.replace(/[&<>"']/g, m => map[m]);
+            return String(text).replace(/[&<>"']/g, m => map[m]);
         }
     };
 
