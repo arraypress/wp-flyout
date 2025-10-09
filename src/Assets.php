@@ -57,6 +57,31 @@ class Assets {
 			'script' => '', // No JS needed
 			'style'  => 'css/components/timeline.css',
 			'deps'   => []
+		],
+		'customer-header' => [
+			'script' => '',
+			'style'  => 'css/components/customer-header.css',
+			'deps'   => []
+		],
+		'stats-card'      => [
+			'script' => '',
+			'style'  => 'css/components/stats-card.css',
+			'deps'   => []
+		],
+		'address-card'    => [
+			'script' => '',
+			'style'  => 'css/components/address-card.css',
+			'deps'   => []
+		],
+		'payment-method'  => [
+			'script' => '',
+			'style'  => 'css/components/payment-method.css',
+			'deps'   => []
+		],
+		'price-breakdown' => [
+			'script' => '',
+			'style'  => 'css/components/price-breakdown.css',
+			'deps'   => []
 		]
 	];
 

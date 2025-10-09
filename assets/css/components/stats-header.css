@@ -1,0 +1,160 @@
+/**
+ * Stats Card Component
+ */
+.wp-flyout-stats-card {
+    margin: 20px 0;
+}
+
+.wp-flyout-stats-card.layout-grid {
+    display: grid;
+    gap: 15px;
+}
+
+.wp-flyout-stats-card.columns-2 {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.wp-flyout-stats-card.columns-3 {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.wp-flyout-stats-card.columns-4 {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+.stat-item {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 20px;
+    position: relative;
+}
+
+.stat-icon {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    color: #e5e7eb;
+}
+
+.stat-icon .dashicons {
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+}
+
+.stat-content {
+    position: relative;
+}
+
+.stat-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: #111827;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.stat-trend {
+    font-size: 14px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.stat-trend .dashicons {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+}
+
+.stat-trend.trend-up {
+    color: #059669;
+    background: #d1fae5;
+}
+
+.stat-trend.trend-down {
+    color: #dc2626;
+    background: #fee2e2;
+}
+
+.stat-trend.trend-neutral {
+    color: #6b7280;
+    background: #f3f4f6;
+}
+
+.stat-label {
+    font-size: 13px;
+    color: #6b7280;
+    margin-top: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.stat-description {
+    font-size: 12px;
+    color: #9ca3af;
+    margin-top: 8px;
+}
+
+.stat-item.stat-success {
+    border-color: #86efac;
+    background: #f0fdf4;
+}
+
+.stat-item.stat-warning {
+    border-color: #fde047;
+    background: #fefce8;
+}
+
+.stat-item.stat-error {
+    border-color: #fca5a5;
+    background: #fef2f2;
+}
+
+.stat-item.stat-info {
+    border-color: #93c5fd;
+    background: #eff6ff;
+}
+
+.wp-flyout-stats-card.layout-list .stat-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    margin-bottom: 10px;
+}
+
+.wp-flyout-stats-card.layout-inline {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.wp-flyout-stats-card.layout-inline .stat-item {
+    padding: 10px 15px;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.wp-flyout-stats-card.layout-inline .stat-value {
+    font-size: 20px;
+}
+
+@media (max-width: 768px) {
+    .wp-flyout-stats-card.columns-3,
+    .wp-flyout-stats-card.columns-4 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .wp-flyout-stats-card.layout-grid {
+        grid-template-columns: 1fr;
+    }
+}

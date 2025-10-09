@@ -1,0 +1,153 @@
+/**
+ * Price Breakdown Component
+ */
+.wp-flyout-price-breakdown {
+    margin: 20px 0;
+}
+
+.breakdown-items {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+.breakdown-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.breakdown-table thead {
+    background: #f9fafb;
+}
+
+.breakdown-table th {
+    padding: 10px 12px;
+    text-align: left;
+    font-size: 12px;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.breakdown-table th.item-quantity,
+.breakdown-table th.item-price,
+.breakdown-table th.item-total {
+    text-align: right;
+}
+
+.breakdown-table td {
+    padding: 12px;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.breakdown-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.item-name {
+    font-weight: 500;
+    color: #111827;
+}
+
+.item-description {
+    display: block;
+    font-size: 12px;
+    color: #9ca3af;
+    margin-top: 2px;
+}
+
+.item-quantity {
+    text-align: right;
+    color: #6b7280;
+}
+
+.item-price,
+.item-total {
+    text-align: right;
+    font-weight: 500;
+    color: #111827;
+}
+
+.breakdown-summary {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 15px;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    font-size: 14px;
+}
+
+.summary-label {
+    color: #6b7280;
+}
+
+.summary-label small {
+    color: #9ca3af;
+    margin-left: 4px;
+}
+
+.summary-value {
+    font-weight: 600;
+    color: #111827;
+}
+
+.summary-row.subtotal {
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 12px;
+    margin-bottom: 8px;
+}
+
+.summary-row.adjustment-discount .summary-value {
+    color: #059669;
+}
+
+.summary-row.adjustment-tax .summary-value {
+    color: #6b7280;
+}
+
+.summary-row.adjustment-shipping .summary-value {
+    color: #6b7280;
+}
+
+.summary-row.adjustment-fee .summary-value {
+    color: #dc2626;
+}
+
+.summary-row.total {
+    border-top: 2px solid #e5e7eb;
+    margin-top: 12px;
+    padding-top: 12px;
+    font-size: 16px;
+}
+
+.summary-row.total .summary-label {
+    font-weight: 600;
+    color: #111827;
+}
+
+.summary-row.total .summary-value {
+    font-size: 20px;
+    font-weight: 700;
+    color: #111827;
+}
+
+@media (max-width: 600px) {
+    .breakdown-table {
+        font-size: 13px;
+    }
+
+    .breakdown-table th,
+    .breakdown-table td {
+        padding: 8px;
+    }
+}
