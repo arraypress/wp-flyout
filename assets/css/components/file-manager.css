@@ -6,29 +6,39 @@
     margin: 20px 0;
 }
 
+/* List container */
 .file-manager-list {
     margin-bottom: 12px;
     min-height: 60px;
-    border: 1px solid var(--wp-flyout-border);
+    border: 1px solid #c3c4c7;
     border-radius: 4px;
     padding: 8px;
-    background: #fafafa;
-}
-
-.file-manager-list.ui-sortable-disabled {
     background: #f6f7f7;
 }
 
+.file-manager-list:empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #8c8f94;
+    font-style: italic;
+}
+
+.file-manager-list:empty::after {
+    content: "No files added";
+}
+
+/* File item */
 .file-manager-item {
     display: flex;
     align-items: center;
     gap: 12px;
     background: #fff;
-    border: 1px solid var(--wp-flyout-border);
+    border: 1px solid #c3c4c7;
     border-radius: 4px;
     padding: 12px;
     margin-bottom: 8px;
-    transition: all 0.2s;
+    transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .file-manager-item:last-child {
@@ -36,50 +46,66 @@
 }
 
 .file-manager-item:hover {
-    border-color: var(--wp-flyout-primary);
+    border-color: #2271b1;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 /* Sortable states */
 .file-manager-item.ui-sortable-helper {
-    opacity: 0.6;
+    opacity: 0.9;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    background: #fff;
+    cursor: move;
 }
 
-.file-manager-item.ui-sortable-placeholder {
-    border: 2px dashed var(--wp-flyout-border);
+.file-manager-item-placeholder {
+    border: 2px dashed #c3c4c7;
     background: #f0f0f1;
     visibility: visible !important;
+    margin-bottom: 8px;
 }
 
-/* Handle */
+/* Drag handle */
 .file-handle {
     cursor: move;
-    color: var(--wp-flyout-text-secondary);
+    color: #8c8f94;
     display: flex;
     align-items: center;
     flex-shrink: 0;
     padding: 4px;
+    transition: color 0.2s;
 }
 
 .file-handle:hover {
-    color: var(--wp-flyout-primary);
+    color: #2271b1;
 }
 
-/* File info */
+.file-handle .dashicons {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+}
+
+/* File info container */
 .file-info {
     flex: 1;
     display: flex;
     gap: 10px;
     align-items: center;
-    min-width: 0; /* Allow flex items to shrink */
+    min-width: 0;
 }
 
+/* File name input */
 .file-info input[data-field="name"] {
     flex: 0 0 200px;
     min-width: 150px;
+    padding: 6px 8px;
+    border: 1px solid #8c8f94;
+    border-radius: 4px;
+    font-size: 13px;
 }
 
+/* URL wrapper */
 .file-url-wrapper {
     flex: 1;
     display: flex;
@@ -87,39 +113,102 @@
     min-width: 0;
 }
 
-.file-url-wrapper input {
+.file-url-wrapper input[data-field="url"] {
     flex: 1;
     min-width: 0;
+    padding: 6px 8px;
+    border: 1px solid #8c8f94;
+    border-radius: 4px;
+    font-size: 13px;
 }
 
-.file-url-wrapper button {
+/* Browse button */
+.file-url-wrapper button[data-action="browse"] {
     flex-shrink: 0;
-    padding: 0 10px;
+    padding: 4px 10px;
     min-height: 30px;
+    background: #f6f7f7;
+    border: 1px solid #8c8f94;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.file-url-wrapper button[data-action="browse"]:hover {
+    background: #f0f0f1;
+    border-color: #2271b1;
+}
+
+.file-url-wrapper button[data-action="browse"] .dashicons {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    vertical-align: middle;
 }
 
 /* Remove button */
 .file-manager-item button[data-action="remove"] {
-    padding: 6px;
+    padding: 4px;
     background: none;
     border: none;
     cursor: pointer;
-    color: var(--wp-flyout-text-secondary);
+    color: #8c8f94;
     transition: color 0.2s;
+    flex-shrink: 0;
 }
 
 .file-manager-item button[data-action="remove"]:hover {
-    color: var(--wp-flyout-danger);
+    color: #d63638;
+}
+
+.file-manager-item button[data-action="remove"] .dashicons {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
 }
 
 /* Add button */
 .wp-flyout-file-manager button[data-action="add"] {
     width: 100%;
-    padding: 10px;
+    padding: 10px 12px;
+    background: #fff;
+    border: 1px solid #2271b1;
+    border-radius: 4px;
+    color: #2271b1;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 6px;
+    transition: background 0.2s, color 0.2s;
+}
+
+.wp-flyout-file-manager button[data-action="add"]:hover {
+    background: #2271b1;
+    color: #fff;
+}
+
+.wp-flyout-file-manager button[data-action="add"] .dashicons {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    margin-top: -2px;
+}
+
+/* Focus states */
+.file-manager-item input:focus {
+    border-color: #2271b1;
+    box-shadow: 0 0 0 1px #2271b1;
+    outline: none;
+}
+
+/* Disabled/readonly states */
+.file-manager-item input[readonly] {
+    background: #f6f7f7;
+    color: #8c8f94;
+    cursor: not-allowed;
 }
 
 /* Responsive */
@@ -127,29 +216,41 @@
     .file-info {
         flex-direction: column;
         align-items: stretch;
+        gap: 8px;
     }
 
     .file-info input[data-field="name"] {
         flex: 1;
+        width: 100%;
+    }
+
+    .file-url-wrapper {
+        width: 100%;
     }
 
     .file-manager-item {
         padding: 10px;
     }
+
+    .file-handle .dashicons,
+    .file-manager-item button[data-action="remove"] .dashicons {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+    }
 }
 
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
-    .file-manager-list {
-        background: #1e1e1e;
-    }
+/* Loading state */
+.wp-flyout-file-manager.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
 
-    .file-manager-item {
-        background: #2c3338;
-        border-color: #3c434a;
-    }
+/* Error state */
+.file-manager-item.has-error {
+    border-color: #d63638;
+}
 
-    .file-manager-item:hover {
-        border-color: var(--wp-flyout-primary);
-    }
+.file-manager-item.has-error input {
+    border-color: #d63638;
 }

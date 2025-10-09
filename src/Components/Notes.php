@@ -40,7 +40,6 @@ class Notes {
             'placeholder'    => 'Add a note...',
             'button_text'    => 'Add Note',
             'confirm_delete' => 'Delete this note?',
-        // Data attributes for JS
             'data'           => []
     ];
 

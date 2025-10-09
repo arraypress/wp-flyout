@@ -81,10 +81,22 @@
             }, 350);
 
             // Trigger event.
-            $(document).trigger('wpflyout:opened', {
-                id: id,
-                element: $flyout
-            });
+            // $(document).trigger('wpflyout:opened', {
+            //     id: id,
+            //     element: $flyout
+            // });
+
+
+            // Trigger event AFTER animation completes
+            setTimeout(function () {
+                $(document).trigger('wpflyout:opened', {
+                    id: id,
+                    element: $flyout[0]  // Pass DOM element, not jQuery object
+                });
+
+                // Also trigger directly on the flyout element
+                $flyout.trigger('flyout:ready');
+            }, 350);  // Match the focus timeout
         },
 
         /**
