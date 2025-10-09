@@ -23,19 +23,24 @@ class Assets {
 	 * @var array
 	 */
 	private static array $components = [
-		'file-manager' => [
+		'file-manager'    => [
 			'script' => 'js/components/file-manager.js',
 			'style'  => 'css/components/file-manager.css',
 			'deps'   => [ 'jquery-ui-sortable' ]
 		],
-		'notes'        => [
+		'notes'           => [
 			'script' => 'js/components/notes.js',
 			'style'  => 'css/components/notes.css',
 			'deps'   => []
 		],
-		'order-items'  => [
+		'order-items'     => [
 			'script' => 'js/components/order-items.js',
 			'style'  => 'css/components/order-items.css',
+			'deps'   => []
+		],
+		'product-display' => [
+			'script' => '', // No JS needed for this component
+			'style'  => 'css/components/product-display.css',
 			'deps'   => []
 		]
 	];
@@ -99,8 +104,8 @@ class Assets {
 		foreach ( self::$components as $name => $config ) {
 			$handle = 'wp-flyout-' . $name;
 
-			// Register component script if exists
-			if ( isset( $config['script'] ) ) {
+			// Register component script if exists and not empty
+			if ( ! empty( $config['script'] ) ) {
 				$deps = array_merge( [ 'jquery', 'wp-flyout' ], $config['deps'] ?? [] );
 				\wp_register_composer_script_from_file(
 					$handle,
@@ -111,8 +116,8 @@ class Assets {
 				);
 			}
 
-			// Register component style if exists
-			if ( isset( $config['style'] ) ) {
+			// Register component style if exists and not empty
+			if ( ! empty( $config['style'] ) ) {
 				\wp_register_composer_style_from_file(
 					$handle,
 					$base_file,
@@ -173,4 +178,5 @@ class Assets {
 	public static function has_component( string $component ): bool {
 		return isset( self::$components[ $component ] );
 	}
+
 }

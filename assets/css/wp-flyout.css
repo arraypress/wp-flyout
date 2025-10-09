@@ -262,7 +262,6 @@
 .wp-flyout-actions .button {
     flex: 1;
     margin: 0;
-    padding: 12px 24px;
     font-size: 14px;
     font-weight: 500;
     border-radius: 6px;
@@ -301,6 +300,16 @@
 .wp-flyout-actions .button-secondary:focus {
     background: #f9fafb;
     border-color: #9ca3af;
+}
+
+/* Fix icon alignment in buttons */
+.wp-flyout-actions .button .dashicons {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    line-height: 1;
+    vertical-align: middle;
+    margin-top: -2px;
 }
 
 /* Link style button */
