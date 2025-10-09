@@ -1,0 +1,26 @@
+/**
+ * Flex Row Component Styles
+ */
+
+.wp-flyout-flex-row {
+    margin-bottom: 20px;
+}
+
+.wp-flyout-flex-row .flex-item {
+    min-width: 0; /* Prevent overflow */
+}
+
+.wp-flyout-flex-row .flex-spacer {
+    visibility: hidden;
+}
+
+/* Responsive behavior */
+@media screen and (max-width: 600px) {
+    .wp-flyout-flex-row[style*="flex-direction: row"] {
+        flex-direction: column !important;
+    }
+
+    .wp-flyout-flex-row .flex-item {
+        width: 100%;
+    }
+}

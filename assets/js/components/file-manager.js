@@ -24,8 +24,7 @@
 
         initSortable: function (container) {
             if (!$.fn.sortable) {
-                console.warn('jQuery UI Sortable not loaded');
-                return;
+                return; // Silently fail if sortable not loaded
             }
 
             $(container).find('.file-manager-list[data-sortable="true"]').each(function () {
@@ -57,6 +56,17 @@
             const $button = $(e.currentTarget);
             const $manager = $button.closest('.wp-flyout-file-manager');
             const $list = $manager.find('.file-manager-list');
+
+            // Check max items limit
+            const maxItems = parseInt($manager.data('max')) || 0;
+            if (maxItems > 0) {
+                const currentCount = $list.find('.file-manager-item').length;
+                if (currentCount >= maxItems) {
+                    alert('Maximum ' + maxItems + ' files allowed');
+                    return;
+                }
+            }
+
             const template = $manager.data('template');
             const index = $list.find('.file-manager-item').length;
 
@@ -78,10 +88,11 @@
             const $item = $button.closest('.file-manager-item');
             const $list = $item.closest('.file-manager-list');
             const $manager = $list.closest('.wp-flyout-file-manager');
-            const minItems = parseInt($manager.data('min')) || 1;
+            const minItems = parseInt($manager.data('min')) || 0;
 
-            if ($list.find('.file-manager-item').length <= minItems) {
-                $item.find('input').val('');
+            // Check minimum items
+            if (minItems > 0 && $list.find('.file-manager-item').length <= minItems) {
+                alert('Minimum ' + minItems + ' files required');
                 return;
             }
 
@@ -125,13 +136,20 @@
         },
 
         reindex: function ($list) {
-            const prefix = $list.closest('.wp-flyout-file-manager').data('prefix');
+            const $manager = $list.closest('.wp-flyout-file-manager');
+            const prefix = $manager.data('prefix');
+
+            if (!prefix) {
+                return; // No prefix to update
+            }
 
             $list.find('.file-manager-item').each(function (index) {
                 $(this).find('input, select, textarea').each(function () {
                     const name = $(this).attr('name');
-                    if (name) {
-                        $(this).attr('name', name.replace(/\[\d+\]/, '[' + index + ']'));
+                    if (name && name.includes(prefix)) {
+                        // Update the index in the name attribute
+                        const newName = name.replace(/\[\d+\]/, '[' + index + ']');
+                        $(this).attr('name', newName);
                     }
                 });
             });

@@ -15,6 +15,8 @@
     background: #f6f7f7;
     border: 1px solid #c3c4c7;
     border-radius: 4px;
+    width: 100%; /* Ensure full width */
+    box-sizing: border-box; /* Include padding in width calculation */
 }
 
 .order-items-selector .product-selector {
@@ -34,17 +36,25 @@
 }
 
 .order-items-selector button {
-    display: flex;
+    display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 5px;
     white-space: nowrap;
 }
 
+/* Better fix for dashicon alignment */
 .order-items-selector button .dashicons {
     font-size: 16px;
     width: 16px;
     height: 16px;
-    margin-top: -2px;
+    line-height: 1;
+    vertical-align: middle;
+}
+
+/* Alternative approach using flexbox for better alignment */
+.order-items-selector button .dashicons::before {
+    display: block;
 }
 
 /* Items table */

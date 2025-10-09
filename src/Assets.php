@@ -39,8 +39,18 @@ class Assets {
 			'deps'   => []
 		],
 		'product-display' => [
-			'script' => '', // No JS needed for this component
+			'script' => '', // No JS needed
 			'style'  => 'css/components/product-display.css',
+			'deps'   => []
+		],
+		'field-group'     => [
+			'script' => '', // No JS needed
+			'style'  => 'css/components/field-group.css',
+			'deps'   => []
+		],
+		'flex-row'        => [
+			'script' => '', // No JS needed
+			'style'  => 'css/components/flex-row.css',
 			'deps'   => []
 		]
 	];

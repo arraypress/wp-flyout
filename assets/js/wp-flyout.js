@@ -13,7 +13,7 @@
     /**
      * WP Flyout Manager
      *
-     * @since 3.0.0
+     * @since 1.0.0
      * @type {Object}
      */
     const WPFlyout = {
@@ -21,15 +21,27 @@
         /**
          * Active flyout instances
          *
-         * @since 3.0.0
+         * @since 1.0.0
          * @type {Object}
          */
         instances: {},
 
         /**
+         * Configuration
+         *
+         * @since 1.0.0
+         * @type {Object}
+         */
+        config: {
+            animationDelay: 10,
+            animationDuration: 300,
+            focusDelay: 350
+        },
+
+        /**
          * Initialize flyout system
          *
-         * @since 3.0.0
+         * @since 1.0.0
          * @return {void}
          */
         init: function () {
@@ -39,115 +51,153 @@
         /**
          * Open a flyout
          *
-         * @since 3.0.0
-         *
-         * @param {string} id Flyout element ID.
-         * @return {void}
+         * @since 1.0.0
+         * @param {string} id Flyout element ID
+         * @return {boolean} Success status
          */
         open: function (id) {
             const $flyout = $('#' + id);
 
             if (!$flyout.length) {
-                console.error('WP Flyout: Element not found:', id);
-                return;
+                return false;
             }
 
-            // Create overlay if needed.
-            if (!$('.wp-flyout-overlay').length) {
-                $('body').append('<div class="wp-flyout-overlay"></div>');
-            }
+            // Create overlay if needed
+            this.ensureOverlay();
 
-            // Store instance.
+            // Store instance
             this.instances[id] = $flyout;
 
-            // Add body class.
+            // Add body class
             $('body').addClass('wp-flyout-open');
 
-            // Activate with delay for animation.
-            setTimeout(function () {
+            // Activate with delay for animation
+            setTimeout(() => {
                 $('.wp-flyout-overlay').addClass('active');
                 $flyout.addClass('active');
-            }, 10);
+            }, this.config.animationDelay);
 
-            // Initialize tabs if present.
+            // Initialize tabs if present
             this.initTabs($flyout);
 
-            // Focus management.
-            setTimeout(function () {
+            // Focus management and trigger events after animation
+            setTimeout(() => {
+                // Focus first input
                 $flyout.find('input:visible, select:visible, textarea:visible')
                     .not(':disabled')
                     .first()
                     .focus();
-            }, 350);
 
-            // Trigger event AFTER animation completes
-            setTimeout(function () {
-                $(document).trigger('wpflyout:opened', {
+                // Trigger events
+                const eventData = {
                     id: id,
-                    element: $flyout[0]  // Pass DOM element, not jQuery object
-                });
+                    element: $flyout[0]
+                };
 
-                // Also trigger directly on the flyout element
+                $(document).trigger('wpflyout:opened', eventData);
                 $flyout.trigger('flyout:ready');
-            }, 350);  // Match the focus timeout
+            }, this.config.focusDelay);
+
+            return true;
         },
 
         /**
          * Close a flyout
          *
-         * @since 3.0.0
-         *
-         * @param {string} id Flyout element ID.
-         * @return {void}
+         * @since 1.0.0
+         * @param {string} id Flyout element ID
+         * @return {boolean} Success status
          */
         close: function (id) {
             const $flyout = this.instances[id];
 
             if (!$flyout) {
-                return;
+                return false;
             }
 
-            // Start close animation.
+            // Start close animation
             $flyout.removeClass('active');
 
-            // Clean up after animation.
+            // Clean up after animation
             setTimeout(() => {
                 $flyout.remove();
                 delete this.instances[id];
 
-                // Remove overlay if no more flyouts.
-                if (Object.keys(this.instances).length === 0) {
-                    $('.wp-flyout-overlay').removeClass('active');
-                    $('body').removeClass('wp-flyout-open');
-
-                    setTimeout(function () {
-                        $('.wp-flyout-overlay').remove();
-                    }, 300);
+                // Remove overlay if no more flyouts
+                if (this.isEmpty()) {
+                    this.removeOverlay();
                 }
 
-                // Trigger event.
+                // Trigger event
                 $(document).trigger('wpflyout:closed', {id: id});
-            }, 300);
+            }, this.config.animationDuration);
+
+            return true;
         },
 
         /**
          * Close all open flyouts
          *
-         * @since 3.0.0
+         * @since 1.0.0
          * @return {void}
          */
         closeAll: function () {
-            Object.keys(this.instances).forEach(id => {
-                this.close(id);
-            });
+            Object.keys(this.instances).forEach(id => this.close(id));
+        },
+
+        /**
+         * Get the last opened flyout ID
+         *
+         * @since 1.0.0
+         * @return {string|null}
+         */
+        getLastId: function () {
+            const keys = Object.keys(this.instances);
+            return keys.length ? keys[keys.length - 1] : null;
+        },
+
+        /**
+         * Check if there are no active flyouts
+         *
+         * @since 1.0.0
+         * @return {boolean}
+         */
+        isEmpty: function () {
+            return Object.keys(this.instances).length === 0;
+        },
+
+        /**
+         * Ensure overlay exists
+         *
+         * @since 1.0.0
+         * @return {void}
+         */
+        ensureOverlay: function () {
+            if (!$('.wp-flyout-overlay').length) {
+                $('body').append('<div class="wp-flyout-overlay"></div>');
+            }
+        },
+
+        /**
+         * Remove overlay
+         *
+         * @since 1.0.0
+         * @return {void}
+         */
+        removeOverlay: function () {
+            $('.wp-flyout-overlay').removeClass('active');
+            $('body').removeClass('wp-flyout-open');
+
+            setTimeout(() => {
+                $('.wp-flyout-overlay').remove();
+            }, this.config.animationDuration);
         },
 
         /**
          * Initialize tab switching
          *
-         * @since 3.0.0
-         *
-         * @param {jQuery} $flyout Flyout element.
+         * @since 1.0.0
+         * @param {jQuery} $flyout Flyout element
          * @return {void}
          */
         initTabs: function ($flyout) {
@@ -162,15 +212,19 @@
 
                 const tabId = $tab.data('tab');
 
-                // Update active states.
-                $flyout.find('.wp-flyout-tab').removeClass('active').attr('aria-selected', 'false');
-                $tab.addClass('active').attr('aria-selected', 'true');
+                // Update active states
+                $flyout.find('.wp-flyout-tab')
+                    .removeClass('active')
+                    .attr('aria-selected', 'false');
 
-                // Switch content.
+                $tab.addClass('active')
+                    .attr('aria-selected', 'true');
+
+                // Switch content
                 $flyout.find('.wp-flyout-tab-content').removeClass('active');
                 $flyout.find('#tab-' + tabId).addClass('active');
 
-                // Trigger event.
+                // Trigger event
                 $(document).trigger('wpflyout:tab-changed', {
                     flyoutId: $flyout.attr('id'),
                     tabId: tabId
@@ -181,30 +235,30 @@
         /**
          * Bind global event handlers
          *
-         * @since 3.0.0
+         * @since 1.0.0
          * @return {void}
          */
         bindGlobalEvents: function () {
             const self = this;
 
-            // Close button.
+            // Close button
             $(document).on('click', '.wp-flyout-close', function () {
                 const flyoutId = $(this).closest('.wp-flyout').attr('id');
                 self.close(flyoutId);
             });
 
-            // Overlay click.
+            // Overlay click
             $(document).on('click', '.wp-flyout-overlay', function () {
-                const lastId = Object.keys(self.instances).pop();
+                const lastId = self.getLastId();
                 if (lastId) {
                     self.close(lastId);
                 }
             });
 
-            // Escape key.
+            // Escape key
             $(document).on('keydown', function (e) {
                 if (e.key === 'Escape' || e.keyCode === 27) {
-                    const lastId = Object.keys(self.instances).pop();
+                    const lastId = self.getLastId();
                     if (lastId) {
                         self.close(lastId);
                     }
@@ -213,12 +267,12 @@
         }
     };
 
-    // Initialize on ready.
+    // Initialize on ready
     $(document).ready(function () {
         WPFlyout.init();
     });
 
-    // Export to global.
+    // Export to global
     window.WPFlyout = WPFlyout;
 
 })(jQuery, window, document);
