@@ -250,36 +250,16 @@
    COMPONENT STYLES
    ================================== */
 
-/* Action Bar Component */
+/* Action Bar Component - Modern style only */
 .wp-flyout-actions {
     display: flex;
-    gap: 10px;
+    gap: 12px;
+    padding: 20px;
     align-items: center;
 }
 
-.wp-flyout-actions.align-left {
-    justify-content: flex-start;
-}
-
-.wp-flyout-actions.align-right {
-    justify-content: flex-end;
-}
-
-.wp-flyout-actions.align-center {
-    justify-content: center;
-}
-
-.wp-flyout-actions.align-space-between {
-    justify-content: space-between;
-}
-
-/* Modern stretch alignment - buttons fill width equally */
-.wp-flyout-actions.align-stretch {
-    gap: 12px;
-    padding: 20px;
-}
-
-.wp-flyout-actions.align-stretch .button {
+/* Default buttons fill available space */
+.wp-flyout-actions .button {
     flex: 1;
     margin: 0;
     padding: 12px 24px;
@@ -289,77 +269,111 @@
     justify-content: center;
     min-height: 44px;
     text-align: center;
-}
-
-/* Standard button styles */
-.wp-flyout-actions .button {
     display: inline-flex;
     align-items: center;
-    gap: 5px;
+    gap: 6px;
+    transition: all 0.2s;
 }
 
-.wp-flyout-actions .button .dashicons {
-    font-size: 16px;
-    width: 16px;
-    height: 16px;
-}
-
-/* Modern button styles for stretch/stacked layouts */
-.wp-flyout-actions.align-stretch .button-primary,
-.wp-flyout-actions.stacked .button-primary {
+/* Primary button - modern purple */
+.wp-flyout-actions .button-primary {
     background: #5850ec;
     border-color: #5850ec;
     color: #fff;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
 }
 
-.wp-flyout-actions.align-stretch .button-primary:hover,
-.wp-flyout-actions.stacked .button-primary:hover {
+.wp-flyout-actions .button-primary:hover,
+.wp-flyout-actions .button-primary:focus {
     background: #4840d4;
     border-color: #4840d4;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
-.wp-flyout-actions.align-stretch .button-secondary,
-.wp-flyout-actions.stacked .button-secondary {
+/* Secondary button - clean white */
+.wp-flyout-actions .button-secondary {
     background: #fff;
     border: 1px solid #d1d5db;
     color: #374151;
 }
 
-.wp-flyout-actions.align-stretch .button-secondary:hover,
-.wp-flyout-actions.stacked .button-secondary:hover {
+.wp-flyout-actions .button-secondary:hover,
+.wp-flyout-actions .button-secondary:focus {
     background: #f9fafb;
     border-color: #9ca3af;
 }
 
-/* Stacked variant - buttons stack vertically */
-.wp-flyout-actions.stacked {
-    flex-direction: column;
-    gap: 12px;
-    padding: 20px;
+/* Link style button */
+.wp-flyout-actions .button-link {
+    background: none;
+    border: none;
+    color: #6b7280;
+    flex: 0;
+    padding: 12px;
+    min-width: auto;
 }
 
-.wp-flyout-actions.stacked .button {
-    width: 100%;
-    margin: 0;
-    padding: 12px 24px;
-    font-size: 14px;
-    font-weight: 500;
-    border-radius: 6px;
-    justify-content: center;
-    min-height: 44px;
+.wp-flyout-actions .button-link:hover {
+    color: #374151;
+    background: #f3f4f6;
 }
 
-/* Footer adjustments */
+/* Icons in buttons */
+.wp-flyout-actions .button .dashicons {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    margin: -2px 0;
+}
+
+/* Footer with action bar */
 .wp-flyout-footer {
     background: #fff;
     border-top: 1px solid #e5e7eb;
     padding: 0;
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
 }
 
-/* Remove extra padding when using stretch or stacked layout */
-.wp-flyout-footer .wp-flyout-actions.align-stretch,
-.wp-flyout-footer .wp-flyout-actions.stacked {
+.wp-flyout-footer .wp-flyout-actions {
     border-top: none;
+}
+
+/* Alignment variations (optional) */
+.wp-flyout-actions.align-left {
+    justify-content: flex-start;
+}
+
+.wp-flyout-actions.align-left .button {
+    flex: 0 1 auto;
+}
+
+.wp-flyout-actions.align-right {
+    justify-content: flex-end;
+}
+
+.wp-flyout-actions.align-right .button {
+    flex: 0 1 auto;
+}
+
+.wp-flyout-actions.align-center {
+    justify-content: center;
+}
+
+.wp-flyout-actions.align-center .button {
+    flex: 0 1 auto;
+}
+
+/* Responsive */
+@media screen and (max-width: 600px) {
+    .wp-flyout-actions {
+        flex-direction: column;
+    }
+
+    .wp-flyout-actions .button {
+        width: 100%;
+    }
 }
 
 /* Badge Component */

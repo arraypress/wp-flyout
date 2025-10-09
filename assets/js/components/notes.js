@@ -14,12 +14,10 @@
         handleAdd: function (e) {
             e.preventDefault();
 
-            // Start from the button and find the panel
             const $button = $(e.currentTarget);
             const $form = $button.closest('.note-add-form');
             const $panel = $button.closest('.wp-flyout-notes-panel');
 
-            // Find the textarea within the same form
             const $input = $form.find('textarea.note-input');
 
             if (!$input.length) {
@@ -32,6 +30,9 @@
                 $input.focus();
                 return;
             }
+
+            // Get all data attributes from the panel
+            const panelData = $panel.data();
 
             // Create note HTML
             const noteId = 'note_' + Date.now();
@@ -59,11 +60,18 @@
             // Clear input
             $input.val('').focus();
 
-            // Trigger event for any AJAX handling
+            // Trigger event with all panel data
             $panel.trigger('notes:added', {
                 id: noteId,
                 content: content,
-                note: $newNote
+                note: $newNote,
+                // Include all data attributes from panel
+                object_type: panelData['object-type'] || panelData.objectType,
+                object_id: panelData['object-id'] || panelData.objectId,
+                action: panelData.action,
+                nonce: panelData.nonce,
+                // Or just pass all data
+                data: panelData
             });
         },
 
@@ -81,6 +89,9 @@
             const $panel = $button.closest('.wp-flyout-notes-panel');
             const noteId = $note.data('note-id');
 
+            // Get panel data
+            const panelData = $panel.data();
+
             // Remove with animation
             $note.slideUp(200, function () {
                 $(this).remove();
@@ -88,12 +99,19 @@
                 // Check if list is empty
                 const $list = $panel.find('.notes-list');
                 if ($list.find('.note-item').length === 0) {
-                    const emptyText = $panel.data('empty-text') || 'No notes yet.';
+                    const emptyText = panelData['empty-text'] || panelData.emptyText || 'No notes yet.';
                     $list.html(`<p class="no-notes">${emptyText}</p>`);
                 }
 
-                // Trigger event
-                $panel.trigger('notes:deleted', {id: noteId});
+                // Trigger event with panel data
+                $panel.trigger('notes:deleted', {
+                    id: noteId,
+                    object_type: panelData['object-type'] || panelData.objectType,
+                    object_id: panelData['object-id'] || panelData.objectId,
+                    action: panelData.action,
+                    nonce: panelData.nonce,
+                    data: panelData
+                });
             });
         }
     };

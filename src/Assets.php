@@ -32,6 +32,11 @@ class Assets {
 			'script' => 'js/components/notes.js',
 			'style'  => 'css/components/notes.css',
 			'deps'   => []
+		],
+		'order-items'  => [
+			'script' => 'js/components/order-items.js',
+			'style'  => 'css/components/order-items.css',
+			'deps'   => []
 		]
 	];
 
@@ -168,5 +173,4 @@ class Assets {
 	public static function has_component( string $component ): bool {
 		return isset( self::$components[ $component ] );
 	}
-
 }
