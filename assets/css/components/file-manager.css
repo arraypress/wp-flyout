@@ -1,0 +1,155 @@
+/**
+ * WP Flyout - File Manager Component
+ */
+
+.wp-flyout-file-manager {
+    margin: 20px 0;
+}
+
+.file-manager-list {
+    margin-bottom: 12px;
+    min-height: 60px;
+    border: 1px solid var(--wp-flyout-border);
+    border-radius: 4px;
+    padding: 8px;
+    background: #fafafa;
+}
+
+.file-manager-list.ui-sortable-disabled {
+    background: #f6f7f7;
+}
+
+.file-manager-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #fff;
+    border: 1px solid var(--wp-flyout-border);
+    border-radius: 4px;
+    padding: 12px;
+    margin-bottom: 8px;
+    transition: all 0.2s;
+}
+
+.file-manager-item:last-child {
+    margin-bottom: 0;
+}
+
+.file-manager-item:hover {
+    border-color: var(--wp-flyout-primary);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* Sortable states */
+.file-manager-item.ui-sortable-helper {
+    opacity: 0.6;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.file-manager-item.ui-sortable-placeholder {
+    border: 2px dashed var(--wp-flyout-border);
+    background: #f0f0f1;
+    visibility: visible !important;
+}
+
+/* Handle */
+.file-handle {
+    cursor: move;
+    color: var(--wp-flyout-text-secondary);
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    padding: 4px;
+}
+
+.file-handle:hover {
+    color: var(--wp-flyout-primary);
+}
+
+/* File info */
+.file-info {
+    flex: 1;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    min-width: 0; /* Allow flex items to shrink */
+}
+
+.file-info input[data-field="name"] {
+    flex: 0 0 200px;
+    min-width: 150px;
+}
+
+.file-url-wrapper {
+    flex: 1;
+    display: flex;
+    gap: 4px;
+    min-width: 0;
+}
+
+.file-url-wrapper input {
+    flex: 1;
+    min-width: 0;
+}
+
+.file-url-wrapper button {
+    flex-shrink: 0;
+    padding: 0 10px;
+    min-height: 30px;
+}
+
+/* Remove button */
+.file-manager-item button[data-action="remove"] {
+    padding: 6px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--wp-flyout-text-secondary);
+    transition: color 0.2s;
+}
+
+.file-manager-item button[data-action="remove"]:hover {
+    color: var(--wp-flyout-danger);
+}
+
+/* Add button */
+.wp-flyout-file-manager button[data-action="add"] {
+    width: 100%;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+/* Responsive */
+@media screen and (max-width: 782px) {
+    .file-info {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .file-info input[data-field="name"] {
+        flex: 1;
+    }
+
+    .file-manager-item {
+        padding: 10px;
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .file-manager-list {
+        background: #1e1e1e;
+    }
+
+    .file-manager-item {
+        background: #2c3338;
+        border-color: #3c434a;
+    }
+
+    .file-manager-item:hover {
+        border-color: var(--wp-flyout-primary);
+    }
+}

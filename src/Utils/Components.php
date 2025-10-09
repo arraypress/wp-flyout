@@ -12,10 +12,12 @@
 
 declare( strict_types=1 );
 
+use ArrayPress\WPFlyout\Assets;
 use ArrayPress\WPFlyout\Components\ActionBar;
 use ArrayPress\WPFlyout\Components\Badge;
 use ArrayPress\WPFlyout\Components\EmptyState;
 use ArrayPress\WPFlyout\Components\FeatureList;
+use ArrayPress\WPFlyout\Components\FileManager;
 use ArrayPress\WPFlyout\Components\FormField;
 use ArrayPress\WPFlyout\Components\InfoGrid;
 use ArrayPress\WPFlyout\Components\SectionHeader;
@@ -223,5 +225,43 @@ if ( ! function_exists( 'wp_flyout_data_table' ) ) {
 	 */
 	function wp_flyout_data_table( array $data = [], array $config = [] ): DataTable {
 		return new DataTable( $data, $config );
+	}
+}
+
+if ( ! function_exists( 'wp_flyout_enqueue_component' ) ) {
+	/**
+	 * Enqueue specific flyout component assets
+	 *
+	 * @param string $component Component name (e.g., 'file-manager')
+	 * @return bool Whether component was enqueued successfully
+	 */
+	function wp_flyout_enqueue_component( string $component ): bool {
+		return Assets::enqueue_component( $component );
+	}
+}
+
+if ( ! function_exists( 'wp_flyout_has_component' ) ) {
+	/**
+	 * Check if a component is available
+	 *
+	 * @param string $component Component name
+	 * @return bool
+	 */
+	function wp_flyout_has_component( string $component ): bool {
+		return Assets::has_component( $component );
+	}
+}
+
+if ( ! function_exists( 'wp_flyout_file_manager' ) ) {
+	/**
+	 * Create a file manager component
+	 *
+	 * @param array  $files       Initial files array
+	 * @param string $name_prefix Input name prefix
+	 * @param array  $config      Optional configuration
+	 * @return FileManager
+	 */
+	function wp_flyout_file_manager( array $files = [], string $name_prefix = 'files', array $config = [] ): FileManager {
+		return new FileManager( $files, $name_prefix, $config );
 	}
 }

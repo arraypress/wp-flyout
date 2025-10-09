@@ -12,6 +12,7 @@
 
 declare( strict_types=1 );
 
+use ArrayPress\WPFlyout\Components\FileManager;
 use ArrayPress\WPFlyout\Flyout;
 use ArrayPress\WPFlyout\Assets;
 
