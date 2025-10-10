@@ -23,64 +23,84 @@ class Assets {
 	 * @var array
 	 */
 	private static array $components = [
-		'file-manager'    => [
+		'file-manager'       => [
 			'script' => 'js/components/file-manager.js',
 			'style'  => 'css/components/file-manager.css',
 			'deps'   => [ 'jquery-ui-sortable' ]
 		],
-		'notes'           => [
+		'notes'              => [
 			'script' => 'js/components/notes.js',
 			'style'  => 'css/components/notes.css',
 			'deps'   => []
 		],
-		'order-items'     => [
+		'order-items'        => [
 			'script' => 'js/components/order-items.js',
 			'style'  => 'css/components/order-items.css',
 			'deps'   => []
 		],
-		'product-display' => [
+		'product-display'    => [
 			'script' => '', // No JS needed
 			'style'  => 'css/components/product-display.css',
 			'deps'   => []
 		],
-		'field-group'     => [
+		'field-group'        => [
 			'script' => '', // No JS needed
 			'style'  => 'css/components/field-group.css',
 			'deps'   => []
 		],
-		'flex-row'        => [
+		'flex-row'           => [
 			'script' => '', // No JS needed
 			'style'  => 'css/components/flex-row.css',
 			'deps'   => []
 		],
-		'timeline'        => [
+		'timeline'           => [
 			'script' => '', // No JS needed
 			'style'  => 'css/components/timeline.css',
 			'deps'   => []
 		],
-		'customer-header' => [
+		'customer-header'    => [
 			'script' => '',
 			'style'  => 'css/components/customer-header.css',
 			'deps'   => []
 		],
-		'stats-card'      => [
+		'stats-card'         => [
 			'script' => '',
 			'style'  => 'css/components/stats-card.css',
 			'deps'   => []
 		],
-		'address-card'    => [
+		'address-card'       => [
 			'script' => '',
 			'style'  => 'css/components/address-card.css',
 			'deps'   => []
 		],
-		'payment-method'  => [
+		'payment-method'     => [
 			'script' => '',
 			'style'  => 'css/components/payment-method.css',
 			'deps'   => []
 		],
-		'price-breakdown' => [
+		'price-breakdown'    => [
 			'script' => '',
 			'style'  => 'css/components/price-breakdown.css',
+			'deps'   => []
+		],
+		'range-slider'       => [
+			'script' => 'js/components/range-slider.js',
+			'style'  => 'css/components/range-slider.css',
+			'deps'   => []
+		],
+		'code-block'         => [
+			'script' => 'js/components/code-block.js',
+			'style'  => 'css/components/code-block.css',
+			'deps'   => []
+		],
+		'status-indicator'   => [
+			'script' => '',
+			'style'  => 'css/components/status-indicator.css',
+			'deps'   => []
+		],
+		'progress-indicator' => [
+			'script' => '',
+			'style'  => 'css/components/progress-indicator.css',
 			'deps'   => []
 		]
 	];

@@ -1,0 +1,105 @@
+.wp-flyout-code-block {
+    margin: 20px 0;
+    background: #f6f7f7;
+    border: 1px solid #dcdcde;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.code-block-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: #fff;
+    border-bottom: 1px solid #dcdcde;
+}
+
+.code-block-title {
+    font-weight: 600;
+    color: #1e1e1e;
+}
+
+.code-block-language {
+    font-size: 11px;
+    font-weight: 500;
+    color: #8c8f94;
+    background: #f0f0f1;
+    padding: 2px 8px;
+    border-radius: 3px;
+}
+
+.code-block-wrapper {
+    position: relative;
+    overflow: auto;
+}
+
+.code-block-copy {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 3px;
+    padding: 4px 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    z-index: 10;
+    transition: all 0.2s;
+}
+
+.code-block-copy:hover {
+    background: #2271b1;
+    border-color: #2271b1;
+    color: #fff;
+}
+
+.code-block-copy .dashicons {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+}
+
+.code-block-copy.copied {
+    background: #00a32a;
+    border-color: #00a32a;
+    color: #fff;
+}
+
+.code-block-pre {
+    margin: 0;
+    padding: 16px;
+    overflow-x: auto;
+}
+
+.code-block-code {
+    font-family: Consolas, Monaco, 'Courier New', monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #1e1e1e;
+}
+
+/* Line numbers */
+.code-block-code.line-numbers {
+    counter-reset: line;
+    padding-left: 3em;
+    position: relative;
+}
+
+.code-block-code.line-numbers > span {
+    counter-increment: line;
+    position: relative;
+}
+
+.code-block-code.line-numbers > span::before {
+    content: counter(line);
+    position: absolute;
+    left: -2.5em;
+    width: 2em;
+    text-align: right;
+    color: #8c8f94;
+    user-select: none;
+}

@@ -1,0 +1,130 @@
+.wp-flyout-status-indicator {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 20px 0;
+}
+
+.status-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+}
+
+.status-icon {
+    position: relative;
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+.status-icon .dashicons {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    z-index: 2;
+    position: relative;
+}
+
+.status-pulse {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(34, 113, 177, 0.7);
+    }
+    70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 10px rgba(34, 113, 177, 0);
+    }
+    100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(34, 113, 177, 0);
+    }
+}
+
+/* Status colors */
+.status-success .status-icon {
+    background: #d4f4dd;
+    color: #00a32a;
+}
+
+.status-success .status-pulse {
+    background: rgba(0, 163, 42, 0.3);
+}
+
+.status-warning .status-icon {
+    background: #fcf9e8;
+    color: #dba617;
+}
+
+.status-error .status-icon {
+    background: #facfd2;
+    color: #d63638;
+}
+
+.status-info .status-icon {
+    background: #e0f2ff;
+    color: #2271b1;
+}
+
+.status-info {
+    flex: 1;
+}
+
+.status-title {
+    margin: 0 0 5px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1e1e1e;
+}
+
+.status-label {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.status-success .status-label { color: #00a32a; }
+.status-warning .status-label { color: #8a6116; }
+.status-error .status-label { color: #8a2424; }
+.status-info .status-label { color: #0a4b78; }
+
+.status-message {
+    margin: 8px 0 0 0;
+    font-size: 13px;
+    color: #646970;
+}
+
+.status-details {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #f0f0f1;
+}
+
+.status-detail-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    font-size: 13px;
+}
+
+.detail-label {
+    color: #8c8f94;
+}
+
+.detail-value {
+    color: #1e1e1e;
+    font-weight: 500;
+}
