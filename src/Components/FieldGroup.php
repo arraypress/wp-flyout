@@ -283,4 +283,16 @@ class FieldGroup {
         return $group;
     }
 
+    /**
+     * Static factory method for creating a new instance
+     *
+     * @since 1.0.0
+     *
+     * @param array $config Configuration options
+     * @return self
+     */
+    public static function create( array $config = [] ): self {
+        return new self( $config );
+    }
+
 }
