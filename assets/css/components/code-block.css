@@ -1,3 +1,7 @@
+/**
+ * WP Flyout Code Block Component Styles
+ */
+
 .wp-flyout-code-block {
     margin: 20px 0;
     background: #f6f7f7;
@@ -18,6 +22,7 @@
 .code-block-title {
     font-weight: 600;
     color: #1e1e1e;
+    font-size: 14px;
 }
 
 .code-block-language {
@@ -27,6 +32,7 @@
     background: #f0f0f1;
     padding: 2px 8px;
     border-radius: 3px;
+    text-transform: uppercase;
 }
 
 .code-block-wrapper {
@@ -73,33 +79,128 @@
     margin: 0;
     padding: 16px;
     overflow-x: auto;
+    background: #f8f9fa;
 }
 
 .code-block-code {
     font-family: Consolas, Monaco, 'Courier New', monospace;
     font-size: 13px;
-    line-height: 1.5;
+    line-height: 1.6;
     color: #1e1e1e;
+    display: block;
+    white-space: pre;
+    word-wrap: normal;
 }
 
 /* Line numbers */
 .code-block-code.line-numbers {
     counter-reset: line;
-    padding-left: 3em;
+    padding-left: 3.5em;
     position: relative;
 }
 
-.code-block-code.line-numbers > span {
-    counter-increment: line;
+.code-block-code.line-numbers > * {
     position: relative;
 }
 
-.code-block-code.line-numbers > span::before {
+/* Create line numbers for each line */
+.code-block-pre {
+    position: relative;
+}
+
+.code-block-code.line-numbers::before {
     content: counter(line);
+    counter-increment: line;
     position: absolute;
-    left: -2.5em;
-    width: 2em;
+    left: 0;
+    width: 3em;
+    padding-right: 0.5em;
     text-align: right;
     color: #8c8f94;
     user-select: none;
+    pointer-events: none;
+}
+
+/* Syntax highlighting colors */
+.code-block-code .code-comment {
+    color: #6a737d;
+    font-style: italic;
+}
+
+.code-block-code .code-string {
+    color: #032f62;
+}
+
+.code-block-code .code-keyword {
+    color: #d73a49;
+    font-weight: 600;
+}
+
+.code-block-code .code-function {
+    color: #6f42c1;
+}
+
+.code-block-code .code-variable {
+    color: #005cc5;
+}
+
+.code-block-code .code-builtin {
+    color: #6f42c1;
+}
+
+.code-block-code .code-number {
+    color: #005cc5;
+}
+
+.code-block-code .code-selector {
+    color: #6f42c1;
+    font-weight: 600;
+}
+
+.code-block-code .code-property {
+    color: #005cc5;
+}
+
+/* Dark theme variation (optional - can be triggered with a class) */
+.wp-flyout-code-block.dark .code-block-pre {
+    background: #1e1e1e;
+}
+
+.wp-flyout-code-block.dark .code-block-code {
+    color: #d4d4d4;
+}
+
+.wp-flyout-code-block.dark .code-block-code .code-comment {
+    color: #6a9955;
+}
+
+.wp-flyout-code-block.dark .code-block-code .code-string {
+    color: #ce9178;
+}
+
+.wp-flyout-code-block.dark .code-block-code .code-keyword {
+    color: #569cd6;
+}
+
+.wp-flyout-code-block.dark .code-block-code .code-variable {
+    color: #9cdcfe;
+}
+
+.wp-flyout-code-block.dark .code-block-code .code-builtin {
+    color: #4ec9b0;
+}
+
+.wp-flyout-code-block.dark .code-block-code .code-number {
+    color: #b5cea8;
+}
+
+/* Responsive */
+@media screen and (max-width: 782px) {
+    .code-block-pre {
+        padding: 12px;
+    }
+
+    .code-block-code {
+        font-size: 12px;
+    }
 }
