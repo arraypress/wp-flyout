@@ -7,6 +7,13 @@
 }
 
 /* Product selector */
+.product-selector-wrapper {
+    display: flex;
+    width: 100%;
+    gap: 12px;
+}
+
+/* Product selector */
 .order-items-selector {
     display: flex;
     gap: 10px;
@@ -371,6 +378,10 @@
 
     .totals-row.total .value {
         font-size: 16px;
+    }
+
+    .product-selector-wrapper {
+        flex-direction: column;
     }
 }
 
