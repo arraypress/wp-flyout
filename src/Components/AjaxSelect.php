@@ -15,25 +15,24 @@ declare( strict_types=1 );
 
 namespace ArrayPress\WPFlyout\Components;
 
-use ArrayPress\WPFlyout\Traits\Renderable;
 use ArrayPress\WPFlyout\Assets;
 
 /**
  * Class AjaxSelect
  *
  * AJAX-powered select elements with automatic asset loading.
+ * Note: This component uses static methods and doesn't use the Renderable trait.
  *
  * @since 1.0.0
  */
 class AjaxSelect {
-	use Renderable;
 
 	/**
 	 * Load AJAX select assets
 	 *
+	 * @return void
 	 * @since 1.0.0
 	 *
-	 * @return void
 	 */
 	public static function load_assets(): void {
 		Assets::enqueue_component( 'ajax-select' );
@@ -42,10 +41,11 @@ class AjaxSelect {
 	/**
 	 * Generate AJAX select field
 	 *
+	 * @param array $args Field configuration
+	 *
+	 * @return string Generated HTML
 	 * @since 1.0.0
 	 *
-	 * @param array $args Field configuration
-	 * @return string Generated HTML
 	 */
 	public static function field( array $args ): string {
 		// Load assets
@@ -84,10 +84,11 @@ class AjaxSelect {
 	/**
 	 * Build HTML attributes string
 	 *
+	 * @param array $args Configuration array
+	 *
+	 * @return string HTML attributes
 	 * @since 1.0.0
 	 *
-	 * @param array $args Configuration array
-	 * @return string HTML attributes
 	 */
 	private static function build_attributes( array $args ): string {
 		$attrs = [];
@@ -131,14 +132,16 @@ class AjaxSelect {
 	}
 
 	/**
-	 * Render AJAX select field directly
-	 *
-	 * @since 1.0.0
+	 * Render AJAX select field directly (echoes the output)
 	 *
 	 * @param array $args Field configuration
+	 *
 	 * @return void
+	 * @since 1.0.0
+	 *
 	 */
-	public static function render( array $args ): void {
+	public static function render_field( array $args ): void {
 		echo self::field( $args );
 	}
+
 }
