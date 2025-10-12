@@ -108,4 +108,46 @@ class SectionHeader {
         return ob_get_clean();
     }
 
+    /**
+     * Create a simple heading without description
+     *
+     * @param string $text  Heading text
+     * @param string $tag   HTML tag (h2, h3, h4)
+     * @param string $class Optional CSS class
+     *
+     * @return string Generated HTML
+     * @since 3.1.0
+     *
+     */
+    public static function simple( string $text, string $tag = 'h3', string $class = '' ): string {
+        $classes = array_filter( [ 'wp-flyout-heading', $class ] );
+
+        return sprintf(
+                '<%1$s class="%2$s">%3$s</%1$s>',
+                esc_attr( $tag ),
+                esc_attr( implode( ' ', $classes ) ),
+                esc_html( $text )
+        );
+    }
+
+    /**
+     * Create a heading with emphasized value
+     *
+     * @param string $label Label text
+     * @param string $value Value to emphasize
+     * @param string $tag   HTML tag
+     *
+     * @return string Generated HTML
+     * @since 3.1.0
+     *
+     */
+    public static function with_value( string $label, string $value, string $tag = 'p' ): string {
+        return sprintf(
+                '<%1$s class="wp-flyout-label-value">%2$s: <strong>%3$s</strong></%1$s>',
+                esc_attr( $tag ),
+                esc_html( $label ),
+                esc_html( $value )
+        );
+    }
+
 }

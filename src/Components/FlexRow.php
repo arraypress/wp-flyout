@@ -304,4 +304,32 @@ class FlexRow {
         return $row;
     }
 
+    /**
+     * Create a label/value row
+     *
+     * @param string $label       Label text
+     * @param string $value       Value text
+     * @param array  $value_style Optional style attributes for value
+     *
+     * @return self
+     * @since 1.0.0
+     *
+     */
+    public static function label_value( string $label, string $value, array $value_style = [] ): self {
+        $label_html = '<span class="flex-label"><strong>' . esc_html( $label ) . ':</strong></span>';
+
+        $style_string = '';
+        if ( ! empty( $value_style ) ) {
+            $styles = [];
+            foreach ( $value_style as $prop => $val ) {
+                $styles[] = esc_attr( $prop ) . ': ' . esc_attr( $val );
+            }
+            $style_string = ' style="' . implode( '; ', $styles ) . '"';
+        }
+
+        $value_html = '<span class="flex-value"' . $style_string . '>' . esc_html( $value ) . '</span>';
+
+        return self::space_between( $label_html, $value_html );
+    }
+
 }
