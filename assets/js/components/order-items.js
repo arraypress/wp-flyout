@@ -1,5 +1,6 @@
 /**
  * WP Flyout Order Items Component
+ * Works with AJAX Select for product search
  */
 
 (function ($) {
@@ -12,14 +13,6 @@
             $('body').on('click', '.wp-flyout-order-items [data-action="remove-item"]', this.handleRemove.bind(this));
             $('body').on('change', '.wp-flyout-order-items [data-action="update-quantity"]', this.handleQuantityChange.bind(this));
 
-            // Enter key on selector
-            $('body').on('keypress', '.wp-flyout-order-items .product-selector', function (e) {
-                if (e.which === 13) {
-                    e.preventDefault();
-                    $(this).siblings('[data-action="add-product"]').click();
-                }
-            });
-
             // Initialize on flyout open
             $(document).on('wpflyout:opened', function (e, data) {
                 OrderItems.initComponent($(data.element));
@@ -29,6 +22,22 @@
         initComponent: function ($container) {
             $container.find('.wp-flyout-order-items').each(function () {
                 const $component = $(this);
+
+                // Initialize AJAX select if not already done
+                const $select = $component.find('.product-ajax-select');
+                if ($select.length && !$select.data('wpAjaxSelectInitialized')) {
+                    new WPAjaxSelect($select[0]);
+
+                    // Listen for product selection
+                    $select.on('change', function () {
+                        // Auto-add when product is selected
+                        const $addButton = $component.find('[data-action="add-product"]');
+                        if ($(this).val()) {
+                            $addButton.click();
+                        }
+                    });
+                }
+
                 if ($component.data('mode') === 'edit') {
                     OrderItems.recalculateTotals($component);
                 }
@@ -39,20 +48,11 @@
             e.preventDefault();
             const $button = $(e.currentTarget);
             const $component = $button.closest('.wp-flyout-order-items');
-            const $selector = $component.find('.product-selector');
-            const productData = $selector.val();
+            const $select = $component.find('.product-ajax-select');
+            const productId = $select.val();
 
-            if (!productData) {
-                $selector.focus();
-                return;
-            }
-
-            // Parse product data
-            let product;
-            try {
-                product = JSON.parse(productData);
-            } catch (err) {
-                console.error('Invalid product data');
+            if (!productId) {
+                $select.focus();
                 return;
             }
 
@@ -67,30 +67,69 @@
             }
 
             // Check if product already exists
-            const existingItem = this.findExistingItem($component, product);
+            const existingItem = this.findExistingItem($component, productId);
             if (existingItem) {
                 // Increment quantity
                 const $qtyInput = existingItem.find('.quantity-input');
                 const currentQty = parseInt($qtyInput.val()) || 1;
                 $qtyInput.val(currentQty + 1).trigger('change');
-                $selector.val('').focus();
+
+                // Clear selection
+                this.clearAjaxSelect($select);
                 return;
             }
 
-            // Add new item
-            this.addItemToTable($component, product);
-            $selector.val('').focus();
+            // Get product details via AJAX
+            this.fetchProductDetails($component, productId);
         },
 
-        findExistingItem: function ($component, product) {
+        fetchProductDetails: function ($component, productId) {
+            const ajaxAction = $component.data('ajax-action');
+
+            // Use the config from wpFlyoutConfig if available
+            const config = window.wpFlyoutConfig && window.wpFlyoutConfig.components &&
+                window.wpFlyoutConfig.components.orderItems || {};
+
+            $.ajax({
+                url: window.ajaxurl || '/wp-admin/admin-ajax.php',
+                type: 'POST',
+                data: {
+                    action: config.action || ajaxAction || 'get_product_details',
+                    product_id: productId,
+                    _wpnonce: config.nonce || ''
+                },
+                success: (response) => {
+                    if (response.success && response.data) {
+                        this.addItemToTable($component, response.data);
+
+                        // Clear the AJAX select
+                        const $select = $component.find('.product-ajax-select');
+                        this.clearAjaxSelect($select);
+                    }
+                },
+                error: () => {
+                    alert('Error loading product details');
+                }
+            });
+        },
+
+        clearAjaxSelect: function ($select) {
+            // Clear the AJAX select using its API
+            const instance = $select.data('wpAjaxSelect');
+            if (instance && instance.clear) {
+                instance.clear();
+            } else {
+                // Fallback
+                $select.val('').trigger('change');
+                $select.next('.wp-ajax-select').find('.wp-ajax-select-input').val('');
+            }
+        },
+
+        findExistingItem: function ($component, productId) {
             let $found = null;
             $component.find('.order-item').each(function () {
                 const $row = $(this);
-                const productId = $row.find('[name*="[product_id]"]').val();
-                const priceId = $row.find('[name*="[price_id]"]').val();
-
-                if ((product.product_id && productId === product.product_id) ||
-                    (product.price_id && priceId === product.price_id)) {
+                if ($row.data('product-id') == productId) {
                     $found = $row;
                     return false;
                 }
@@ -189,7 +228,7 @@
 
                 // Check if empty
                 if ($tbody.find('.order-item').length === 0) {
-                    const emptyText = $component.data('empty-text') || 'No products added yet.';
+                    const emptyText = 'No products added yet.';
                     $component.find('.order-items-table').html(
                         `<div class="order-items-empty"><p>${emptyText}</p></div>`
                     );
