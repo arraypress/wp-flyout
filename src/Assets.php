@@ -102,7 +102,12 @@ class Assets {
 			'script' => '',
 			'style'  => 'css/components/progress-indicator.css',
 			'deps'   => []
-		]
+		],
+		'ajax-select' => [
+			'script' => 'js/components/ajax-select.js',
+			'style'  => 'css/components/ajax-select.css',
+			'deps'   => []
+		],
 	];
 
 	/**

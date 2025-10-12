@@ -633,14 +633,8 @@ class FormField {
      *
      */
     private function render_ajax_select(): string {
-
-        // Check if the utility function exists
-        if ( ! function_exists( 'wp_ajax_select' ) ) {
-            return $this->render_select();
-        }
-
-        // Build configuration for AJAX select
-        $config = [
+        // Use the internal AjaxSelect component
+        return AjaxSelect::field( [
                 'name'            => $this->field['name'],
                 'id'              => $this->field['id'],
                 'ajax'            => $this->field['ajax_action'] ?? '',
@@ -654,22 +648,9 @@ class FormField {
                 'delay'           => $this->field['delay'] ?? 300,
                 'initial_results' => $this->field['initial_results'] ?? 20,
                 'empty_option'    => $this->field['empty_option'] ?? null,
-        ];
-
-        // Add nonce if provided
-        if ( ! empty( $this->field['nonce'] ) ) {
-            $config['nonce'] = $this->field['nonce'];
-        } elseif ( ! empty( $this->field['ajax_action'] ) ) {
-            $config['nonce'] = wp_create_nonce( $this->field['ajax_action'] );
-        }
-
-        // Add custom AJAX URL if provided
-        if ( ! empty( $this->field['ajax_url'] ) ) {
-            $config['ajax_url'] = $this->field['ajax_url'];
-        }
-
-        // Use the utility function which handles asset loading automatically
-        return wp_ajax_select( $config );
+                'nonce'           => $this->field['nonce'] ?? ( ! empty( $this->field['ajax_action'] ) ? wp_create_nonce( $this->field['ajax_action'] ) : '' ),
+                'ajax_url'        => $this->field['ajax_url'] ?? ''
+        ] );
     }
 
 }
