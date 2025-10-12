@@ -6,25 +6,37 @@
     'use strict';
 
     const OrderItems = {
-        init() {
+        init: function () {
+            const self = this;
+
             // Use body delegation for dynamic content
             $(document)
-                .on('click', '.wp-flyout-order-items [data-action="add-product"]', e => this.handleAdd(e))
-                .on('click', '.wp-flyout-order-items [data-action="remove-item"]', e => this.handleRemove(e))
-                .on('change', '.wp-flyout-order-items [data-action="update-quantity"]', e => this.handleQuantityChange(e))
-                .on('wpflyout:opened', (e, data) => this.initComponent($(data.element)));
+                .on('click', '.wp-flyout-order-items [data-action="add-product"]', function (e) {
+                    self.handleAdd(e);
+                })
+                .on('click', '.wp-flyout-order-items [data-action="remove-item"]', function (e) {
+                    self.handleRemove(e);
+                })
+                .on('change', '.wp-flyout-order-items [data-action="update-quantity"]', function (e) {
+                    self.handleQuantityChange(e);
+                })
+                .on('wpflyout:opened', function (e, data) {
+                    self.initComponent($(data.element));
+                });
 
             // Initialize on document ready
-            $(() => {
-                $('.wp-flyout-order-items').each((i, el) => {
-                    this.initComponent($(el).parent());
+            $(function () {
+                $('.wp-flyout-order-items').each(function () {
+                    self.initComponent($(this).parent());
                 });
             });
         },
 
-        initComponent($container) {
-            $container.find('.wp-flyout-order-items').each((i, el) => {
-                const $component = $(el);
+        initComponent: function ($container) {
+            const self = this;
+
+            $container.find('.wp-flyout-order-items').each(function () {
+                const $component = $(this);
                 const $select = $component.find('.product-ajax-select');
 
                 if ($select.length && !$select.data('wpAjaxSelectInitialized')) {
@@ -34,12 +46,12 @@
                 }
 
                 if ($component.data('mode') === 'edit') {
-                    this.recalculateTotals($component);
+                    self.recalculateTotals($component);
                 }
             });
         },
 
-        handleAdd(e) {
+        handleAdd: function (e) {
             e.preventDefault();
 
             const $button = $(e.currentTarget);
@@ -54,14 +66,17 @@
 
             // Check max items
             const maxItems = parseInt($component.data('max-items')) || 0;
-            if (maxItems > 0 && $component.find('.order-item').length >= maxItems) {
-                alert(`Maximum ${maxItems} items allowed`);
-                return;
+            if (maxItems > 0) {
+                const currentCount = $component.find('.order-item').length;
+                if (currentCount >= maxItems) {
+                    alert('Maximum ' + maxItems + ' items allowed');
+                    return;
+                }
             }
 
             // Check if product already exists
             const existingItem = this.findExistingItem($component, productId);
-            if (existingItem) {
+            if (existingItem.length) {
                 // Increment quantity
                 const $qtyInput = existingItem.find('.quantity-input');
                 const currentQty = parseInt($qtyInput.val()) || 1;
@@ -74,42 +89,46 @@
             this.fetchProductDetails($component, productId);
         },
 
-        async fetchProductDetails($component, productId) {
+        fetchProductDetails: function ($component, productId) {
+            const self = this;
             const $button = $component.find('[data-action="add-product"]');
+
             $button.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> Loading...');
 
             const ajaxUrl = window.ajaxurl || '/wp-admin/admin-ajax.php';
-            const config = window.wpFlyoutConfig?.components?.orderItems || {};
+            const config = window.wpFlyoutConfig && window.wpFlyoutConfig.components &&
+                window.wpFlyoutConfig.components.orderItems || {};
 
-            try {
-                const response = await $.ajax({
-                    url: ajaxUrl,
-                    type: 'POST',
-                    dataType: 'json',
-                    data: {
-                        action: 'get_product_details',
-                        product_id: String(productId),
-                        _wpnonce: config.nonce || ''
+            $.ajax({
+                url: ajaxUrl,
+                type: 'POST',
+                dataType: 'json',
+                data: {
+                    action: 'get_product_details',
+                    product_id: String(productId),
+                    _wpnonce: config.nonce || ''
+                },
+                success: function (response) {
+                    if (response.success && response.data) {
+                        self.addItemToTable($component, response.data);
+                        self.clearAjaxSelect($component.find('.product-ajax-select'));
+                    } else {
+                        alert('Error: ' + (response.data || 'Product details not found'));
                     }
-                });
-
-                if (response.success && response.data) {
-                    this.addItemToTable($component, response.data);
-                    this.clearAjaxSelect($component.find('.product-ajax-select'));
-                } else {
-                    alert(`Error: ${response.data || 'Product details not found'}`);
+                },
+                error: function (xhr, status, error) {
+                    console.error('AJAX Error:', error);
+                    alert('Error loading product details: ' + error);
+                },
+                complete: function () {
+                    $button.prop('disabled', false).html('<span class="dashicons dashicons-plus-alt"></span> Add');
                 }
-            } catch (error) {
-                console.error('AJAX Error:', error);
-                alert(`Error loading product details: ${error.statusText || error}`);
-            } finally {
-                $button.prop('disabled', false).html('<span class="dashicons dashicons-plus-alt"></span> Add');
-            }
+            });
         },
 
-        clearAjaxSelect($select) {
+        clearAjaxSelect: function ($select) {
             const instance = $select.data('wpAjaxSelect');
-            if (instance?.clear) {
+            if (instance && instance.clear) {
                 instance.clear();
             } else {
                 // Fallback
@@ -123,21 +142,27 @@
             }
         },
 
-        findExistingItem($component, productId) {
-            return $component.find('.order-item').filter((i, el) => {
-                const $row = $(el);
+        findExistingItem: function ($component, productId) {
+            let $found = null;
+            $component.find('.order-item').each(function () {
+                const $row = $(this);
                 const rowProductId = $row.data('product-id') || $row.find('[name*="[product_id]"]').val();
-                return rowProductId == productId;
-            }).first();
+                if (rowProductId == productId) {
+                    $found = $row;
+                    return false;
+                }
+            });
+            return $found ? $($found) : $();
         },
 
-        addItemToTable($component, product) {
+        addItemToTable: function ($component, product) {
             let $tbody = $component.find('.order-items-list');
             const $emptyMessage = $component.find('.order-items-empty');
 
             // Create table if needed
             if ($emptyMessage.length) {
-                const showQty = $component.find('.order-item-template').html()?.includes('column-quantity');
+                const template = $component.find('.order-item-template').html();
+                const showQty = template && template.includes('column-quantity');
                 const tableHtml = `
                     <table>
                         <thead>
@@ -171,11 +196,11 @@
 
             const priceFormatted = this.formatCurrency(price, currency, currencyPos);
             const thumbnailHtml = product.thumbnail ?
-                `<img src="${product.thumbnail}" alt="${product.name}" class="product-thumbnail">` :
-                `<div class="product-thumbnail-placeholder"><span class="dashicons dashicons-format-image"></span></div>`;
+                '<img src="' + product.thumbnail + '" alt="' + product.name + '" class="product-thumbnail">' :
+                '<div class="product-thumbnail-placeholder"><span class="dashicons dashicons-format-image"></span></div>';
 
             // Replace template variables
-            const html = template
+            let html = template
                 .replace(/{{index}}/g, index)
                 .replace(/{{product_id}}/g, product.product_id || product.id || '')
                 .replace(/{{price_id}}/g, product.price_id || '')
@@ -191,13 +216,16 @@
 
             // Highlight briefly
             $newRow.css('background', '#ffffcc');
-            setTimeout(() => $newRow.css('background', ''), 1000);
+            setTimeout(function () {
+                $newRow.css('background', '');
+            }, 1000);
 
             this.recalculateTotals($component);
         },
 
-        handleRemove(e) {
+        handleRemove: function (e) {
             e.preventDefault();
+            const self = this;
 
             const $button = $(e.currentTarget);
             const $row = $button.closest('.order-item');
@@ -206,29 +234,30 @@
 
             // Check min items
             const minItems = parseInt($component.data('min-items')) || 0;
-            const currentCount = $tbody.find('.order-item').length;
-
-            if (minItems > 0 && currentCount <= minItems) {
-                alert(`Minimum ${minItems} items required`);
-                return;
+            if (minItems > 0) {
+                const currentCount = $tbody.find('.order-item').length;
+                if (currentCount <= minItems) {
+                    alert('Minimum ' + minItems + ' items required');
+                    return;
+                }
             }
 
-            $row.fadeOut(300, () => {
+            $row.fadeOut(300, function () {
                 $row.remove();
-                this.reindexItems($component);
+                self.reindexItems($component);
 
                 // Check if empty
-                if (!$tbody.find('.order-item').length) {
+                if ($tbody.find('.order-item').length === 0) {
                     $component.find('.order-items-table').html(
                         '<div class="order-items-empty"><p>No products added yet.</p></div>'
                     );
                 }
 
-                this.recalculateTotals($component);
+                self.recalculateTotals($component);
             });
         },
 
-        handleQuantityChange(e) {
+        handleQuantityChange: function (e) {
             const $input = $(e.currentTarget);
             const $component = $input.closest('.wp-flyout-order-items');
             const $row = $input.closest('.order-item');
@@ -246,29 +275,29 @@
             this.recalculateTotals($component);
         },
 
-        reindexItems($component) {
+        reindexItems: function ($component) {
             const namePrefix = $component.data('name-prefix') || 'order_items';
 
-            $component.find('.order-item').each((index, el) => {
-                const $item = $(el);
+            $component.find('.order-item').each(function (index) {
+                const $item = $(this);
                 $item.attr('data-index', index);
 
-                $item.find('input').each((i, input) => {
-                    const name = $(input).attr('name');
+                $item.find('input').each(function () {
+                    const name = $(this).attr('name');
                     if (name) {
-                        $(input).attr('name', name.replace(/\[\d+\]/, `[${index}]`));
+                        $(this).attr('name', name.replace(/\[\d+\]/, '[' + index + ']'));
                     }
                 });
             });
         },
 
-        recalculateTotals($component) {
+        recalculateTotals: function ($component) {
             let subtotal = 0;
             const currency = $component.data('currency') || '$';
             const currencyPos = $component.data('currency-position') || 'before';
 
-            $component.find('.order-item').each((i, el) => {
-                const $row = $(el);
+            $component.find('.order-item').each(function () {
+                const $row = $(this);
                 const price = parseFloat($row.find('.column-price').data('price')) || 0;
                 const quantity = parseInt($row.find('.quantity-input').val()) || 1;
                 subtotal += price * quantity;
@@ -285,17 +314,19 @@
             }
 
             // Trigger event
-            $component.trigger('orderitems:updated', {subtotal});
+            $component.trigger('orderitems:updated', {subtotal: subtotal});
         },
 
-        formatCurrency(amount, symbol, position) {
+        formatCurrency: function (amount, symbol, position) {
             const formatted = amount.toFixed(2);
             return position === 'after' ? formatted + symbol : symbol + formatted;
         }
     };
 
     // Initialize
-    $(() => OrderItems.init());
+    $(function () {
+        OrderItems.init();
+    });
 
     // Export
     window.WPFlyoutOrderItems = OrderItems;
