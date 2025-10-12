@@ -218,6 +218,10 @@
     z-index: 10;
 }
 
+.wp-flyout-footer .wp-flyout-actions {
+    padding: 20px !important;
+}
+
 /* Form wrapper for auto-detection */
 .wp-flyout-form {
     display: flex;
