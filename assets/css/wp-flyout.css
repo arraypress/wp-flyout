@@ -444,6 +444,8 @@
 .wp-flyout-field input[type="number"],
 .wp-flyout-field input[type="url"],
 .wp-flyout-field input[type="tel"],
+.wp-flyout-field input[type="date"],
+.wp-flyout-field input[type="password"],
 .wp-flyout-field textarea,
 .wp-flyout-field select {
     width: 100%;
