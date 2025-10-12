@@ -1,26 +1,6 @@
 /**
- * WordPress AJAX Select - Enhanced Styles
+ * WordPress AJAX Select - Component Styles
  */
-
-:root {
-    /* Colors */
-    --wp-ajax-select-border: #8c8f94;
-    --wp-ajax-select-border-focus: #2271b1;
-    --wp-ajax-select-bg: white;
-    --wp-ajax-select-text: inherit;
-    --wp-ajax-select-text-muted: #646970;
-    --wp-ajax-select-text-hover: #2271b1;
-    --wp-ajax-select-clear-hover: #d63638;
-    --wp-ajax-select-item-hover-bg: #2271b1;
-    --wp-ajax-select-item-hover-text: white;
-    --wp-ajax-select-item-border: #f0f0f1;
-    --wp-ajax-select-shadow: rgba(0, 0, 0, 0.1);
-    --wp-ajax-select-scrollbar-track: #f0f0f1;
-    --wp-ajax-select-scrollbar-thumb: #c3c4c7;
-    --wp-ajax-select-scrollbar-thumb-hover: #8c8f94;
-    --wp-ajax-select-spinner-bg: #dcdcde;
-    --wp-ajax-select-spinner-color: #2271b1;
-}
 
 .wp-ajax-select {
     position: relative;
@@ -36,18 +16,25 @@
 .wp-ajax-select-input {
     width: 100%;
     padding: 0 60px 0 8px;
-    height: 30px;
-    border: 1px solid var(--wp-ajax-select-border);
+    height: 36px; /* Match WordPress admin inputs */
+    border: 1px solid #8c8f94;
     border-radius: 4px;
     font-size: 14px;
-    background: var(--wp-ajax-select-bg);
+    line-height: 2;
+    background: #fff;
     box-sizing: border-box;
 }
 
 .wp-ajax-select-input:focus {
-    border-color: var(--wp-ajax-select-border-focus);
-    box-shadow: 0 0 0 1px var(--wp-ajax-select-border-focus);
+    border-color: #2271b1;
+    box-shadow: 0 0 0 1px #2271b1;
     outline: none;
+}
+
+/* When value is selected, prevent editing */
+.wp-ajax-select-has-value .wp-ajax-select-input {
+    background: #f0f0f1;
+    cursor: default;
 }
 
 /* Clear button */
@@ -59,25 +46,31 @@
     width: 20px;
     height: 20px;
     cursor: pointer;
-    color: var(--wp-ajax-select-text-muted);
-    font-size: 18px;
+    color: #646970;
+    font-size: 20px;
     line-height: 1;
     text-align: center;
     user-select: none;
-    transition: color 0.2s;
+    transition: all 0.2s;
+    display: none;
+}
+
+.wp-ajax-select-has-value .wp-ajax-select-clear {
+    display: block;
 }
 
 .wp-ajax-select-clear:hover {
-    color: var(--wp-ajax-select-clear-hover);
+    color: #d63638;
+    transform: translateY(-50%) scale(1.1);
 }
 
-/* Arrow with rotation */
+/* Arrow */
 .wp-ajax-select-arrow {
     position: absolute;
     right: 8px;
     top: 50%;
     transform: translateY(-50%);
-    color: var(--wp-ajax-select-text-muted);
+    color: #646970;
     cursor: pointer;
     user-select: none;
     transition: transform 0.2s ease;
@@ -89,7 +82,7 @@
 }
 
 .wp-ajax-select-arrow:hover {
-    color: var(--wp-ajax-select-text-hover);
+    color: #2271b1;
 }
 
 /* Rotate arrow when open */
@@ -100,49 +93,28 @@
 /* Results dropdown */
 .wp-ajax-select-results {
     position: absolute;
-    top: calc(100% - 1px);
+    top: 100%;
     left: 0;
     right: 0;
+    margin-top: 4px;
     max-height: 200px;
     overflow-y: auto;
-    background: var(--wp-ajax-select-bg);
-    border: 1px solid var(--wp-ajax-select-border);
-    border-radius: 0 0 4px 4px;
-    box-shadow: 0 2px 6px var(--wp-ajax-select-shadow);
-    z-index: 1000;
+    background: #fff;
+    border: 1px solid #8c8f94;
+    border-radius: 4px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    z-index: 10000;
     display: none;
     box-sizing: border-box;
-}
-
-/* Border color matches input when focused */
-.wp-ajax-select-input:focus ~ .wp-ajax-select-results {
-    border-color: var(--wp-ajax-select-border-focus);
-}
-
-/* Scrollbar styling */
-.wp-ajax-select-results::-webkit-scrollbar {
-    width: 8px;
-}
-
-.wp-ajax-select-results::-webkit-scrollbar-track {
-    background: var(--wp-ajax-select-scrollbar-track);
-}
-
-.wp-ajax-select-results::-webkit-scrollbar-thumb {
-    background: var(--wp-ajax-select-scrollbar-thumb);
-    border-radius: 4px;
-}
-
-.wp-ajax-select-results::-webkit-scrollbar-thumb:hover {
-    background: var(--wp-ajax-select-scrollbar-thumb-hover);
 }
 
 /* Result items */
 .wp-ajax-select-item {
     padding: 8px 12px;
     cursor: pointer;
-    border-bottom: 1px solid var(--wp-ajax-select-item-border);
+    border-bottom: 1px solid #f0f0f1;
     transition: background-color 0.15s;
+    font-size: 14px;
 }
 
 .wp-ajax-select-item:last-child {
@@ -151,14 +123,14 @@
 
 .wp-ajax-select-item:hover,
 .wp-ajax-select-item.active {
-    background: var(--wp-ajax-select-item-hover-bg);
-    color: var(--wp-ajax-select-item-hover-text);
+    background: #2271b1;
+    color: #fff;
 }
 
 /* Empty state */
 .wp-ajax-select-empty {
     padding: 12px;
-    color: var(--wp-ajax-select-text-muted);
+    color: #646970;
     text-align: center;
     font-style: italic;
 }
@@ -166,7 +138,7 @@
 /* Loading state */
 .wp-ajax-select-loading {
     padding: 12px;
-    color: var(--wp-ajax-select-text-muted);
+    color: #646970;
     text-align: center;
 }
 
@@ -176,9 +148,9 @@
     width: 14px;
     height: 14px;
     margin-right: 8px;
-    border: 2px solid var(--wp-ajax-select-spinner-bg);
+    border: 2px solid #dcdcde;
     border-radius: 50%;
-    border-top-color: var(--wp-ajax-select-spinner-color);
+    border-top-color: #2271b1;
     animation: wp-ajax-select-spin 0.8s linear infinite;
     vertical-align: middle;
 }
@@ -187,6 +159,29 @@
     to {
         transform: rotate(360deg);
     }
+}
+
+/* Scrollbar */
+.wp-ajax-select-results::-webkit-scrollbar {
+    width: 8px;
+}
+
+.wp-ajax-select-results::-webkit-scrollbar-track {
+    background: #f0f0f1;
+}
+
+.wp-ajax-select-results::-webkit-scrollbar-thumb {
+    background: #c3c4c7;
+    border-radius: 4px;
+}
+
+.wp-ajax-select-results::-webkit-scrollbar-thumb:hover {
+    background: #8c8f94;
+}
+
+/* Inside flyout adjustments */
+.wp-flyout-field .wp-ajax-select-input {
+    height: 32px;
 }
 
 /* Responsive */

@@ -1,13 +1,22 @@
 /**
- * WordPress AJAX Select - Simple Arrays Only
+ * WordPress AJAX Select Component
+ *
+ * @package ArrayPress\WPFlyout
+ * @version 1.0.0
  */
-
 (function ($) {
     'use strict';
 
     class WPAjaxSelect {
         constructor(element, options = {}) {
             this.$select = $(element);
+
+            // Skip if already initialized
+            if (this.$select.data('wpAjaxSelectInitialized')) {
+                return;
+            }
+
+            this.$select.data('wpAjaxSelectInitialized', true);
 
             // Parse all data-ajax-* attributes
             const dataOptions = this.parseDataAttributes();
@@ -18,12 +27,12 @@
                 ajax: null,
                 nonce: null,
                 ajaxUrl: null,
-                minLength: 3,  // Changed to 3 - prevents unnecessary initial loads
+                minLength: 3,
                 delay: 300,
                 initialResults: 20,
                 emptyOption: null,
-                value: null,  // Initial value
-                text: null    // Initial text
+                value: null,
+                text: null
             }, dataOptions, options);
 
             this.searchTimeout = null;
@@ -35,16 +44,11 @@
             const attrs = {};
             const data = this.$select.data();
 
-            // Map data attributes to options
-            // data-ajax="action" becomes ajax: "action"
-            // data-placeholder="..." becomes placeholder: "..."
             Object.keys(data).forEach(key => {
-                // Convert to camelCase and handle values
                 let value = data[key];
                 if (value === 'true') value = true;
                 else if (value === 'false') value = false;
                 else if (!isNaN(value) && value !== '') value = Number(value);
-
                 attrs[key] = value;
             });
 
@@ -53,7 +57,10 @@
 
         init() {
             // Auto-initialize if ajax action is specified
-            if (!this.options.ajax) return;
+            if (!this.options.ajax) {
+                console.warn('WPAjaxSelect: No ajax action specified for', this.$select[0]);
+                return;
+            }
 
             // Add empty option if configured and doesn't exist
             if (this.options.emptyOption !== null && this.$select.find('option[value=""]').length === 0) {
@@ -96,6 +103,8 @@
             if (selectedOption.length && selectedOption.val()) {
                 const text = selectedOption.text().trim();
                 this.$input.val(text);
+                this.$input.prop('readonly', true);
+                this.$container.addClass('wp-ajax-select-has-value');
                 this.$clear.show();
             } else {
                 this.$clear.hide();
@@ -105,29 +114,41 @@
         }
 
         bindEvents() {
-            // Type to search
-            this.$input.on('input', () => {
-                clearTimeout(this.searchTimeout);
-                const term = this.$input.val();
+            const self = this;
+
+            // Type to search - only if not readonly
+            this.$input.on('input', function () {
+                if ($(this).prop('readonly')) {
+                    return;
+                }
+
+                clearTimeout(self.searchTimeout);
+                const term = $(this).val();
 
                 if (term.length === 0) {
                     // Empty input - show initial results
-                    if (!this.resultsLoaded) {
-                        this.loadResults('');
+                    if (!self.resultsLoaded) {
+                        self.loadResults('');
                     } else {
-                        this.searchTimeout = setTimeout(() => {
-                            this.search('');
-                        }, this.options.delay);
+                        self.searchTimeout = setTimeout(() => {
+                            self.search('');
+                        }, self.options.delay);
                     }
-                } else if (term.length < this.options.minLength) {
+                } else if (term.length < self.options.minLength) {
                     // Not enough characters - hide results
-                    this.$results.empty().hide();
-
+                    self.$results.empty().hide();
                 } else {
                     // Enough characters - search
-                    this.searchTimeout = setTimeout(() => {
-                        this.search(term);
-                    }, this.options.delay);
+                    self.searchTimeout = setTimeout(() => {
+                        self.search(term);
+                    }, self.options.delay);
+                }
+            });
+
+            // Click on input when readonly - focus for clear button visibility
+            this.$input.on('click', function () {
+                if ($(this).prop('readonly')) {
+                    $(this).blur(); // Prevent focus on readonly
                 }
             });
 
@@ -141,6 +162,12 @@
             // Click arrow toggles dropdown
             this.$arrow.on('click', (e) => {
                 e.stopPropagation();
+
+                // If has value, clear it instead of opening dropdown
+                if (this.$container.hasClass('wp-ajax-select-has-value')) {
+                    return;
+                }
+
                 this.$input.focus();
 
                 if (this.$results.is(':visible')) {
@@ -154,8 +181,12 @@
                 }
             });
 
-            // Focus - show initial results
+            // Focus - show initial results only if not readonly
             this.$input.on('focus', () => {
+                if (this.$input.prop('readonly')) {
+                    return;
+                }
+
                 if (!this.resultsLoaded) {
                     this.loadResults('');
                 } else if (this.$results.children().length) {
@@ -178,6 +209,16 @@
 
             // Keyboard nav
             this.$input.on('keydown', (e) => {
+                // If readonly and not tab/shift/escape, prevent
+                if (this.$input.prop('readonly') && e.which !== 9 && e.which !== 16 && e.which !== 27) {
+                    if (e.which === 8 || e.which === 46) { // Backspace or Delete
+                        e.preventDefault();
+                        this.clear();
+                        return;
+                    }
+                    return;
+                }
+
                 const $items = this.$results.find('.wp-ajax-select-item');
                 const $active = this.$results.find('.active');
                 let index = $items.index($active);
@@ -232,16 +273,14 @@
         }
 
         getNonce() {
-            // Priority: options > data attribute > globals
             return this.options.nonce || '';
         }
 
         fetchInitialText(value) {
-            // Fetch text for the initial value
             const data = {
                 action: this.options.ajax,
-                search: '',  // Empty search
-                initial_value: value,  // Pass the specific value to fetch
+                search: '',
+                initial_value: value,
                 limit: 1,
                 _wpnonce: this.getNonce()
             };
@@ -263,7 +302,7 @@
                         }
 
                         // Find the matching item
-                        const item = results.find(r => r.value === value);
+                        const item = results.find(r => String(r.value) === String(value));
                         if (item) {
                             // Add option and set value
                             if (!this.$select.find(`option[value="${value}"]`).length) {
@@ -274,6 +313,8 @@
                             // Update input if it exists
                             if (this.$input) {
                                 this.$input.val(item.text);
+                                this.$input.prop('readonly', true);
+                                this.$container.addClass('wp-ajax-select-has-value');
                                 this.$clear.show();
                             }
                         }
@@ -301,6 +342,10 @@
             if (nonce) {
                 data._wpnonce = nonce;
             }
+
+            // Show loading state
+            this.$results.html('<div class="wp-ajax-select-loading">Loading...</div>');
+            this.openDropdown();
 
             $.ajax({
                 url: this.getAjaxUrl(),
@@ -354,7 +399,12 @@
 
             this.$select.val(value).trigger('change');
             this.$input.val(text);
+
+            // Make input read-only when value selected
+            this.$input.prop('readonly', true);
+            this.$container.addClass('wp-ajax-select-has-value');
             this.$clear.show();
+
             this.closeDropdown();
         }
 
@@ -367,6 +417,8 @@
             if ($option.length) {
                 this.$select.val(value).trigger('change');
                 this.$input.val($option.text());
+                this.$input.prop('readonly', true);
+                this.$container.addClass('wp-ajax-select-has-value');
                 this.$clear.show();
             }
             return this;
@@ -375,13 +427,19 @@
         clear() {
             this.$select.val('').trigger('change');
             this.$input.val('');
+
+            // Remove read-only when cleared
+            this.$input.prop('readonly', false);
+            this.$container.removeClass('wp-ajax-select-has-value');
             this.$clear.hide();
+
             this.resultsLoaded = false;
         }
 
         destroy() {
             this.$container.remove();
             this.$select.show();
+            this.$select.removeData('wpAjaxSelectInitialized');
         }
     }
 
@@ -393,9 +451,22 @@
         });
     };
 
-    // Auto-initialize on document ready
+    // Initialize on document ready
     $(document).ready(function () {
         $('[data-ajax]').wpAjaxSelect();
     });
+
+    // Initialize when flyouts open
+    $(document).on('wpflyout:opened', function (e, data) {
+        // Find any uninitialized ajax selects in the flyout
+        $(data.element).find('select[data-ajax]').each(function () {
+            if (!$(this).data('wpAjaxSelectInitialized')) {
+                new WPAjaxSelect(this);
+            }
+        });
+    });
+
+    // Export to window for manual initialization
+    window.WPAjaxSelect = WPAjaxSelect;
 
 })(jQuery);
