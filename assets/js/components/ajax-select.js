@@ -67,18 +67,21 @@
                 this.$select.prepend(`<option value="">${this.options.emptyOption}</option>`);
             }
 
+            // Store whether we need to fetch initial text
+            this.needsInitialFetch = false;
+
             // Handle initial value
             if (this.options.value) {
                 if (this.options.text) {
-                    // Both value and text provided - use them
+                    // Both value and text provided - use them directly
                     if (!this.$select.find(`option[value="${this.options.value}"]`).length) {
                         this.$select.append(`<option value="${this.options.value}">${this.options.text}</option>`);
                     }
                     this.$select.val(this.options.value);
                 } else {
-                    // Only value provided - fetch the text
+                    // Only value provided - need to fetch the text
                     this.$select.val(this.options.value);
-                    this.fetchInitialText(this.options.value);
+                    this.needsInitialFetch = true;
                 }
             }
 
@@ -111,6 +114,11 @@
             }
 
             this.bindEvents();
+
+            // Fetch initial text if needed (after events are bound)
+            if (this.needsInitialFetch) {
+                this.fetchInitialText(this.options.value);
+            }
         }
 
         bindEvents() {
@@ -145,10 +153,11 @@
                 }
             });
 
-            // Click on input when readonly - focus for clear button visibility
+            // Click on input when readonly - focus for keyboard access
             this.$input.on('click', function () {
                 if ($(this).prop('readonly')) {
-                    $(this).blur(); // Prevent focus on readonly
+                    // Keep focus for keyboard shortcuts to work
+                    $(this).focus();
                 }
             });
 
@@ -163,8 +172,9 @@
             this.$arrow.on('click', (e) => {
                 e.stopPropagation();
 
-                // If has value, clear it instead of opening dropdown
+                // If has value, don't open dropdown
                 if (this.$container.hasClass('wp-ajax-select-has-value')) {
+                    this.$input.focus();
                     return;
                 }
 
@@ -207,15 +217,31 @@
                 }
             });
 
-            // Keyboard nav
+            // Keyboard navigation
             this.$input.on('keydown', (e) => {
-                // If readonly and not tab/shift/escape, prevent
-                if (this.$input.prop('readonly') && e.which !== 9 && e.which !== 16 && e.which !== 27) {
-                    if (e.which === 8 || e.which === 46) { // Backspace or Delete
-                        e.preventDefault();
-                        this.clear();
+                // Handle special keys when readonly (has selected value)
+                if (this.$input.prop('readonly')) {
+                    // Only process delete keys when input is focused
+                    if (document.activeElement === this.$input[0]) {
+                        if (e.which === 8 || e.which === 46) { // Backspace or Delete
+                            e.preventDefault();
+                            this.clear();
+                            return;
+                        }
+                        if (e.which === 27) { // Escape
+                            e.preventDefault();
+                            this.clear();
+                            return;
+                        }
+                    }
+
+                    // Allow tab navigation
+                    if (e.which === 9 || e.which === 16) {
                         return;
                     }
+
+                    // Block other keys when readonly
+                    e.preventDefault();
                     return;
                 }
 
@@ -277,6 +303,8 @@
         }
 
         fetchInitialText(value) {
+            if (!value) return;
+
             const data = {
                 action: this.options.ajax,
                 search: '',
@@ -284,6 +312,10 @@
                 limit: 1,
                 _wpnonce: this.getNonce()
             };
+
+            // Show loading state in input
+            this.$input.val('Loading...');
+            this.$input.prop('readonly', true);
 
             $.ajax({
                 url: this.getAjaxUrl(),
@@ -296,7 +328,7 @@
                         // Convert to array format if needed
                         if (!Array.isArray(results) && typeof results === 'object') {
                             results = Object.entries(results).map(([key, val]) => ({
-                                value: key,
+                                value: String(key),
                                 text: val
                             }));
                         }
@@ -310,15 +342,24 @@
                             }
                             this.$select.val(value);
 
-                            // Update input if it exists
-                            if (this.$input) {
-                                this.$input.val(item.text);
-                                this.$input.prop('readonly', true);
-                                this.$container.addClass('wp-ajax-select-has-value');
-                                this.$clear.show();
-                            }
+                            // Update input
+                            this.$input.val(item.text);
+                            this.$input.prop('readonly', true);
+                            this.$container.addClass('wp-ajax-select-has-value');
+                            this.$clear.show();
+                        } else {
+                            // Item not found - clear the field
+                            this.$input.val('');
+                            this.$input.prop('readonly', false);
+                            this.$input.attr('placeholder', this.options.placeholder);
                         }
                     }
+                },
+                error: () => {
+                    // Error fetching - clear the field
+                    this.$input.val('');
+                    this.$input.prop('readonly', false);
+                    this.$input.attr('placeholder', this.options.placeholder);
                 }
             });
         }
@@ -358,7 +399,7 @@
                         // Convert simple key/value object to array format
                         if (!Array.isArray(results) && typeof results === 'object') {
                             results = Object.entries(results).map(([key, value]) => ({
-                                value: key,
+                                value: String(key),
                                 text: value
                             }));
                         }
@@ -433,6 +474,11 @@
             this.$container.removeClass('wp-ajax-select-has-value');
             this.$clear.hide();
 
+            // Reset placeholder
+            this.$input.attr('placeholder', this.options.placeholder);
+
+            // Clear results but don't mark as not loaded
+            this.$results.empty().hide();
             this.resultsLoaded = false;
         }
 

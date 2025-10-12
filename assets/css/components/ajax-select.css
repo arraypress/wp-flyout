@@ -1,5 +1,6 @@
 /**
  * WordPress AJAX Select - Component Styles
+ * Matches WP Flyout form field styling
  */
 
 .wp-ajax-select {
@@ -13,34 +14,36 @@
     width: 100%;
 }
 
+/* Match the core form field styles exactly */
 .wp-ajax-select-input {
     width: 100%;
-    padding: 0 60px 0 8px;
-    height: 36px; /* Match WordPress admin inputs */
+    padding: 8px 60px 8px 8px; /* Same padding as core, with room for buttons */
     border: 1px solid #8c8f94;
     border-radius: 4px;
     font-size: 14px;
-    line-height: 2;
     background: #fff;
+    transition: border-color 0.15s;
     box-sizing: border-box;
+    line-height: normal;
+    height: auto; /* Let padding determine height */
 }
 
 .wp-ajax-select-input:focus {
     border-color: #2271b1;
     box-shadow: 0 0 0 1px #2271b1;
-    outline: none;
+    outline: 2px solid transparent;
 }
 
 /* When value is selected, prevent editing */
 .wp-ajax-select-has-value .wp-ajax-select-input {
-    background: #f0f0f1;
+    background: #f6f7f7;
     cursor: default;
 }
 
 /* Clear button */
 .wp-ajax-select-clear {
     position: absolute;
-    right: 30px;
+    right: 32px;
     top: 50%;
     transform: translateY(-50%);
     width: 20px;
@@ -103,7 +106,7 @@
     border: 1px solid #8c8f94;
     border-radius: 4px;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-    z-index: 10000;
+    z-index: 160001; /* Higher than flyout */
     display: none;
     box-sizing: border-box;
 }
@@ -115,6 +118,7 @@
     border-bottom: 1px solid #f0f0f1;
     transition: background-color 0.15s;
     font-size: 14px;
+    line-height: 1.4;
 }
 
 .wp-ajax-select-item:last-child {
@@ -133,6 +137,7 @@
     color: #646970;
     text-align: center;
     font-style: italic;
+    font-size: 13px;
 }
 
 /* Loading state */
@@ -140,6 +145,7 @@
     padding: 12px;
     color: #646970;
     text-align: center;
+    font-size: 13px;
 }
 
 .wp-ajax-select-loading:before {
@@ -161,7 +167,7 @@
     }
 }
 
-/* Scrollbar */
+/* Scrollbar styling to match WP admin */
 .wp-ajax-select-results::-webkit-scrollbar {
     width: 8px;
 }
@@ -179,19 +185,15 @@
     background: #8c8f94;
 }
 
-/* Inside flyout adjustments */
-.wp-flyout-field .wp-ajax-select-input {
-    height: 32px;
-}
-
-/* Responsive */
+/* Responsive - match core responsive styles */
 @media screen and (max-width: 782px) {
     .wp-ajax-select-input {
-        height: 40px;
+        padding: 10px 60px 10px 10px;
         font-size: 16px;
     }
 
     .wp-ajax-select-item {
         padding: 10px 12px;
+        font-size: 16px;
     }
 }
