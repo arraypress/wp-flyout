@@ -1,18 +1,19 @@
 /**
  * WP Flyout Order Items Component
  */
-(function($) {
+
+(function ($) {
     'use strict';
 
     const OrderItems = {
-        init: function() {
+        init: function () {
             // Use body delegation for dynamic content
             $('body').on('click', '.wp-flyout-order-items [data-action="add-product"]', this.handleAdd.bind(this));
             $('body').on('click', '.wp-flyout-order-items [data-action="remove-item"]', this.handleRemove.bind(this));
             $('body').on('change', '.wp-flyout-order-items [data-action="update-quantity"]', this.handleQuantityChange.bind(this));
 
             // Enter key on selector
-            $('body').on('keypress', '.wp-flyout-order-items .product-selector', function(e) {
+            $('body').on('keypress', '.wp-flyout-order-items .product-selector', function (e) {
                 if (e.which === 13) {
                     e.preventDefault();
                     $(this).siblings('[data-action="add-product"]').click();
@@ -20,13 +21,13 @@
             });
 
             // Initialize on flyout open
-            $(document).on('wpflyout:opened', function(e, data) {
+            $(document).on('wpflyout:opened', function (e, data) {
                 OrderItems.initComponent($(data.element));
             });
         },
 
-        initComponent: function($container) {
-            $container.find('.wp-flyout-order-items').each(function() {
+        initComponent: function ($container) {
+            $container.find('.wp-flyout-order-items').each(function () {
                 const $component = $(this);
                 if ($component.data('mode') === 'edit') {
                     OrderItems.recalculateTotals($component);
@@ -34,7 +35,7 @@
             });
         },
 
-        handleAdd: function(e) {
+        handleAdd: function (e) {
             e.preventDefault();
             const $button = $(e.currentTarget);
             const $component = $button.closest('.wp-flyout-order-items');
@@ -81,9 +82,9 @@
             $selector.val('').focus();
         },
 
-        findExistingItem: function($component, product) {
+        findExistingItem: function ($component, product) {
             let $found = null;
-            $component.find('.order-item').each(function() {
+            $component.find('.order-item').each(function () {
                 const $row = $(this);
                 const productId = $row.find('[name*="[product_id]"]').val();
                 const priceId = $row.find('[name*="[price_id]"]').val();
@@ -97,7 +98,7 @@
             return $found;
         },
 
-        addItemToTable: function($component, product) {
+        addItemToTable: function ($component, product) {
             let $tbody = $component.find('.order-items-list');
             const $emptyMessage = $component.find('.order-items-empty');
 
@@ -165,7 +166,7 @@
             this.recalculateTotals($component);
         },
 
-        handleRemove: function(e) {
+        handleRemove: function (e) {
             e.preventDefault();
             const $button = $(e.currentTarget);
             const $row = $button.closest('.order-item');
@@ -198,7 +199,7 @@
             });
         },
 
-        handleQuantityChange: function(e) {
+        handleQuantityChange: function (e) {
             const $input = $(e.currentTarget);
             const $component = $input.closest('.wp-flyout-order-items');
             const $row = $input.closest('.order-item');
@@ -217,14 +218,14 @@
             this.recalculateTotals($component);
         },
 
-        reindexItems: function($component) {
+        reindexItems: function ($component) {
             const namePrefix = $component.data('name-prefix') || 'order_items';
 
-            $component.find('.order-item').each(function(index) {
+            $component.find('.order-item').each(function (index) {
                 const $item = $(this);
                 $item.attr('data-index', index);
 
-                $item.find('input').each(function() {
+                $item.find('input').each(function () {
                     const name = $(this).attr('name');
                     if (name) {
                         $(this).attr('name', name.replace(/\[\d+\]/, '[' + index + ']'));
@@ -233,12 +234,12 @@
             });
         },
 
-        recalculateTotals: function($component) {
+        recalculateTotals: function ($component) {
             let subtotal = 0;
             const currency = $component.data('currency') || '$';
             const currencyPos = $component.data('currency-position') || 'before';
 
-            $component.find('.order-item').each(function() {
+            $component.find('.order-item').each(function () {
                 const $row = $(this);
                 const price = parseFloat($row.find('.column-price').data('price')) || 0;
                 const quantity = parseInt($row.find('.quantity-input').val()) || 1;
@@ -256,17 +257,17 @@
             }
 
             // Trigger event
-            $component.trigger('orderitems:updated', { subtotal: subtotal });
+            $component.trigger('orderitems:updated', {subtotal: subtotal});
         },
 
-        formatCurrency: function(amount, symbol, position) {
+        formatCurrency: function (amount, symbol, position) {
             const formatted = amount.toFixed(2);
             return position === 'after' ? formatted + symbol : symbol + formatted;
         }
     };
 
     // Initialize
-    $(function() {
+    $(function () {
         OrderItems.init();
     });
 

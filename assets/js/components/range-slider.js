@@ -6,7 +6,8 @@
  * @package     ArrayPress\WPFlyout
  * @version     1.0.0
  */
-(function($) {
+
+(function ($) {
     'use strict';
 
     /**
@@ -16,14 +17,14 @@
         /**
          * Initialize all range sliders
          */
-        init: function() {
-            $('.wp-flyout-range-slider').each(function() {
+        init: function () {
+            $('.wp-flyout-range-slider').each(function () {
                 RangeSlider.initSlider($(this));
             });
 
             // Initialize on flyout open
-            $(document).on('wpflyout:opened', function(e, data) {
-                $(data.element).find('.wp-flyout-range-slider').each(function() {
+            $(document).on('wpflyout:opened', function (e, data) {
+                $(data.element).find('.wp-flyout-range-slider').each(function () {
                     RangeSlider.initSlider($(this));
                 });
             });
@@ -32,7 +33,7 @@
         /**
          * Initialize a single slider
          */
-        initSlider: function($container) {
+        initSlider: function ($container) {
             const $minSlider = $container.find('.range-slider-min');
             const $maxSlider = $container.find('.range-slider-max');
             const $minInput = $container.find('.range-input-min');
@@ -65,7 +66,7 @@
             };
 
             // Handle min slider
-            $minSlider.on('input', function() {
+            $minSlider.on('input', function () {
                 let minVal = parseFloat($(this).val());
                 let maxVal = parseFloat($maxSlider.val());
 
@@ -85,7 +86,7 @@
             });
 
             // Handle max slider
-            $maxSlider.on('input', function() {
+            $maxSlider.on('input', function () {
                 let maxVal = parseFloat($(this).val());
                 let minVal = parseFloat($minSlider.val());
 
@@ -105,7 +106,7 @@
             });
 
             // Handle min input
-            $minInput.on('change', function() {
+            $minInput.on('change', function () {
                 let minVal = parseFloat($(this).val());
                 let maxVal = parseFloat($maxInput.val() || $maxSlider.val());
 
@@ -123,7 +124,7 @@
             });
 
             // Handle max input
-            $maxInput.on('change', function() {
+            $maxInput.on('change', function () {
                 let maxVal = parseFloat($(this).val());
                 let minVal = parseFloat($minInput.val() || $minSlider.val());
 
@@ -146,7 +147,7 @@
     };
 
     // Initialize when ready
-    $(function() {
+    $(function () {
         RangeSlider.init();
     });
 

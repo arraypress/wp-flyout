@@ -1,6 +1,7 @@
 /**
  * WP Flyout Notes Component
  */
+
 (function ($) {
     'use strict';
 

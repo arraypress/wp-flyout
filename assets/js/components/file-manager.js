@@ -1,6 +1,7 @@
 /**
  * WP Flyout File Manager Component
  */
+
 (function ($) {
     'use strict';
 

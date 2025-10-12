@@ -3,11 +3,12 @@
  * Form Field Component with Helper Methods
  *
  * Basic form field rendering and utility methods for form handling.
+ * Supports standard HTML5 inputs, textareas, selects, and AJAX-powered selects.
  *
  * @package     ArrayPress\WPFlyout\Components
  * @copyright   Copyright (c) 2025, ArrayPress Limited
  * @license     GPL2+
- * @version     3.0.0
+ * @version     3.1.0
  * @author      David Sherlock
  */
 
@@ -15,7 +16,6 @@ declare( strict_types=1 );
 
 namespace ArrayPress\WPFlyout\Components;
 
-use ArrayPress\WPAjaxSelect\AjaxSelect;
 use ArrayPress\WPFlyout\Traits\Renderable;
 
 /**
@@ -39,13 +39,35 @@ class FormField {
     /**
      * Constructor
      *
-     * @param array $field Field configuration.
+     * @param array $field Field configuration
      *
      * @since 3.0.0
      *
      */
     public function __construct( array $field ) {
-        $defaults = [
+        $type     = $field['type'] ?? 'text';
+        $defaults = self::get_field_defaults( $type );
+
+        $this->field         = array_merge( $defaults, $field );
+        $this->field['type'] = $type; // Ensure type is set
+
+        // Auto-generate ID if not provided
+        if ( empty( $this->field['id'] ) && ! empty( $this->field['name'] ) ) {
+            $this->field['id'] = sanitize_key( $this->field['name'] );
+        }
+    }
+
+    /**
+     * Get field defaults by type
+     *
+     * @param string $type Field type
+     *
+     * @return array Default configuration
+     * @since 3.1.0
+     *
+     */
+    private static function get_field_defaults( string $type ): array {
+        $base_defaults = [
                 'type'        => 'text',
                 'name'        => '',
                 'id'          => '',
@@ -55,25 +77,52 @@ class FormField {
                 'placeholder' => '',
                 'required'    => false,
                 'disabled'    => false,
+                'readonly'    => false,
                 'class'       => 'regular-text',
-                'options'     => [],
-                'rows'        => 5,
         ];
 
-        $this->field = array_merge( $defaults, $field );
+        $type_defaults = [
+                'select'      => [
+                        'options'  => [],
+                        'multiple' => false,
+                ],
+                'textarea'    => [
+                        'rows' => 5,
+                        'cols' => 50,
+                ],
+                'number'      => [
+                        'min'  => null,
+                        'max'  => null,
+                        'step' => 1,
+                ],
+                'ajax_select' => [
+                        'ajax_action'     => '',
+                        'min_length'      => 3,
+                        'delay'           => 300,
+                        'initial_results' => 20,
+                        'empty_option'    => null,
+                        'text'            => '',
+                        'nonce'           => '',
+                        'ajax_url'        => '',
+                ],
+        ];
 
-        // Auto-generate ID if not provided.
-        if ( empty( $this->field['id'] ) && ! empty( $this->field['name'] ) ) {
-            $this->field['id'] = sanitize_key( $this->field['name'] );
-        }
+        return array_merge(
+                $base_defaults,
+                $type_defaults[ $type ] ?? []
+        );
     }
+
+    /* =========================================
+       FIELD FACTORY METHODS
+       ========================================= */
 
     /**
      * Create a text field
      *
-     * @param string $name  Field name.
-     * @param string $label Field label.
-     * @param array  $args  Additional arguments.
+     * @param string $name  Field name
+     * @param string $label Field label
+     * @param array  $args  Additional arguments
      *
      * @return self
      * @since 3.0.0
@@ -88,12 +137,130 @@ class FormField {
     }
 
     /**
+     * Create an email field
+     *
+     * @param string $name  Field name
+     * @param string $label Field label
+     * @param array  $args  Additional arguments
+     *
+     * @return self
+     * @since 3.1.0
+     *
+     */
+    public static function email( string $name, string $label, array $args = [] ): self {
+        return new self( array_merge( [
+                'type'        => 'email',
+                'name'        => $name,
+                'label'       => $label,
+                'placeholder' => 'you@example.com'
+        ], $args ) );
+    }
+
+    /**
+     * Create a URL field
+     *
+     * @param string $name  Field name
+     * @param string $label Field label
+     * @param array  $args  Additional arguments
+     *
+     * @return self
+     * @since 3.1.0
+     *
+     */
+    public static function url( string $name, string $label, array $args = [] ): self {
+        return new self( array_merge( [
+                'type'        => 'url',
+                'name'        => $name,
+                'label'       => $label,
+                'placeholder' => 'https://'
+        ], $args ) );
+    }
+
+    /**
+     * Create a number field
+     *
+     * @param string $name  Field name
+     * @param string $label Field label
+     * @param array  $args  Additional arguments
+     *
+     * @return self
+     * @since 3.1.0
+     *
+     */
+    public static function number( string $name, string $label, array $args = [] ): self {
+        return new self( array_merge( [
+                'type'  => 'number',
+                'name'  => $name,
+                'label' => $label
+        ], $args ) );
+    }
+
+    /**
+     * Create a telephone field
+     *
+     * @param string $name  Field name
+     * @param string $label Field label
+     * @param array  $args  Additional arguments
+     *
+     * @return self
+     * @since 3.1.0
+     *
+     */
+    public static function tel( string $name, string $label, array $args = [] ): self {
+        return new self( array_merge( [
+                'type'        => 'tel',
+                'name'        => $name,
+                'label'       => $label,
+                'placeholder' => '+1 (555) 123-4567'
+        ], $args ) );
+    }
+
+    /**
+     * Create a password field
+     *
+     * @param string $name  Field name
+     * @param string $label Field label
+     * @param array  $args  Additional arguments
+     *
+     * @return self
+     * @since 3.1.0
+     *
+     */
+    public static function password( string $name, string $label, array $args = [] ): self {
+        return new self( array_merge( [
+                'type'        => 'password',
+                'name'        => $name,
+                'label'       => $label,
+                'placeholder' => '••••••••'
+        ], $args ) );
+    }
+
+    /**
+     * Create a date field
+     *
+     * @param string $name  Field name
+     * @param string $label Field label
+     * @param array  $args  Additional arguments
+     *
+     * @return self
+     * @since 3.1.0
+     *
+     */
+    public static function date( string $name, string $label, array $args = [] ): self {
+        return new self( array_merge( [
+                'type'  => 'date',
+                'name'  => $name,
+                'label' => $label
+        ], $args ) );
+    }
+
+    /**
      * Create a select field
      *
-     * @param string $name    Field name.
-     * @param string $label   Field label.
-     * @param array  $options Options array.
-     * @param array  $args    Additional arguments.
+     * @param string $name    Field name
+     * @param string $label   Field label
+     * @param array  $options Options array
+     * @param array  $args    Additional arguments
      *
      * @return self
      * @since 3.0.0
@@ -111,9 +278,9 @@ class FormField {
     /**
      * Create a textarea field
      *
-     * @param string $name  Field name.
-     * @param string $label Field label.
-     * @param array  $args  Additional arguments.
+     * @param string $name  Field name
+     * @param string $label Field label
+     * @param array  $args  Additional arguments
      *
      * @return self
      * @since 3.0.0
@@ -156,10 +323,10 @@ class FormField {
     /**
      * Generate a hidden field
      *
-     * @param string $name  Field name.
-     * @param mixed  $value Field value.
+     * @param string $name  Field name
+     * @param mixed  $value Field value
      *
-     * @return string HTML for hidden field.
+     * @return string HTML for hidden field
      * @since 3.0.0
      *
      */
@@ -174,10 +341,10 @@ class FormField {
     /**
      * Generate a nonce field
      *
-     * @param string $action Nonce action.
-     * @param string $name   Field name (defaults to '_wpnonce').
+     * @param string $action Nonce action
+     * @param string $name   Field name (defaults to '_wpnonce')
      *
-     * @return string HTML for nonce field.
+     * @return string HTML for nonce field
      * @since 3.0.0
      *
      */
@@ -188,9 +355,9 @@ class FormField {
     /**
      * Generate multiple hidden fields
      *
-     * @param array $fields Array of name => value pairs.
+     * @param array $fields Array of name => value pairs
      *
-     * @return string HTML for all hidden fields.
+     * @return string HTML for all hidden fields
      * @since 3.0.0
      *
      */
@@ -206,12 +373,12 @@ class FormField {
     /**
      * Generate form metadata fields (ID and nonce)
      *
-     * @param string     $id_field_name Name of the ID field.
-     * @param int|string $id_value      Value of the ID.
-     * @param string     $nonce_action  Nonce action.
-     * @param string     $nonce_name    Nonce field name.
+     * @param string     $id_field_name Name of the ID field
+     * @param int|string $id_value      Value of the ID
+     * @param string     $nonce_action  Nonce action
+     * @param string     $nonce_name    Nonce field name
      *
-     * @return string HTML for metadata fields.
+     * @return string HTML for metadata fields
      * @since 3.0.0
      *
      */
@@ -228,9 +395,9 @@ class FormField {
     /**
      * Generate referer field
      *
-     * @param string $name Field name (defaults to '_wp_http_referer').
+     * @param string $name Field name (defaults to '_wp_http_referer')
      *
-     * @return string HTML for referer field.
+     * @return string HTML for referer field
      * @since 3.0.0
      *
      */
@@ -243,9 +410,9 @@ class FormField {
     /**
      * Generate action field for admin forms
      *
-     * @param string $action Action value.
+     * @param string $action Action value
      *
-     * @return string HTML for action field.
+     * @return string HTML for action field
      * @since 3.0.0
      *
      */
@@ -256,10 +423,10 @@ class FormField {
     /**
      * Generate a complete set of form security fields
      *
-     * @param string $nonce_action    Nonce action.
-     * @param bool   $include_referer Whether to include referer field.
+     * @param string $nonce_action    Nonce action
+     * @param bool   $include_referer Whether to include referer field
      *
-     * @return string HTML for security fields.
+     * @return string HTML for security fields
      * @since 3.0.0
      *
      */
@@ -280,14 +447,14 @@ class FormField {
     /**
      * Render the form field
      *
-     * @return string Generated HTML.
+     * @return string Generated HTML
      * @since 3.0.0
      *
      */
     public function render(): string {
         ob_start();
         ?>
-        <div class="wp-flyout-field">
+        <div class="wp-flyout-field field-type-<?php echo esc_attr( $this->field['type'] ); ?>">
             <?php if ( $this->field['label'] ) : ?>
                 <label for="<?php echo esc_attr( $this->field['id'] ); ?>">
                     <?php echo esc_html( $this->field['label'] ); ?>
@@ -310,7 +477,7 @@ class FormField {
     /**
      * Render the input element
      *
-     * @return string Generated HTML.
+     * @return string Generated HTML
      * @since 3.0.0
      *
      */
@@ -328,34 +495,81 @@ class FormField {
     }
 
     /**
-     * Render text input
+     * Render text-based input
      *
-     * @return string Generated HTML.
+     * @return string Generated HTML
      * @since 3.0.0
      *
      */
     private function render_text_input(): string {
-        $type = in_array( $this->field['type'], [ 'email', 'url', 'number', 'tel' ], true )
+        // Supported HTML5 input types
+        $valid_types = [
+                'text',
+                'email',
+                'url',
+                'number',
+                'tel',
+                'password',
+                'date',
+                'datetime-local',
+                'time',
+                'search',
+                'color',
+                'range'
+        ];
+
+        $type = in_array( $this->field['type'], $valid_types, true )
                 ? $this->field['type']
                 : 'text';
 
-        return sprintf(
-                '<input type="%s" id="%s" name="%s" value="%s" class="%s" placeholder="%s" %s %s>',
-                esc_attr( $type ),
-                esc_attr( $this->field['id'] ),
-                esc_attr( $this->field['name'] ),
-                esc_attr( $this->field['value'] ),
-                esc_attr( $this->field['class'] ),
-                esc_attr( $this->field['placeholder'] ),
-                $this->field['required'] ? 'required' : '',
-                $this->field['disabled'] ? 'disabled' : ''
-        );
+        $attrs = [
+                'type'        => $type,
+                'id'          => $this->field['id'],
+                'name'        => $this->field['name'],
+                'value'       => $this->field['value'],
+                'class'       => $this->field['class'],
+                'placeholder' => $this->field['placeholder'],
+        ];
+
+        // Add type-specific attributes
+        if ( $type === 'number' ) {
+            if ( $this->field['min'] !== null ) {
+                $attrs['min'] = $this->field['min'];
+            }
+            if ( $this->field['max'] !== null ) {
+                $attrs['max'] = $this->field['max'];
+            }
+            if ( $this->field['step'] !== null ) {
+                $attrs['step'] = $this->field['step'];
+            }
+        }
+
+        // Build attribute string
+        $attr_string = '';
+        foreach ( $attrs as $key => $value ) {
+            if ( $value !== '' && $value !== null ) {
+                $attr_string .= sprintf( ' %s="%s"', $key, esc_attr( (string) $value ) );
+            }
+        }
+
+        // Add boolean attributes
+        if ( $this->field['required'] ) {
+            $attr_string .= ' required';
+        }
+        if ( $this->field['disabled'] ) {
+            $attr_string .= ' disabled';
+        }
+        if ( $this->field['readonly'] ) {
+            $attr_string .= ' readonly';
+        }
+
+        return sprintf( '<input%s>', $attr_string );
     }
 
     /**
-     * Render select
+     * Render select field
      *
-     * @return string Generated HTML.
+     * @return string Generated HTML
      * @since 3.0.0
      *
      */
@@ -363,16 +577,23 @@ class FormField {
         ob_start();
         ?>
         <select id="<?php echo esc_attr( $this->field['id'] ); ?>"
-                name="<?php echo esc_attr( $this->field['name'] ); ?>"
+                name="<?php echo esc_attr( $this->field['name'] ); ?><?php echo $this->field['multiple'] ? '[]' : ''; ?>"
                 class="<?php echo esc_attr( $this->field['class'] ); ?>"
                 <?php echo $this->field['required'] ? 'required' : ''; ?>
-                <?php echo $this->field['disabled'] ? 'disabled' : ''; ?>>
+                <?php echo $this->field['disabled'] ? 'disabled' : ''; ?>
+                <?php echo $this->field['multiple'] ? 'multiple' : ''; ?>>
             <?php if ( $this->field['placeholder'] ) : ?>
                 <option value=""><?php echo esc_html( $this->field['placeholder'] ); ?></option>
             <?php endif; ?>
             <?php foreach ( $this->field['options'] as $value => $label ) : ?>
                 <option value="<?php echo esc_attr( $value ); ?>"
-                        <?php selected( $this->field['value'], $value ); ?>>
+                        <?php
+                        if ( $this->field['multiple'] && is_array( $this->field['value'] ) ) {
+                            selected( in_array( $value, $this->field['value'], true ) );
+                        } else {
+                            selected( $this->field['value'], $value );
+                        }
+                        ?>>
                     <?php echo esc_html( $label ); ?>
                 </option>
             <?php endforeach; ?>
@@ -382,22 +603,24 @@ class FormField {
     }
 
     /**
-     * Render textarea
+     * Render textarea field
      *
-     * @return string Generated HTML.
+     * @return string Generated HTML
      * @since 3.0.0
      *
      */
     private function render_textarea(): string {
         return sprintf(
-                '<textarea id="%s" name="%s" class="%s" rows="%d" placeholder="%s" %s %s>%s</textarea>',
+                '<textarea id="%s" name="%s" class="%s" rows="%d" cols="%d" placeholder="%s" %s %s %s>%s</textarea>',
                 esc_attr( $this->field['id'] ),
                 esc_attr( $this->field['name'] ),
                 esc_attr( $this->field['class'] ),
                 absint( $this->field['rows'] ),
+                absint( $this->field['cols'] ),
                 esc_attr( $this->field['placeholder'] ),
                 $this->field['required'] ? 'required' : '',
                 $this->field['disabled'] ? 'disabled' : '',
+                $this->field['readonly'] ? 'readonly' : '',
                 esc_textarea( $this->field['value'] )
         );
     }
@@ -411,8 +634,10 @@ class FormField {
      */
     private function render_ajax_select(): string {
 
-        // Load the assets
-        AjaxSelect::load_assets();
+        // Check if the utility function exists
+        if ( ! function_exists( 'wp_ajax_select' ) ) {
+            return $this->render_select();
+        }
 
         // Build configuration for AJAX select
         $config = [
@@ -443,7 +668,8 @@ class FormField {
             $config['ajax_url'] = $this->field['ajax_url'];
         }
 
-        return AjaxSelect::field( $config );
+        // Use the utility function which handles asset loading automatically
+        return wp_ajax_select( $config );
     }
 
 }

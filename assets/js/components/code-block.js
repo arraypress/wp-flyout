@@ -6,10 +6,11 @@
  * @package     ArrayPress\WPFlyout
  * @version     1.0.0
  */
-(function($) {
+
+(function ($) {
     'use strict';
 
-    $(document).on('click', '.code-block-copy', function(e) {
+    $(document).on('click', '.code-block-copy', function (e) {
         e.preventDefault();
 
         const $button = $(this);
