@@ -140,7 +140,8 @@ class Assets {
 		$version   = defined( 'WP_DEBUG' ) && WP_DEBUG ? time() : '3.0.0';
 
 		// Register each core CSS file with constructed handles
-		$deps = [ 'dashicons' ];
+		$deps        = [ 'dashicons' ];
+		$last_handle = '';
 		foreach ( self::$core_styles as $css_file ) {
 			$handle = self::get_handle_from_path( $css_file );
 
@@ -153,8 +154,12 @@ class Assets {
 			);
 
 			// Make each subsequent file depend on the previous one
-			$deps = [ $handle ];
+			$deps        = [ $handle ];
+			$last_handle = $handle;
 		}
+
+		// Register virtual 'wp-flyout' handle that depends on all core styles
+		wp_register_style( 'wp-flyout', false, [ $last_handle ], $version );
 
 		// Register core JavaScript
 		\wp_register_composer_script_from_file(
@@ -219,11 +224,8 @@ class Assets {
 	 * @return void
 	 */
 	public static function enqueue(): void {
-		// Enqueue all core CSS files
-		foreach ( self::$core_styles as $css_file ) {
-			wp_enqueue_style( self::get_handle_from_path( $css_file ) );
-		}
-
+		// This will enqueue all core CSS via dependencies
+		wp_enqueue_style( 'wp-flyout' );
 		wp_enqueue_script( 'wp-flyout' );
 	}
 
