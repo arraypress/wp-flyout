@@ -216,13 +216,14 @@
          */
         handleRemove: function (e) {
             e.preventDefault();
-            e.stopPropagation();
 
             const self = this;
             const $button = $(e.currentTarget);
             const $item = $button.closest('.file-manager-item');
             const $list = $item.closest('.file-manager-list');
             const $manager = $list.closest('.wp-flyout-file-manager');
+
+            const currentCount = $list.find('.file-manager-item').length;
 
             // Get item data before removal/clearing
             const itemData = {
@@ -231,8 +232,6 @@
                 id: $item.find('[data-field="id"]').val(),
                 index: $item.index()
             };
-
-            const currentCount = $list.find('.file-manager-item').length;
 
             // Fire before remove event (cancellable)
             const beforeRemoveEvent = $.Event('filemanager:beforeremove');
@@ -246,39 +245,14 @@
                 return;
             }
 
-            // If this is the only item, just clear the fields, don't remove the row
-            if (currentCount <= 1) {
-                // Clear text inputs
-                $item.find('input[type="text"], input[type="url"], input[type="email"], input[type="number"]').val('');
-
-                // Clear hidden inputs
-                $item.find('input[type="hidden"]').val('');
-
-                // Clear textareas and selects
-                $item.find('textarea, select').val('');
-
-                // Uncheck checkboxes and radios
+            // If this is the only item, just clear the fields
+            if (currentCount === 1) {
+                // Clear all inputs
+                $item.find('input[type="text"], input[type="url"], input[type="email"], input[type="number"], input[type="hidden"], textarea, select').val('');
                 $item.find('input[type="checkbox"], input[type="radio"]').prop('checked', false);
 
-                // Clear any preview elements if they exist
-                $item.find('.file-preview, .file-thumbnail').each(function () {
-                    if ($(this).is('img')) {
-                        $(this).attr('src', '').hide();
-                    } else {
-                        $(this).empty().hide();
-                    }
-                });
-
-                // Clear any display text elements
-                $item.find('.file-name, .file-info, .file-size').text('');
-
-                // Hide any elements that should be hidden when empty
-                $item.find('.file-details').hide();
-
-                // Focus first visible text input for user convenience
-                setTimeout(function () {
-                    $item.find('input[type="text"]:visible:first, input[type="url"]:visible:first').focus();
-                }, 100);
+                // Focus first input
+                $item.find('input[type="text"]:first, input[type="url"]:first').focus();
 
                 // Trigger cleared event
                 $manager.trigger('filemanager:cleared', {
@@ -286,27 +260,29 @@
                     index: 0,
                     previousData: itemData
                 });
-            } else {
-                // Multiple items exist - remove this one with animation
-                $item.fadeOut(200, function () {
-                    $item.remove();
 
-                    // Reindex remaining items
-                    self.reindex($list);
-
-                    // Refresh sortable if active
-                    if ($list.hasClass('ui-sortable')) {
-                        $list.sortable('refresh');
-                    }
-
-                    // Trigger removed event
-                    $manager.trigger('filemanager:removed', {
-                        data: itemData,
-                        index: itemData.index,
-                        remainingCount: $list.find('.file-manager-item').length
-                    });
-                });
+                return; // Exit here - don't remove
             }
+
+            // Multiple items exist - remove this one
+            $item.fadeOut(200, function () {
+                $item.remove();
+
+                // Reindex remaining items
+                self.reindex($list);
+
+                // Refresh sortable if active
+                if ($list.hasClass('ui-sortable')) {
+                    $list.sortable('refresh');
+                }
+
+                // Trigger removed event
+                $manager.trigger('filemanager:removed', {
+                    data: itemData,
+                    index: itemData.index,
+                    remainingCount: $list.find('.file-manager-item').length
+                });
+            });
         },
 
         /**
@@ -376,17 +352,6 @@
                 if (attachment.mime) {
                     $item.find('[data-field="mime"]').val(attachment.mime);
                 }
-
-                // Update preview if exists
-                const $preview = $item.find('.file-preview, .file-thumbnail');
-                if ($preview.length && attachment.url) {
-                    if (attachment.type === 'image') {
-                        $preview.attr('src', attachment.url).show();
-                    }
-                }
-
-                // Show file details if hidden
-                $item.find('.file-details').show();
 
                 // Trigger selected event
                 $manager.trigger('filemanager:selected', {

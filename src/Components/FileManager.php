@@ -24,141 +24,133 @@ use ArrayPress\WPFlyout\Traits\Renderable;
  * Manages a list of files with drag-and-drop reordering and media picker integration.
  */
 class FileManager {
-	use Renderable;
+    use Renderable;
 
-	/**
-	 * Files array
-	 *
-	 * @var array
-	 */
-	private array $files = [];
+    /**
+     * Files array
+     *
+     * @var array
+     */
+    private array $files = [];
 
-	/**
-	 * Input name prefix
-	 *
-	 * @var string
-	 */
-	private string $name_prefix = 'files';
+    /**
+     * Input name prefix
+     *
+     * @var string
+     */
+    private string $name_prefix = 'files';
 
-	/**
-	 * Component configuration
-	 *
-	 * @var array
-	 */
-	private array $config = [
-		'reorderable'      => true,
-		'media_picker'     => true,
-		'external_urls'    => true,
-		'min_items'        => 1,
-		'max_items'        => null,
-		'class'            => 'wp-flyout-file-manager',
-		'empty_text'       => 'No files added yet.',
-		'add_button_text'  => 'Add File',
-		'placeholder_name' => 'File name',
-		'placeholder_url'  => 'File URL'
-	];
+    /**
+     * Component configuration
+     *
+     * @var array
+     */
+    private array $config = [
+            'reorderable'      => true,
+            'media_picker'     => true,
+            'external_urls'    => true,
+            'class'            => 'wp-flyout-file-manager',
+            'empty_text'       => 'No files added yet.',
+            'add_button_text'  => 'Add File',
+            'placeholder_name' => 'File name',
+            'placeholder_url'  => 'File URL'
+    ];
 
-	/**
-	 * Constructor
-	 *
-	 * @param array  $files       Initial files array
-	 * @param string $name_prefix Input name prefix
-	 * @param array  $config      Optional configuration
-	 */
-	public function __construct( array $files = [], string $name_prefix = 'files', array $config = [] ) {
-		$this->files       = $files;
-		$this->name_prefix = $name_prefix;
-		$this->config      = array_merge( $this->config, $config );
+    /**
+     * Constructor
+     *
+     * @param array  $files       Initial files array
+     * @param string $name_prefix Input name prefix
+     * @param array  $config      Optional configuration
+     */
+    public function __construct( array $files = [], string $name_prefix = 'files', array $config = [] ) {
+        $this->files       = $files;
+        $this->name_prefix = $name_prefix;
+        $this->config      = array_merge( $this->config, $config );
 
-		// Ensure minimum items
-		while ( count( $this->files ) < $this->config['min_items'] ) {
-			$this->files[] = $this->get_empty_file();
-		}
-	}
+        // Ensure at least one empty row
+        if ( empty( $this->files ) ) {
+            $this->files[] = $this->get_empty_file();
+        }
+    }
 
-	/**
-	 * Get empty file structure
-	 *
-	 * @return array
-	 */
-	private function get_empty_file(): array {
-		return [
-			'id'   => 0,
-			'name' => '',
-			'url'  => ''
-		];
-	}
+    /**
+     * Get empty file structure
+     *
+     * @return array
+     */
+    private function get_empty_file(): array {
+        return [
+                'id'   => 0,
+                'name' => '',
+                'url'  => ''
+        ];
+    }
 
-	/**
-	 * Add a file
-	 *
-	 * @param array $file File data
-	 *
-	 * @return self
-	 */
-	public function add_file( array $file ): self {
-		if ( $this->config['max_items'] === null || count( $this->files ) < $this->config['max_items'] ) {
-			$this->files[] = array_merge( $this->get_empty_file(), $file );
-		}
+    /**
+     * Add a file
+     *
+     * @param array $file File data
+     *
+     * @return self
+     */
+    public function add_file( array $file ): self {
+        $this->files[] = array_merge( $this->get_empty_file(), $file );
 
-		return $this;
-	}
+        return $this;
+    }
 
-	/**
-	 * Render the file manager
-	 *
-	 * @return string Generated HTML
-	 */
-	public function render(): string {
-		$classes = array_filter( [
-			$this->config['class'],
-			$this->config['reorderable'] ? 'reorderable' : ''
-		] );
+    /**
+     * Render the file manager
+     *
+     * @return string Generated HTML
+     */
+    public function render(): string {
+        $classes = array_filter( [
+                $this->config['class'],
+                $this->config['reorderable'] ? 'reorderable' : ''
+        ] );
 
-		$template = $this->get_template();
+        $template = $this->get_template();
 
-		ob_start();
-		?>
+        ob_start();
+        ?>
         <div class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>"
              data-prefix="<?php echo esc_attr( $this->name_prefix ); ?>"
-             data-template="<?php echo esc_attr( $template ); ?>"
-             data-min="<?php echo esc_attr( (string) $this->config['min_items'] ); ?>"
-             data-max="<?php echo esc_attr( (string) ( $this->config['max_items'] ?? '' ) ); ?>">
+             data-template="<?php echo esc_attr( $template ); ?>">
 
             <div class="file-manager-list" <?php echo $this->config['reorderable'] ? 'data-sortable="true"' : ''; ?>>
-				<?php foreach ( $this->files as $index => $file ) : ?>
-					<?php echo $this->render_file_item( $file, $index ); ?>
-				<?php endforeach; ?>
+                <?php foreach ( $this->files as $index => $file ) : ?>
+                    <?php echo $this->render_file_item( $file, $index ); ?>
+                <?php endforeach; ?>
             </div>
 
-			<?php if ( $this->config['max_items'] === null || count( $this->files ) < $this->config['max_items'] ) : ?>
-                <button type="button" class="button" data-action="add">
-                    <span class="dashicons dashicons-plus-alt2"></span>
-					<?php echo esc_html( $this->config['add_button_text'] ); ?>
-                </button>
-			<?php endif; ?>
+            <button type="button" class="button" data-action="add">
+                <span class="dashicons dashicons-plus-alt2"></span>
+                <?php echo esc_html( $this->config['add_button_text'] ); ?>
+            </button>
         </div>
-		<?php
-		return ob_get_clean();
-	}
+        <?php
+        return ob_get_clean();
+    }
 
-	/**
-	 * Render a file item
-	 *
-	 * @param array $file  File data
-	 * @param int   $index Item index
-	 *
-	 * @return string Generated HTML
-	 */
-	private function render_file_item( array $file, int $index ): string {
-		ob_start();
-		?>
+    /**
+     * Render a file item
+     *
+     * @param array $file  File data
+     * @param int   $index Item index
+     *
+     * @return string Generated HTML
+     */
+    private function render_file_item( array $file, int $index ): string {
+        ob_start();
+        ?>
         <div class="file-manager-item">
-			<?php if ( $this->config['reorderable'] ) : ?>
+            <?php if ( $this->config['reorderable'] ) : ?>
                 <div class="file-handle" data-handle>
                     <span class="dashicons dashicons-menu"></span>
                 </div>
-			<?php endif; ?>
+            <?php endif; ?>
 
             <div class="file-info">
                 <input type="hidden"
@@ -180,40 +172,38 @@ class FileManager {
                            placeholder="<?php echo esc_attr( $this->config['placeholder_url'] ); ?>"
                            data-field="url"
                            class="regular-text"
-						<?php echo ! $this->config['external_urls'] ? 'readonly' : ''; ?>>
+                            <?php echo ! $this->config['external_urls'] ? 'readonly' : ''; ?>>
 
-					<?php if ( $this->config['media_picker'] ) : ?>
+                    <?php if ( $this->config['media_picker'] ) : ?>
                         <button type="button" class="button" data-action="browse" title="Select from Media Library">
                             <span class="dashicons dashicons-admin-media"></span>
                         </button>
-					<?php endif; ?>
+                    <?php endif; ?>
                 </div>
             </div>
 
-			<?php if ( count( $this->files ) > $this->config['min_items'] ) : ?>
-                <button type="button" class="button-link" data-action="remove" title="Remove file">
-                    <span class="dashicons dashicons-trash"></span>
-                </button>
-			<?php endif; ?>
+            <button type="button" class="button-link" data-action="remove" title="Remove file">
+                <span class="dashicons dashicons-trash"></span>
+            </button>
         </div>
-		<?php
-		return ob_get_clean();
-	}
+        <?php
+        return ob_get_clean();
+    }
 
-	/**
-	 * Get template for new items
-	 *
-	 * @return string HTML template
-	 */
-	private function get_template(): string {
-		ob_start();
-		?>
+    /**
+     * Get template for new items
+     *
+     * @return string HTML template
+     */
+    private function get_template(): string {
+        ob_start();
+        ?>
         <div class="file-manager-item">
-			<?php if ( $this->config['reorderable'] ) : ?>
+            <?php if ( $this->config['reorderable'] ) : ?>
                 <div class="file-handle" data-handle>
                     <span class="dashicons dashicons-menu"></span>
                 </div>
-			<?php endif; ?>
+            <?php endif; ?>
 
             <div class="file-info">
                 <input type="hidden"
@@ -235,13 +225,13 @@ class FileManager {
                            placeholder="<?php echo esc_attr( $this->config['placeholder_url'] ); ?>"
                            data-field="url"
                            class="regular-text"
-						<?php echo ! $this->config['external_urls'] ? 'readonly' : ''; ?>>
+                            <?php echo ! $this->config['external_urls'] ? 'readonly' : ''; ?>>
 
-					<?php if ( $this->config['media_picker'] ) : ?>
+                    <?php if ( $this->config['media_picker'] ) : ?>
                         <button type="button" class="button" data-action="browse" title="Select from Media Library">
                             <span class="dashicons dashicons-admin-media"></span>
                         </button>
-					<?php endif; ?>
+                    <?php endif; ?>
                 </div>
             </div>
 
@@ -249,38 +239,38 @@ class FileManager {
                 <span class="dashicons dashicons-trash"></span>
             </button>
         </div>
-		<?php
-		return trim( preg_replace( '/\s+/', ' ', ob_get_clean() ) );
-	}
+        <?php
+        return trim( preg_replace( '/\s+/', ' ', ob_get_clean() ) );
+    }
 
-	/**
-	 * Create a FileManager for downloads
-	 *
-	 * @param array  $files  Initial files
-	 * @param string $prefix Input name prefix
-	 *
-	 * @return self
-	 */
-	public static function downloads( array $files = [], string $prefix = 'downloads' ): self {
-		return new self( $files, $prefix, [
-			'add_button_text'  => 'Add Download',
-			'placeholder_name' => 'Download title',
-		] );
-	}
+    /**
+     * Create a FileManager for downloads
+     *
+     * @param array  $files  Initial files
+     * @param string $prefix Input name prefix
+     *
+     * @return self
+     */
+    public static function downloads( array $files = [], string $prefix = 'downloads' ): self {
+        return new self( $files, $prefix, [
+                'add_button_text'  => 'Add Download',
+                'placeholder_name' => 'Download title',
+        ] );
+    }
 
-	/**
-	 * Create a FileManager for resources
-	 *
-	 * @param array  $files  Initial files
-	 * @param string $prefix Input name prefix
-	 *
-	 * @return self
-	 */
-	public static function resources( array $files = [], string $prefix = 'resources' ): self {
-		return new self( $files, $prefix, [
-			'add_button_text'  => 'Add Resource',
-			'placeholder_name' => 'Resource name',
-			'placeholder_url'  => 'https://example.com',
-		] );
-	}
+    /**
+     * Create a FileManager for resources
+     *
+     * @param array  $files  Initial files
+     * @param string $prefix Input name prefix
+     *
+     * @return self
+     */
+    public static function resources( array $files = [], string $prefix = 'resources' ): self {
+        return new self( $files, $prefix, [
+                'add_button_text'  => 'Add Resource',
+                'placeholder_name' => 'Resource name',
+                'placeholder_url'  => 'https://example.com',
+        ] );
+    }
 }
