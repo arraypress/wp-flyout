@@ -312,7 +312,7 @@
                     remainingCount: $list.find('.file-manager-item').length
                 });
             });
-        }
+        },
 
         /**
          * Handle browse button click for Media Library
