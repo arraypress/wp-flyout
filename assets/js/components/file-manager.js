@@ -139,13 +139,12 @@
         /**
          * Handle add file button click
          *
-         * Adds a new file item to the list if max limit hasn't been reached.
+         * Adds a new file item to the list.
          * Uses the template defined in data-template attribute.
          *
          * @since 1.0.0
          * @param {jQuery.Event} e - Click event
          * @fires filemanager:beforeadd
-         * @fires filemanager:maxreached
          * @fires filemanager:added
          * @return {void}
          */
@@ -156,26 +155,15 @@
             const $manager = $button.closest('.wp-flyout-file-manager');
             const $list = $manager.find('.file-manager-list');
 
-            // Check max items limit
-            const maxItems = parseInt($manager.data('max')) || 0;
             const currentCount = $list.find('.file-manager-item').length;
 
             // Fire before add event (cancellable)
             const beforeAddEvent = $.Event('filemanager:beforeadd');
             $manager.trigger(beforeAddEvent, {
-                currentCount: currentCount,
-                maxItems: maxItems
+                currentCount: currentCount
             });
 
             if (beforeAddEvent.isDefaultPrevented()) {
-                return;
-            }
-
-            if (maxItems > 0 && currentCount >= maxItems) {
-                $manager.trigger('filemanager:maxreached', {
-                    max: maxItems,
-                    current: currentCount
-                });
                 return;
             }
 
@@ -203,7 +191,7 @@
             }
 
             // Focus first input in new item for accessibility
-            $newItem.find('input:first').focus();
+            $newItem.find('input[type="text"]:first, input[type="url"]:first').focus();
 
             // Trigger added event
             $manager.trigger('filemanager:added', {
@@ -216,14 +204,12 @@
         /**
          * Handle remove file button click
          *
-         * Removes a file item from the list if min limit allows.
-         * If it's the only/last item and min is 0, clears the fields instead of removing.
-         * Animates removal and reindexes remaining items.
+         * Removes a file item from the list or clears it if it's the only one.
+         * Always maintains at least one row for consistency with standard file managers.
          *
          * @since 1.0.0
          * @param {jQuery.Event} e - Click event
          * @fires filemanager:beforeremove
-         * @fires filemanager:minreached
          * @fires filemanager:removed
          * @fires filemanager:cleared
          * @return {void}
@@ -245,8 +231,6 @@
                 index: $item.index()
             };
 
-            // Check minimum items requirement
-            const minItems = parseInt($manager.data('min')) || 0;
             const currentCount = $list.find('.file-manager-item').length;
 
             // Fire before remove event (cancellable)
@@ -254,26 +238,25 @@
             $manager.trigger(beforeRemoveEvent, {
                 item: $item[0],
                 data: itemData,
-                currentCount: currentCount,
-                minItems: minItems
+                currentCount: currentCount
             });
 
             if (beforeRemoveEvent.isDefaultPrevented()) {
                 return;
             }
 
-            // If this is the only item and min is 0 or 1, clear it instead of removing
-            if (currentCount === 1 && minItems <= 1) {
+            // If this is the only item, clear it instead of removing
+            if (currentCount === 1) {
                 // Clear all fields in the item
                 $item.find('input[type="text"], input[type="hidden"], input[type="url"], input[type="email"], textarea, select').val('');
                 $item.find('input[type="checkbox"], input[type="radio"]').prop('checked', false);
 
-                // Clear any preview elements (like image previews)
+                // Clear any preview elements
                 $item.find('.file-preview, .file-thumbnail').attr('src', '').hide();
                 $item.find('.file-name, .file-info').text('');
 
                 // Focus first input for user convenience
-                $item.find('input:first').focus();
+                $item.find('input[type="text"]:first, input[type="url"]:first').focus();
 
                 // Trigger cleared event
                 $manager.trigger('filemanager:cleared', {
@@ -284,16 +267,7 @@
                 return;
             }
 
-            // If removing would go below minimum (and it's not the last item being cleared)
-            if (minItems > 0 && currentCount <= minItems) {
-                $manager.trigger('filemanager:minreached', {
-                    min: minItems,
-                    current: currentCount
-                });
-                return;
-            }
-
-            // Animate removal for multiple items
+            // Multiple items - remove this one
             $item.fadeOut(200, function () {
                 $item.remove();
 
