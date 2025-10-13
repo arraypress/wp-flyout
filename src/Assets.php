@@ -18,6 +18,17 @@ namespace ArrayPress\WPFlyout;
 class Assets {
 
 	/**
+	 * Core CSS files to load (in order)
+	 *
+	 * @var array
+	 */
+	private static array $core_styles = [
+		'css/flyout/core.css',
+		'css/flyout/form.css',
+		'css/flyout/ui-elements.css'
+	];
+
+	/**
 	 * Available components and their assets
 	 *
 	 * @var array
@@ -36,25 +47,25 @@ class Assets {
 		'order-items'        => [
 			'script' => 'js/components/order-items.js',
 			'style'  => 'css/components/order-items.css',
-			'deps'   => []
+			'deps'   => [ 'wp-flyout-ajax-select' ]
 		],
 		'product-display'    => [
-			'script' => '', // No JS needed
+			'script' => '',
 			'style'  => 'css/components/product-display.css',
 			'deps'   => []
 		],
 		'field-group'        => [
-			'script' => '', // No JS needed
+			'script' => '',
 			'style'  => 'css/components/field-group.css',
 			'deps'   => []
 		],
 		'flex-row'           => [
-			'script' => '', // No JS needed
+			'script' => '',
 			'style'  => 'css/components/flex-row.css',
 			'deps'   => []
 		],
 		'timeline'           => [
-			'script' => '', // No JS needed
+			'script' => '',
 			'style'  => 'css/components/timeline.css',
 			'deps'   => []
 		],
@@ -103,7 +114,7 @@ class Assets {
 			'style'  => 'css/components/progress-indicator.css',
 			'deps'   => []
 		],
-		'ajax-select' => [
+		'ajax-select'        => [
 			'script' => 'js/components/ajax-select.js',
 			'style'  => 'css/components/ajax-select.css',
 			'deps'   => []
@@ -128,14 +139,16 @@ class Assets {
 		$base_file = __FILE__;
 		$version   = defined( 'WP_DEBUG' ) && WP_DEBUG ? time() : '3.0.0';
 
-		// Register core CSS
-		\wp_register_composer_style_from_file(
-			'wp-flyout',
-			$base_file,
-			'css/wp-flyout.css',
-			[ 'dashicons' ],
-			$version
-		);
+		// Register each core CSS file separately
+		foreach ( self::$core_styles as $css_file ) {
+			\wp_register_composer_style_from_file(
+				'wp-flyout',
+				$base_file,
+				$css_file,
+				[ 'dashicons' ],
+				$version
+			);
+		}
 
 		// Register core JavaScript
 		\wp_register_composer_script_from_file(
@@ -221,9 +234,28 @@ class Assets {
 
 		$handle = 'wp-flyout-' . $component;
 
+		// Handle dependencies
+		$config = self::$components[ $component ];
+		if ( ! empty( $config['deps'] ) ) {
+			foreach ( $config['deps'] as $dep ) {
+				// Check if it's another component dependency
+				if ( strpos( $dep, 'wp-flyout-' ) === 0 ) {
+					$dep_component = str_replace( 'wp-flyout-', '', $dep );
+					if ( isset( self::$components[ $dep_component ] ) ) {
+						self::enqueue_component( $dep_component );
+					}
+				}
+			}
+		}
+
 		// Enqueue component assets
-		wp_enqueue_style( $handle );
-		wp_enqueue_script( $handle );
+		if ( wp_style_is( $handle, 'registered' ) ) {
+			wp_enqueue_style( $handle );
+		}
+
+		if ( wp_script_is( $handle, 'registered' ) ) {
+			wp_enqueue_script( $handle );
+		}
 
 		// Handle special requirements
 		if ( $component === 'file-manager' ) {
@@ -242,6 +274,15 @@ class Assets {
 	 */
 	public static function has_component( string $component ): bool {
 		return isset( self::$components[ $component ] );
+	}
+
+	/**
+	 * Get list of available components
+	 *
+	 * @return array Component names
+	 */
+	public static function get_components(): array {
+		return array_keys( self::$components );
 	}
 
 }

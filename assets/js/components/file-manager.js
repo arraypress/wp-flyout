@@ -217,6 +217,7 @@
          * Handle remove file button click
          *
          * Removes a file item from the list if min limit allows.
+         * If it's the only/last item and min is 0, clears the fields instead of removing.
          * Animates removal and reindexes remaining items.
          *
          * @since 1.0.0
@@ -224,6 +225,7 @@
          * @fires filemanager:beforeremove
          * @fires filemanager:minreached
          * @fires filemanager:removed
+         * @fires filemanager:cleared
          * @return {void}
          */
         handleRemove: function (e) {
@@ -260,6 +262,29 @@
                 return;
             }
 
+            // If this is the only item and min is 0 or 1, clear it instead of removing
+            if (currentCount === 1 && minItems <= 1) {
+                // Clear all fields in the item
+                $item.find('input[type="text"], input[type="hidden"], input[type="url"], input[type="email"], textarea, select').val('');
+                $item.find('input[type="checkbox"], input[type="radio"]').prop('checked', false);
+
+                // Clear any preview elements (like image previews)
+                $item.find('.file-preview, .file-thumbnail').attr('src', '').hide();
+                $item.find('.file-name, .file-info').text('');
+
+                // Focus first input for user convenience
+                $item.find('input:first').focus();
+
+                // Trigger cleared event
+                $manager.trigger('filemanager:cleared', {
+                    item: $item[0],
+                    index: 0
+                });
+
+                return;
+            }
+
+            // If removing would go below minimum (and it's not the last item being cleared)
             if (minItems > 0 && currentCount <= minItems) {
                 $manager.trigger('filemanager:minreached', {
                     min: minItems,
@@ -268,7 +293,7 @@
                 return;
             }
 
-            // Animate removal
+            // Animate removal for multiple items
             $item.fadeOut(200, function () {
                 $item.remove();
 
@@ -287,7 +312,7 @@
                     remainingCount: $list.find('.file-manager-item').length
                 });
             });
-        },
+        }
 
         /**
          * Handle browse button click for Media Library
