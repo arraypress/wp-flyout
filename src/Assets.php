@@ -25,7 +25,8 @@ class Assets {
 	private static array $core_styles = [
 		'css/flyout/core.css',
 		'css/flyout/form.css',
-		'css/flyout/ui-elements.css'
+		'css/flyout/ui-elements.css',
+		'css/flyout/data-display.css'
 	];
 
 	/**
