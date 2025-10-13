@@ -139,15 +139,21 @@ class Assets {
 		$base_file = __FILE__;
 		$version   = defined( 'WP_DEBUG' ) && WP_DEBUG ? time() : '3.0.0';
 
-		// Register each core CSS file separately
+		// Register each core CSS file with constructed handles
+		$deps = [ 'dashicons' ];
 		foreach ( self::$core_styles as $css_file ) {
+			$handle = self::get_handle_from_path( $css_file );
+
 			\wp_register_composer_style_from_file(
-				'wp-flyout',
+				$handle,
 				$base_file,
 				$css_file,
-				[ 'dashicons' ],
+				$deps,
 				$version
 			);
+
+			// Make each subsequent file depend on the previous one
+			$deps = [ $handle ];
 		}
 
 		// Register core JavaScript
@@ -213,7 +219,11 @@ class Assets {
 	 * @return void
 	 */
 	public static function enqueue(): void {
-		wp_enqueue_style( 'wp-flyout' );
+		// Enqueue all core CSS files
+		foreach ( self::$core_styles as $css_file ) {
+			wp_enqueue_style( self::get_handle_from_path( $css_file ) );
+		}
+
 		wp_enqueue_script( 'wp-flyout' );
 	}
 
@@ -283,6 +293,21 @@ class Assets {
 	 */
 	public static function get_components(): array {
 		return array_keys( self::$components );
+	}
+
+	/**
+	 * Generate handle from file path
+	 *
+	 * @param string $file_path File path
+	 * @param string $prefix    Handle prefix (default: 'wp-flyout')
+	 *
+	 * @return string Generated handle
+	 */
+	private static function get_handle_from_path( string $file_path, string $prefix = 'wp-flyout' ): string {
+		$name = basename( $file_path, '.css' );
+		$name = basename( $name, '.js' );
+
+		return $prefix . '-' . $name;
 	}
 
 }
