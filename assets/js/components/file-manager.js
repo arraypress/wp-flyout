@@ -205,7 +205,7 @@
          * Handle remove file button click
          *
          * Removes a file item from the list or clears it if it's the only one.
-         * Always maintains at least one row for consistency with standard file managers.
+         * Always maintains at least one row for consistency.
          *
          * @since 1.0.0
          * @param {jQuery.Event} e - Click event
@@ -216,6 +216,7 @@
          */
         handleRemove: function (e) {
             e.preventDefault();
+            e.stopPropagation();
 
             const self = this;
             const $button = $(e.currentTarget);
@@ -223,7 +224,7 @@
             const $list = $item.closest('.file-manager-list');
             const $manager = $list.closest('.wp-flyout-file-manager');
 
-            // Get item data before removal
+            // Get item data before removal/clearing
             const itemData = {
                 name: $item.find('[data-field="name"]').val(),
                 url: $item.find('[data-field="url"]').val(),
@@ -245,47 +246,67 @@
                 return;
             }
 
-            // If this is the only item, clear it instead of removing
-            if (currentCount === 1) {
-                // Clear all fields in the item
-                $item.find('input[type="text"], input[type="hidden"], input[type="url"], input[type="email"], textarea, select').val('');
+            // If this is the only item, just clear the fields, don't remove the row
+            if (currentCount <= 1) {
+                // Clear text inputs
+                $item.find('input[type="text"], input[type="url"], input[type="email"], input[type="number"]').val('');
+
+                // Clear hidden inputs
+                $item.find('input[type="hidden"]').val('');
+
+                // Clear textareas and selects
+                $item.find('textarea, select').val('');
+
+                // Uncheck checkboxes and radios
                 $item.find('input[type="checkbox"], input[type="radio"]').prop('checked', false);
 
-                // Clear any preview elements
-                $item.find('.file-preview, .file-thumbnail').attr('src', '').hide();
-                $item.find('.file-name, .file-info').text('');
+                // Clear any preview elements if they exist
+                $item.find('.file-preview, .file-thumbnail').each(function () {
+                    if ($(this).is('img')) {
+                        $(this).attr('src', '').hide();
+                    } else {
+                        $(this).empty().hide();
+                    }
+                });
 
-                // Focus first input for user convenience
-                $item.find('input[type="text"]:first, input[type="url"]:first').focus();
+                // Clear any display text elements
+                $item.find('.file-name, .file-info, .file-size').text('');
+
+                // Hide any elements that should be hidden when empty
+                $item.find('.file-details').hide();
+
+                // Focus first visible text input for user convenience
+                setTimeout(function () {
+                    $item.find('input[type="text"]:visible:first, input[type="url"]:visible:first').focus();
+                }, 100);
 
                 // Trigger cleared event
                 $manager.trigger('filemanager:cleared', {
                     item: $item[0],
-                    index: 0
+                    index: 0,
+                    previousData: itemData
                 });
+            } else {
+                // Multiple items exist - remove this one with animation
+                $item.fadeOut(200, function () {
+                    $item.remove();
 
-                return;
+                    // Reindex remaining items
+                    self.reindex($list);
+
+                    // Refresh sortable if active
+                    if ($list.hasClass('ui-sortable')) {
+                        $list.sortable('refresh');
+                    }
+
+                    // Trigger removed event
+                    $manager.trigger('filemanager:removed', {
+                        data: itemData,
+                        index: itemData.index,
+                        remainingCount: $list.find('.file-manager-item').length
+                    });
+                });
             }
-
-            // Multiple items - remove this one
-            $item.fadeOut(200, function () {
-                $item.remove();
-
-                // Reindex remaining items
-                self.reindex($list);
-
-                // Refresh sortable if active
-                if ($list.hasClass('ui-sortable')) {
-                    $list.sortable('refresh');
-                }
-
-                // Trigger removed event
-                $manager.trigger('filemanager:removed', {
-                    data: itemData,
-                    index: itemData.index,
-                    remainingCount: $list.find('.file-manager-item').length
-                });
-            });
         },
 
         /**
@@ -355,6 +376,17 @@
                 if (attachment.mime) {
                     $item.find('[data-field="mime"]').val(attachment.mime);
                 }
+
+                // Update preview if exists
+                const $preview = $item.find('.file-preview, .file-thumbnail');
+                if ($preview.length && attachment.url) {
+                    if (attachment.type === 'image') {
+                        $preview.attr('src', attachment.url).show();
+                    }
+                }
+
+                // Show file details if hidden
+                $item.find('.file-details').show();
 
                 // Trigger selected event
                 $manager.trigger('filemanager:selected', {
