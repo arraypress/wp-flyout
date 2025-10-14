@@ -7,7 +7,7 @@
  * @package     ArrayPress\WPFlyout\Components
  * @copyright   Copyright (c) 2025, ArrayPress Limited
  * @license     GPL2+
- * @version     3.0.0
+ * @version     1.0.0
  * @author      David Sherlock
  */
 
@@ -22,7 +22,7 @@ use ArrayPress\WPFlyout\Traits\Renderable;
  *
  * Renders lists with icons and consistent styling.
  *
- * @since 3.0.0
+ * @since 1.0.0
  */
 class FeatureList {
 	use Renderable;
@@ -30,7 +30,7 @@ class FeatureList {
 	/**
 	 * List items
 	 *
-	 * @since 3.0.0
+	 * @since 1.0.0
 	 * @var array
 	 */
 	private array $items = [];
@@ -38,7 +38,7 @@ class FeatureList {
 	/**
 	 * List configuration
 	 *
-	 * @since 3.0.0
+	 * @since 1.0.0
 	 * @var array
 	 */
 	private array $config = [
@@ -55,7 +55,7 @@ class FeatureList {
 	 * @param array $items  List items.
 	 * @param array $config Optional configuration.
 	 *
-	 * @since 3.0.0
+	 * @since 1.0.0
 	 *
 	 */
 	public function __construct( array $items = [], array $config = [] ) {
@@ -69,7 +69,7 @@ class FeatureList {
 	 * @param array $items Features array.
 	 *
 	 * @return self
-	 * @since 3.0.0
+	 * @since 1.0.0
 	 *
 	 */
 	public static function features( array $items ): self {
@@ -86,7 +86,7 @@ class FeatureList {
 	 * @param string $icon Optional custom icon.
 	 *
 	 * @return self
-	 * @since 3.0.0
+	 * @since 1.0.0
 	 *
 	 */
 	public function add_item( string $text, string $icon = '' ): self {
@@ -102,7 +102,7 @@ class FeatureList {
 	 * Render the list
 	 *
 	 * @return string Generated HTML.
-	 * @since 3.0.0
+	 * @since 1.0.0
 	 *
 	 */
 	public function render(): string {

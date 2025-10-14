@@ -7,7 +7,7 @@
  * @package     ArrayPress\WPFlyout\Components
  * @copyright   Copyright (c) 2025, ArrayPress Limited
  * @license     GPL2+
- * @version     3.0.0
+ * @version     1.0.0
  */
 
 declare( strict_types=1 );
@@ -21,7 +21,7 @@ use ArrayPress\WPFlyout\Traits\Renderable;
  *
  * Renders images with fallback placeholder.
  *
- * @since 3.0.0
+ * @since 1.0.0
  */
 class Image {
 	use Renderable;
@@ -29,7 +29,7 @@ class Image {
 	/**
 	 * Image configuration
 	 *
-	 * @since 3.0.0
+	 * @since 1.0.0
 	 * @var array
 	 */
 	private array $config = [];
@@ -41,7 +41,7 @@ class Image {
 	 * @param string $alt  Alternative text.
 	 * @param array  $args Optional arguments.
 	 *
-	 * @since 3.0.0
+	 * @since 1.0.0
 	 *
 	 */
 	public function __construct( string $src, string $alt = '', array $args = [] ) {
@@ -62,7 +62,7 @@ class Image {
 	 * @param string $alt Alternative text.
 	 *
 	 * @return self
-	 * @since 3.0.0
+	 * @since 1.0.0
 	 *
 	 */
 	public static function thumbnail( string $src, string $alt = '' ): self {
@@ -79,7 +79,7 @@ class Image {
 	 * @param string $alt Alternative text.
 	 *
 	 * @return self
-	 * @since 3.0.0
+	 * @since 1.0.0
 	 *
 	 */
 	public static function avatar( string $src, string $alt = '' ): self {
@@ -99,7 +99,7 @@ class Image {
 	 * Render the image
 	 *
 	 * @return string Generated HTML.
-	 * @since 3.0.0
+	 * @since 1.0.0
 	 *
 	 */
 	public function render(): string {
@@ -129,7 +129,7 @@ class Image {
 	 * Render placeholder
 	 *
 	 * @return string Generated HTML.
-	 * @since 3.0.0
+	 * @since 1.0.0
 	 *
 	 */
 	private function render_placeholder(): string {

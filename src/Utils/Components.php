@@ -7,7 +7,7 @@
  * @package     ArrayPress\WPFlyout
  * @copyright   Copyright (c) 2025, ArrayPress Limited
  * @license     GPL2+
- * @version     3.0.0
+ * @version     1.0.0
  */
 
 declare( strict_types=1 );
@@ -31,7 +31,7 @@ if ( ! function_exists( 'wp_flyout_action_bar' ) ) {
 	 * @param array $config Optional configuration.
 	 *
 	 * @return ActionBar
-	 * @since 3.0.0
+	 * @since 1.0.0
 	 *
 	 */
 	function wp_flyout_action_bar( array $config = [] ): ActionBar {
@@ -47,7 +47,7 @@ if ( ! function_exists( 'wp_flyout_badge' ) ) {
 	 * @param array  $config Optional configuration.
 	 *
 	 * @return Badge
-	 * @since 3.0.0
+	 * @since 1.0.0
 	 *
 	 */
 	function wp_flyout_badge( string $text, array $config = [] ): Badge {
@@ -63,7 +63,7 @@ if ( ! function_exists( 'wp_flyout_empty_state' ) ) {
 	 * @param array  $config Optional configuration.
 	 *
 	 * @return EmptyState
-	 * @since 3.0.0
+	 * @since 1.0.0
 	 *
 	 */
 	function wp_flyout_empty_state( string $title, array $config = [] ): EmptyState {
@@ -79,7 +79,7 @@ if ( ! function_exists( 'wp_flyout_feature_list' ) ) {
 	 * @param array $config Optional configuration.
 	 *
 	 * @return FeatureList
-	 * @since 3.0.0
+	 * @since 1.0.0
 	 *
 	 */
 	function wp_flyout_feature_list( array $items, array $config = [] ): FeatureList {
@@ -97,7 +97,7 @@ if ( ! function_exists( 'wp_flyout_form_field' ) ) {
 	 * @param array  $args  Additional arguments.
 	 *
 	 * @return FormField
-	 * @since 3.0.0
+	 * @since 1.0.0
 	 *
 	 */
 	function wp_flyout_form_field( string $type, string $name, string $label, array $args = [] ): FormField {
@@ -117,7 +117,7 @@ if ( ! function_exists( 'wp_flyout_info_grid' ) ) {
 	 * @param array $config Optional configuration.
 	 *
 	 * @return InfoGrid
-	 * @since 3.0.0
+	 * @since 1.0.0
 	 *
 	 */
 	function wp_flyout_info_grid( array $items = [], array $config = [] ): InfoGrid {
@@ -134,7 +134,7 @@ if ( ! function_exists( 'wp_flyout_section_header' ) ) {
 	 * @param string|null $icon        Optional dashicon.
 	 *
 	 * @return SectionHeader
-	 * @since 3.0.0
+	 * @since 1.0.0
 	 *
 	 */
 	function wp_flyout_section_header( string $title, string $description = '', ?string $icon = null ): SectionHeader {
@@ -152,7 +152,7 @@ if ( ! function_exists( 'wp_flyout_toggle' ) ) {
 	 * @param array  $config  Optional configuration.
 	 *
 	 * @return Toggle
-	 * @since 3.0.0
+	 * @since 1.0.0
 	 *
 	 */
 	function wp_flyout_toggle( string $name, string $label, bool $checked = false, array $config = [] ): Toggle {
@@ -173,7 +173,7 @@ if ( ! function_exists( 'wp_flyout_hidden_field' ) ) {
 	 * @param mixed  $value Field value.
 	 *
 	 * @return string HTML for hidden field.
-	 * @since 3.0.0
+	 * @since 1.0.0
 	 *
 	 */
 	function wp_flyout_hidden_field( string $name, $value ): string {
@@ -189,7 +189,7 @@ if ( ! function_exists( 'wp_flyout_nonce_field' ) ) {
 	 * @param string $name   Field name.
 	 *
 	 * @return string HTML for nonce field.
-	 * @since 3.0.0
+	 * @since 1.0.0
 	 *
 	 */
 	function wp_flyout_nonce_field( string $action, string $name = '_wpnonce' ): string {
@@ -205,7 +205,7 @@ if ( ! function_exists( 'wp_flyout_form_security' ) ) {
 	 * @param bool   $include_referer Whether to include referer field.
 	 *
 	 * @return string HTML for security fields.
-	 * @since 3.0.0
+	 * @since 1.0.0
 	 *
 	 */
 	function wp_flyout_form_security( string $nonce_action, bool $include_referer = false ): string {
@@ -217,7 +217,7 @@ if ( ! function_exists( 'wp_flyout_data_table' ) ) {
 	/**
 	 * Create a data table component
 	 *
-	 * @since 3.0.0
+	 * @since 1.0.0
 	 *
 	 * @param array $data   Data array (key => value pairs).
 	 * @param array $config Optional configuration.

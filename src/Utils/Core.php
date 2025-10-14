@@ -7,7 +7,7 @@
  * @package     ArrayPress\WPFlyout
  * @copyright   Copyright (c) 2025, ArrayPress Limited
  * @license     GPL2+
- * @version     3.0.0
+ * @version     1.0.0
  */
 
 declare( strict_types=1 );
@@ -20,7 +20,7 @@ if ( ! function_exists( 'wp_flyout' ) ) {
 	/**
 	 * Create a new flyout instance
 	 *
-	 * @since 3.0.0
+	 * @since 1.0.0
 	 *
 	 * @param string $id     Flyout ID.
 	 * @param array  $config Optional configuration.
@@ -37,7 +37,7 @@ if ( ! function_exists( 'wp_flyout_init' ) ) {
 	 *
 	 * Call this in your plugin's init hook to register assets.
 	 *
-	 * @since 3.0.0
+	 * @since 1.0.0
 	 *
 	 * @return void
 	 */
@@ -52,7 +52,7 @@ if ( ! function_exists( 'wp_flyout_enqueue' ) ) {
 	 *
 	 * Call this when you need flyout functionality on a page.
 	 *
-	 * @since 3.0.0
+	 * @since 1.0.0
 	 *
 	 * @return void
 	 */

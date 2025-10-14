@@ -5,7 +5,7 @@
  * @package     ArrayPress\WPFlyout
  * @copyright   Copyright (c) 2025, ArrayPress Limited
  * @license     GPL2+
- * @version     3.0.0
+ * @version     1.0.0
  */
 
 declare( strict_types=1 );
@@ -138,7 +138,7 @@ class Assets {
 	 */
 	public static function register_assets(): void {
 		$base_file = __FILE__;
-		$version   = defined( 'WP_DEBUG' ) && WP_DEBUG ? time() : '3.0.0';
+		$version   = defined( 'WP_DEBUG' ) && WP_DEBUG ? time() : '1.0.0';
 
 		// Register each core CSS file with constructed handles
 		$deps        = [ 'dashicons' ];

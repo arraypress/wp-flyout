@@ -83,22 +83,6 @@ class EmptyState {
     }
 
     /**
-     * Create a "coming soon" empty state
-     *
-     * @param string $feature Feature name
-     *
-     * @return self
-     */
-    public static function coming_soon( string $feature = '' ): self {
-        $title = $feature ? $feature . ' Coming Soon' : 'Coming Soon';
-
-        return new self( $title, [
-                'icon'        => 'clock',
-                'description' => 'This feature is under development and will be available soon.'
-        ] );
-    }
-
-    /**
      * Render the empty state
      *
      * @return string Generated HTML

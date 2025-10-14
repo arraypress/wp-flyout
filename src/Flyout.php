@@ -9,7 +9,7 @@
  * @package     ArrayPress\WPFlyout
  * @copyright   Copyright (c) 2025, ArrayPress Limited
  * @license     GPL2+
- * @version     3.0.0
+ * @version     1.0.0
  * @author      David Sherlock
  */
 
@@ -22,14 +22,14 @@ namespace ArrayPress\WPFlyout;
  *
  * Main flyout container for rendering slide-out panels.
  *
- * @since 3.0.0
+ * @since 1.0.0
  */
 class Flyout {
 
     /**
      * Unique identifier for this flyout
      *
-     * @since 3.0.0
+     * @since 1.0.0
      * @var string
      */
     private string $id;
@@ -37,7 +37,7 @@ class Flyout {
     /**
      * Flyout title displayed in header
      *
-     * @since 3.0.0
+     * @since 1.0.0
      * @var string
      */
     private string $title = '';
@@ -45,7 +45,7 @@ class Flyout {
     /**
      * Tab configuration array
      *
-     * @since 3.0.0
+     * @since 1.0.0
      * @var array
      */
     private array $tabs = [];
@@ -53,7 +53,7 @@ class Flyout {
     /**
      * Active tab identifier
      *
-     * @since 3.0.0
+     * @since 1.0.0
      * @var string
      */
     private string $active_tab = '';
@@ -61,7 +61,7 @@ class Flyout {
     /**
      * Content for each tab
      *
-     * @since 3.0.0
+     * @since 1.0.0
      * @var array
      */
     private array $tab_content = [];
@@ -69,7 +69,7 @@ class Flyout {
     /**
      * Footer content HTML
      *
-     * @since 3.0.0
+     * @since 1.0.0
      * @var string
      */
     private string $footer_content = '';
@@ -77,7 +77,7 @@ class Flyout {
     /**
      * Flyout configuration
      *
-     * @since 3.0.0
+     * @since 1.0.0
      * @var array
      */
     private array $config = [
@@ -91,7 +91,7 @@ class Flyout {
      * @param string $id     Unique identifier for this flyout.
      * @param array  $config Optional configuration array.
      *
-     * @since 3.0.0
+     * @since 1.0.0
      *
      */
     public function __construct( string $id, array $config = [] ) {
@@ -105,7 +105,7 @@ class Flyout {
      * @param string $title Title to display in header.
      *
      * @return self
-     * @since 3.0.0
+     * @since 1.0.0
      *
      */
     public function set_title( string $title ): self {
@@ -123,7 +123,7 @@ class Flyout {
      * @param array  $args   Optional tab arguments (icon, badge, disabled).
      *
      * @return self
-     * @since 3.0.0
+     * @since 1.0.0
      *
      */
     public function add_tab( string $id, string $label, bool $active = false, array $args = [] ): self {
@@ -157,7 +157,7 @@ class Flyout {
      * @param string $content HTML content to add.
      *
      * @return self
-     * @since 3.0.0
+     * @since 1.0.0
      *
      */
     public function add_content( string $tab_id, string $content ): self {
@@ -180,7 +180,7 @@ class Flyout {
      * @param string $content Footer HTML content.
      *
      * @return self
-     * @since 3.0.0
+     * @since 1.0.0
      *
      */
     public function set_footer( string $content ): self {
@@ -193,7 +193,7 @@ class Flyout {
      * Check if flyout has tabs
      *
      * @return bool
-     * @since 3.0.0
+     * @since 1.0.0
      *
      */
     private function has_tabs(): bool {
@@ -204,7 +204,7 @@ class Flyout {
      * Render the complete flyout
      *
      * @return string Generated HTML.
-     * @since 3.0.0
+     * @since 1.0.0
      *
      */
     public function render(): string {
@@ -239,7 +239,7 @@ class Flyout {
      * Render flyout header
      *
      * @return string Generated HTML.
-     * @since 3.0.0
+     * @since 1.0.0
      *
      */
     private function render_header(): string {
@@ -259,7 +259,7 @@ class Flyout {
      * Render tab navigation
      *
      * @return string Generated HTML.
-     * @since 3.0.0
+     * @since 1.0.0
      *
      */
     private function render_tabs(): string {
@@ -305,7 +305,7 @@ class Flyout {
      * Render flyout body content
      *
      * @return string Generated HTML.
-     * @since 3.0.0
+     * @since 1.0.0
      *
      */
     private function render_body(): string {
@@ -342,7 +342,7 @@ class Flyout {
      * Render the actual body content
      *
      * @return string Generated HTML.
-     * @since 3.0.0
+     * @since 1.0.0
      *
      */
     private function render_body_content(): string {
@@ -375,7 +375,7 @@ class Flyout {
      * Check if content appears to contain form elements
      *
      * @return bool
-     * @since 3.0.0
+     * @since 1.0.0
      *
      */
     private function has_form_content(): bool {

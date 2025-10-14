@@ -5,7 +5,7 @@
  * Business logic should be handled by the implementing plugin.
  *
  * @package WPFlyout
- * @version 3.0.0
+ * @version 1.0.0
  */
 (function ($, window, document) {
     'use strict';

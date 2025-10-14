@@ -23,7 +23,7 @@ use ArrayPress\WPFlyout\Traits\Renderable;
  *
  * Renders form fields and provides form utility methods.
  *
- * @since 3.0.0
+ * @since 1.0.0
  */
 class FormField {
     use Renderable;
@@ -31,7 +31,7 @@ class FormField {
     /**
      * Field configuration
      *
-     * @since 3.0.0
+     * @since 1.0.0
      * @var array
      */
     private array $field = [];
@@ -41,7 +41,7 @@ class FormField {
      *
      * @param array $field Field configuration
      *
-     * @since 3.0.0
+     * @since 1.0.0
      *
      */
     public function __construct( array $field ) {
@@ -125,7 +125,7 @@ class FormField {
      * @param array  $args  Additional arguments
      *
      * @return self
-     * @since 3.0.0
+     * @since 1.0.0
      *
      */
     public static function text( string $name, string $label, array $args = [] ): self {
@@ -263,7 +263,7 @@ class FormField {
      * @param array  $args    Additional arguments
      *
      * @return self
-     * @since 3.0.0
+     * @since 1.0.0
      *
      */
     public static function select( string $name, string $label, array $options, array $args = [] ): self {
@@ -283,7 +283,7 @@ class FormField {
      * @param array  $args  Additional arguments
      *
      * @return self
-     * @since 3.0.0
+     * @since 1.0.0
      *
      */
     public static function textarea( string $name, string $label, array $args = [] ): self {
@@ -327,7 +327,7 @@ class FormField {
      * @param mixed  $value Field value
      *
      * @return string HTML for hidden field
-     * @since 3.0.0
+     * @since 1.0.0
      *
      */
     public static function hidden( string $name, $value ): string {
@@ -345,7 +345,7 @@ class FormField {
      * @param string $name   Field name (defaults to '_wpnonce')
      *
      * @return string HTML for nonce field
-     * @since 3.0.0
+     * @since 1.0.0
      *
      */
     public static function nonce( string $action, string $name = '_wpnonce' ): string {
@@ -358,7 +358,7 @@ class FormField {
      * @param array $fields Array of name => value pairs
      *
      * @return string HTML for all hidden fields
-     * @since 3.0.0
+     * @since 1.0.0
      *
      */
     public static function hidden_fields( array $fields ): string {
@@ -379,7 +379,7 @@ class FormField {
      * @param string     $nonce_name    Nonce field name
      *
      * @return string HTML for metadata fields
-     * @since 3.0.0
+     * @since 1.0.0
      *
      */
     public static function metadata(
@@ -398,7 +398,7 @@ class FormField {
      * @param string $name Field name (defaults to '_wp_http_referer')
      *
      * @return string HTML for referer field
-     * @since 3.0.0
+     * @since 1.0.0
      *
      */
     public static function referer( string $name = '_wp_http_referer' ): string {
@@ -413,7 +413,7 @@ class FormField {
      * @param string $action Action value
      *
      * @return string HTML for action field
-     * @since 3.0.0
+     * @since 1.0.0
      *
      */
     public static function action( string $action ): string {
@@ -427,7 +427,7 @@ class FormField {
      * @param bool   $include_referer Whether to include referer field
      *
      * @return string HTML for security fields
-     * @since 3.0.0
+     * @since 1.0.0
      *
      */
     public static function security( string $nonce_action, bool $include_referer = false ): string {
@@ -448,7 +448,7 @@ class FormField {
      * Render the form field
      *
      * @return string Generated HTML
-     * @since 3.0.0
+     * @since 1.0.0
      *
      */
     public function render(): string {
@@ -478,7 +478,7 @@ class FormField {
      * Render the input element
      *
      * @return string Generated HTML
-     * @since 3.0.0
+     * @since 1.0.0
      *
      */
     private function render_input(): string {
@@ -498,7 +498,7 @@ class FormField {
      * Render text-based input
      *
      * @return string Generated HTML
-     * @since 3.0.0
+     * @since 1.0.0
      *
      */
     private function render_text_input(): string {
@@ -570,7 +570,7 @@ class FormField {
      * Render select field
      *
      * @return string Generated HTML
-     * @since 3.0.0
+     * @since 1.0.0
      *
      */
     private function render_select(): string {
@@ -606,7 +606,7 @@ class FormField {
      * Render textarea field
      *
      * @return string Generated HTML
-     * @since 3.0.0
+     * @since 1.0.0
      *
      */
     private function render_textarea(): string {

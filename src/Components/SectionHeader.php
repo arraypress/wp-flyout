@@ -7,7 +7,7 @@
  * @package     ArrayPress\WPFlyout\Components
  * @copyright   Copyright (c) 2025, ArrayPress Limited
  * @license     GPL2+
- * @version     3.0.0
+ * @version     1.0.0
  * @author      David Sherlock
  */
 
@@ -22,7 +22,7 @@ use ArrayPress\WPFlyout\Traits\Renderable;
  *
  * Renders section headers with consistent styling.
  *
- * @since 3.0.0
+ * @since 1.0.0
  */
 class SectionHeader {
     use Renderable;
@@ -30,7 +30,7 @@ class SectionHeader {
     /**
      * Section title
      *
-     * @since 3.0.0
+     * @since 1.0.0
      * @var string
      */
     private string $title;
@@ -38,7 +38,7 @@ class SectionHeader {
     /**
      * Section configuration
      *
-     * @since 3.0.0
+     * @since 1.0.0
      * @var array
      */
     private array $config = [
@@ -54,7 +54,7 @@ class SectionHeader {
      * @param string $title  Section title.
      * @param array  $config Optional configuration.
      *
-     * @since 3.0.0
+     * @since 1.0.0
      *
      */
     public function __construct( string $title, array $config = [] ) {
@@ -70,7 +70,7 @@ class SectionHeader {
      * @param string|null $icon        Optional dashicon.
      *
      * @return self
-     * @since 3.0.0
+     * @since 1.0.0
      *
      */
     public static function create( string $title, string $description = '', ?string $icon = null ): self {
@@ -84,7 +84,7 @@ class SectionHeader {
      * Render the section header
      *
      * @return string Generated HTML.
-     * @since 3.0.0
+     * @since 1.0.0
      *
      */
     public function render(): string {

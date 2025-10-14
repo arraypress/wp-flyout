@@ -273,4 +273,5 @@ class FileManager {
                 'placeholder_url'  => 'https://example.com',
         ] );
     }
+
 }
