@@ -304,10 +304,11 @@
          *
          * Creates table if needed, generates row from template,
          * and adds product to the order with animation.
+         * Expects pre-formatted currency strings from server.
          *
          * @since 1.0.0
          * @param {jQuery} $component - Order items component
-         * @param {Object} product - Product data object
+         * @param {Object} product - Product data object (with price_formatted from server)
          * @fires orderitems:added
          * @return {void}
          */
@@ -349,10 +350,11 @@
             // Prepare data for template
             const index = $tbody.find('.order-item').length;
             const price = parseFloat(product.price) || 0;
-            const currency = $component.data('currency') || '$';
-            const currencyPos = $component.data('currency-position') || 'before';
 
-            const priceFormatted = this.formatCurrency(price, currency, currencyPos);
+            // Use pre-formatted currency from server, or format client-side if needed
+            const priceFormatted = product.price_formatted || this.formatCurrency(price, $component.data('currency'));
+            const subtotalFormatted = product.subtotal_formatted || priceFormatted;
+
             const thumbnailHtml = product.thumbnail ?
                 '<img src="' + this.escapeHtml(product.thumbnail) + '" alt="' +
                 this.escapeHtml(product.name) + '" class="product-thumbnail">' :
@@ -367,7 +369,7 @@
                 .replace(/{{name}}/g, this.escapeHtml(product.name || ''))
                 .replace(/{{price}}/g, price)
                 .replace(/{{price_formatted}}/g, priceFormatted)
-                .replace(/{{subtotal_formatted}}/g, priceFormatted)
+                .replace(/{{subtotal_formatted}}/g, subtotalFormatted)
                 .replace(/{{thumbnail_html}}/g, thumbnailHtml);
 
             // Add row with animation
@@ -491,10 +493,9 @@
             // Update row subtotal
             const price = parseFloat($row.find('.column-price').data('price')) || 0;
             const subtotal = price * quantity;
-            const currency = $component.data('currency') || '$';
-            const currencyPos = $component.data('currency-position') || 'before';
+            const currency = $component.data('currency') || 'USD';
 
-            $row.find('.item-subtotal').text(this.formatCurrency(subtotal, currency, currencyPos));
+            $row.find('.item-subtotal').text(this.formatCurrency(subtotal, currency));
 
             // Recalculate totals
             this.recalculateTotals($component);
@@ -556,8 +557,7 @@
          */
         recalculateTotals: function ($component) {
             let subtotal = 0;
-            const currency = $component.data('currency') || '$';
-            const currencyPos = $component.data('currency-position') || 'before';
+            const currency = $component.data('currency') || 'USD';
 
             // Calculate subtotal from all items
             $component.find('.order-item').each(function () {
@@ -569,7 +569,7 @@
 
             // Update subtotal display
             $component.find('.subtotal-amount')
-                .text(this.formatCurrency(subtotal, currency, currencyPos))
+                .text(this.formatCurrency(subtotal, currency))
                 .attr('data-value', subtotal);
 
             // Update total in edit mode
@@ -577,7 +577,7 @@
                 // Could apply discount/tax calculations here if needed
                 const total = subtotal;
                 $component.find('.total-amount')
-                    .text(this.formatCurrency(total, currency, currencyPos));
+                    .text(this.formatCurrency(total, currency));
             }
 
             // Trigger updated event
@@ -590,17 +590,31 @@
         /**
          * Format currency display
          *
-         * Formats a numeric amount as currency with proper symbol placement.
+         * Simple client-side currency formatting for dynamic calculations.
+         * Server-side formatting (via CurrencyFormatter trait) is preferred
+         * and should be used whenever possible.
          *
-         * @since 1.0.0
-         * @param {number} amount - Amount to format
-         * @param {string} symbol - Currency symbol
-         * @param {string} position - Symbol position ('before' or 'after')
+         * @since 2.0.0
+         * @param {number} amount - Amount to format (in dollars as float)
+         * @param {string} currency - Currency code (e.g., 'USD', 'EUR')
          * @return {string} Formatted currency string
          */
-        formatCurrency: function (amount, symbol, position) {
-            const formatted = amount.toFixed(2);
-            return position === 'after' ? formatted + symbol : symbol + formatted;
+        formatCurrency: function (amount, currency) {
+            currency = currency || 'USD';
+
+            const symbols = {
+                'USD': '$',
+                'EUR': '€',
+                'GBP': '£',
+                'JPY': '¥',
+                'CAD': '$',
+                'AUD': '$'
+            };
+
+            const symbol = symbols[currency] || currency + ' ';
+            const decimals = (currency === 'JPY') ? 0 : 2;
+
+            return symbol + amount.toFixed(decimals);
         },
 
         /**
