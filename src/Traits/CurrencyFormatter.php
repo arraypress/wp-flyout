@@ -28,18 +28,24 @@ trait CurrencyFormatter {
 	/**
 	 * Format currency amount
 	 *
-	 * Formats amount in cents to currency string using wp-currencies library.
+	 * Formats amount to currency string using wp-currencies library.
+	 * Accepts both cents (int) and dollar amounts (float).
 	 * Falls back to $this->config['currency'] or 'USD' if currency not provided.
 	 *
-	 * @param int         $amount_in_cents Amount in cents (e.g., 1999 for $19.99)
-	 * @param string|null $currency        Currency code (e.g., 'USD', 'EUR'). Optional.
+	 * @param int|float   $amount    Amount in cents (int) or dollars (float).
+	 *                               Examples: 1999 (int) = $19.99, 19.99 (float) = $19.99
+	 * @param string|null $currency  Currency code (e.g., 'USD', 'EUR'). Optional.
 	 *
 	 * @return string Formatted currency string
 	 * @since 1.0.0
 	 *
 	 */
-	protected function format_currency( int $amount_in_cents, ?string $currency = null ): string {
+	protected function format_currency( $amount, ?string $currency = null ): string {
+		// Determine currency to use
 		$currency = $currency ?? ( $this->config['currency'] ?? 'USD' );
+
+		// Convert to cents if float was provided
+		$amount_in_cents = is_float( $amount ) ? (int) round( $amount * 100 ) : (int) $amount;
 
 		return format_currency( $amount_in_cents, $currency );
 	}
