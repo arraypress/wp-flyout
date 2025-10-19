@@ -146,7 +146,7 @@ class Assets {
 		foreach ( self::$core_styles as $css_file ) {
 			$handle = self::get_handle_from_path( $css_file );
 
-			\wp_register_composer_style_from_file(
+			wp_register_composer_style(
 				$handle,
 				$base_file,
 				$css_file,
@@ -163,7 +163,7 @@ class Assets {
 		wp_register_style( 'wp-flyout', false, [ $last_handle ], $version );
 
 		// Register core JavaScript
-		\wp_register_composer_script_from_file(
+		wp_register_composer_script(
 			'wp-flyout',
 			$base_file,
 			'js/wp-flyout.js',
@@ -172,7 +172,7 @@ class Assets {
 		);
 
 		// Add inline script for global access
-		\wp_add_inline_script(
+		wp_add_inline_script(
 			'wp-flyout',
 			'window.WPFlyout = window.WPFlyout || {};',
 			'before'
@@ -197,7 +197,7 @@ class Assets {
 			// Register component script if exists and not empty
 			if ( ! empty( $config['script'] ) ) {
 				$deps = array_merge( [ 'jquery', 'wp-flyout' ], $config['deps'] ?? [] );
-				\wp_register_composer_script_from_file(
+				wp_register_composer_script(
 					$handle,
 					$base_file,
 					$config['script'],
@@ -208,7 +208,7 @@ class Assets {
 
 			// Register component style if exists and not empty
 			if ( ! empty( $config['style'] ) ) {
-				\wp_register_composer_style_from_file(
+				wp_register_composer_style(
 					$handle,
 					$base_file,
 					$config['style'],
@@ -252,7 +252,7 @@ class Assets {
 		if ( ! empty( $config['deps'] ) ) {
 			foreach ( $config['deps'] as $dep ) {
 				// Check if it's another component dependency
-				if ( strpos( $dep, 'wp-flyout-' ) === 0 ) {
+				if ( str_starts_with( $dep, 'wp-flyout-' ) ) {
 					$dep_component = str_replace( 'wp-flyout-', '', $dep );
 					if ( isset( self::$components[ $dep_component ] ) ) {
 						self::enqueue_component( $dep_component );
