@@ -17,6 +17,7 @@ declare( strict_types=1 );
 namespace ArrayPress\WPFlyout\Components;
 
 use ArrayPress\WPFlyout\Traits\Renderable;
+use ArrayPress\WPFlyout\Traits\IconRenderer;
 
 /**
  * Class StatusIndicator
@@ -27,6 +28,7 @@ use ArrayPress\WPFlyout\Traits\Renderable;
  */
 class StatusIndicator {
     use Renderable;
+    use IconRenderer;
 
     /**
      * Component configuration
@@ -204,7 +206,7 @@ class StatusIndicator {
                         <?php if ( $this->config['show_pulse'] && $this->config['status'] === 'operational' ) : ?>
                             <span class="status-pulse"></span>
                         <?php endif; ?>
-                        <span class="dashicons dashicons-<?php echo esc_attr( $status['icon'] ); ?>"></span>
+                        <?php echo $this->render_icon( $status['icon'] ); ?>
                     </div>
                 <?php endif; ?>
 

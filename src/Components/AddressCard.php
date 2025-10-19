@@ -17,6 +17,7 @@ declare( strict_types=1 );
 namespace ArrayPress\WPFlyout\Components;
 
 use ArrayPress\WPFlyout\Traits\Renderable;
+use ArrayPress\WPFlyout\Traits\IconRenderer;
 
 /**
  * Class AddressCard
@@ -27,6 +28,7 @@ use ArrayPress\WPFlyout\Traits\Renderable;
  */
 class AddressCard {
     use Renderable;
+    use IconRenderer;
 
     /**
      * Address data
@@ -94,13 +96,13 @@ class AddressCard {
                 <div class="address-header">
                     <h4 class="address-label">
                         <?php if ( $this->config['type'] === 'billing' ) : ?>
-                            <span class="dashicons dashicons-money-alt"></span>
+                            <?php echo $this->render_icon( 'money-alt' ); ?>
                             <?php esc_html_e( 'Billing Address', 'wp-flyout' ); ?>
                         <?php elseif ( $this->config['type'] === 'shipping' ) : ?>
-                            <span class="dashicons dashicons-location"></span>
+                            <?php echo $this->render_icon( 'location' ); ?>
                             <?php esc_html_e( 'Shipping Address', 'wp-flyout' ); ?>
                         <?php else : ?>
-                            <span class="dashicons dashicons-admin-home"></span>
+                            <?php echo $this->render_icon( 'admin-home' ); ?>
                             <?php esc_html_e( 'Address', 'wp-flyout' ); ?>
                         <?php endif; ?>
                     </h4>
@@ -109,7 +111,7 @@ class AddressCard {
                         <div class="address-actions">
                             <?php if ( $this->config['show_copy'] ) : ?>
                                 <button type="button" class="button-link" data-action="copy-address">
-                                    <span class="dashicons dashicons-clipboard"></span>
+                                    <?php echo $this->render_icon( 'clipboard' ); ?>
                                     <?php esc_html_e( 'Copy', 'wp-flyout' ); ?>
                                 </button>
                             <?php endif; ?>
@@ -119,7 +121,7 @@ class AddressCard {
                                    target="_blank"
                                    rel="noopener noreferrer"
                                    class="button-link">
-                                    <span class="dashicons dashicons-location-alt"></span>
+                                    <?php echo $this->render_icon( 'location-alt' ); ?>
                                     <?php esc_html_e( 'Map', 'wp-flyout' ); ?>
                                 </a>
                             <?php endif; ?>
@@ -189,12 +191,12 @@ class AddressCard {
 
         // Contact info
         if ( ! empty( $this->address['phone'] ) ) {
-            $lines[] = '<span class="address-phone"><span class="dashicons dashicons-phone"></span> ' .
+            $lines[] = '<span class="address-phone">' . $this->render_icon( 'phone' ) . ' ' .
                        esc_html( $this->address['phone'] ) . '</span>';
         }
 
         if ( ! empty( $this->address['email'] ) ) {
-            $lines[] = '<span class="address-email"><span class="dashicons dashicons-email-alt"></span> ' .
+            $lines[] = '<span class="address-email">' . $this->render_icon( 'email-alt' ) . ' ' .
                        esc_html( $this->address['email'] ) . '</span>';
         }
 

@@ -17,6 +17,7 @@ declare( strict_types=1 );
 namespace ArrayPress\WPFlyout\Components;
 
 use ArrayPress\WPFlyout\Traits\Renderable;
+use ArrayPress\WPFlyout\Traits\IconRenderer;
 
 /**
  * Class Timeline
@@ -27,6 +28,7 @@ use ArrayPress\WPFlyout\Traits\Renderable;
  */
 class Timeline {
     use Renderable;
+    use IconRenderer;
 
     /**
      * Timeline events
@@ -142,7 +144,7 @@ class Timeline {
         <div class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>">
             <div class="timeline-badge">
                 <?php if ( $this->config['show_icons'] && ! empty( $event['icon'] ) ) : ?>
-                    <span class="dashicons dashicons-<?php echo esc_attr( $event['icon'] ); ?>"></span>
+                    <?php echo $this->render_icon( $event['icon'] ); ?>
                 <?php endif; ?>
             </div>
 
@@ -278,4 +280,5 @@ class Timeline {
 
         return $timeline;
     }
+
 }

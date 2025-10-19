@@ -17,6 +17,7 @@ declare( strict_types=1 );
 namespace ArrayPress\WPFlyout\Components;
 
 use ArrayPress\WPFlyout\Traits\Renderable;
+use ArrayPress\WPFlyout\Traits\CurrencyFormatter;
 
 /**
  * Class PriceBreakdown
@@ -27,6 +28,7 @@ use ArrayPress\WPFlyout\Traits\Renderable;
  */
 class PriceBreakdown {
     use Renderable;
+    use CurrencyFormatter;
 
     /**
      * Line items
@@ -273,19 +275,6 @@ class PriceBreakdown {
         }
 
         return max( 0, $total );
-    }
-
-    /**
-     * Format currency using wp-currencies library
-     *
-     * @param int $amount Amount in cents
-     *
-     * @return string Formatted currency string
-     * @since 1.0.0
-     *
-     */
-    private function format_currency( int $amount ): string {
-        return format_currency( $amount, $this->config['currency'] );
     }
 
 }

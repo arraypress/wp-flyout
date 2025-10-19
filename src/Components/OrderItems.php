@@ -16,6 +16,8 @@ declare( strict_types=1 );
 namespace ArrayPress\WPFlyout\Components;
 
 use ArrayPress\WPFlyout\Traits\Renderable;
+use ArrayPress\WPFlyout\Traits\DataAttributes;
+use ArrayPress\WPFlyout\Traits\CurrencyFormatter;
 
 /**
  * Class OrderItems
@@ -26,6 +28,8 @@ use ArrayPress\WPFlyout\Traits\Renderable;
  */
 class OrderItems {
     use Renderable;
+    use DataAttributes;
+    use CurrencyFormatter;
 
     /**
      * Order items array
@@ -129,19 +133,6 @@ class OrderItems {
     }
 
     /**
-     * Format currency using wp-currencies library
-     *
-     * @param int $amount Amount in cents
-     *
-     * @return string Formatted currency string
-     * @since 2.0.0
-     *
-     */
-    private function format_currency( int $amount ): string {
-        return format_currency( $amount, $this->config['currency'] );
-    }
-
-    /**
      * Render the component
      *
      * @return string Generated HTML
@@ -175,26 +166,6 @@ class OrderItems {
         </div>
         <?php
         return ob_get_clean();
-    }
-
-    /**
-     * Render data attributes
-     *
-     * @return string Data attributes HTML
-     * @since 1.0.0
-     *
-     */
-    private function render_data_attributes(): string {
-        if ( empty( $this->config['data'] ) ) {
-            return '';
-        }
-
-        $attrs = [];
-        foreach ( $this->config['data'] as $key => $value ) {
-            $attrs[] = sprintf( 'data-%s="%s"', esc_attr( $key ), esc_attr( $value ) );
-        }
-
-        return implode( ' ', $attrs );
     }
 
     /**
@@ -395,7 +366,8 @@ class OrderItems {
 					<span class="label">
 						<?php esc_html_e( 'Discount', 'arraypress' ); ?>
                         <?php if ( ! empty( $this->config['discount_code'] ) ) : ?>
-                            <span class="discount-code">(<?php echo esc_html( $this->config['discount_code'] ); ?>)</span>
+                            <span class="discount-code">(<?php echo esc_html( $this->config['discount_code'] ); ?>
+                                )</span>
                         <?php endif; ?>
 					</span>
                     <span class="value">-<?php echo esc_html( $this->format_currency( $discount ) ); ?></span>

@@ -16,6 +16,7 @@ declare( strict_types=1 );
 namespace ArrayPress\WPFlyout\Components;
 
 use ArrayPress\WPFlyout\Traits\Renderable;
+use ArrayPress\WPFlyout\Traits\EmptyValueFormatter;
 
 /**
  * Class DataTable
@@ -24,6 +25,7 @@ use ArrayPress\WPFlyout\Traits\Renderable;
  */
 class DataTable {
     use Renderable;
+    use EmptyValueFormatter;
 
     /**
      * Table data
@@ -147,9 +149,9 @@ class DataTable {
                     <td><strong><?php echo esc_html( $key ); ?></strong></td>
                     <td>
                         <?php if ( $this->config['show_code'] ): ?>
-                            <code><?php echo esc_html( $this->format_value( $value ) ); ?></code>
+                            <code><?php echo esc_html( $this->format_table_value( $value ) ); ?></code>
                         <?php else: ?>
-                            <?php echo esc_html( $this->format_value( $value ) ); ?>
+                            <?php echo esc_html( $this->format_table_value( $value ) ); ?>
                         <?php endif; ?>
                     </td>
                 </tr>
@@ -161,19 +163,21 @@ class DataTable {
     }
 
     /**
-     * Format a value for display
+     * Format a value for table display
+     *
+     * This extends the trait's format_value to handle JSON formatting
      *
      * @param mixed $value Value to format
      *
      * @return string Formatted value
      */
-    private function format_value( $value ): string {
+    private function format_table_value( $value ): string {
         if ( is_null( $value ) ) {
             return $this->config['empty_text'];
         }
 
         if ( is_bool( $value ) ) {
-            return $value ? 'true' : 'false';
+            return $this->format_boolean( $value );
         }
 
         if ( is_array( $value ) || is_object( $value ) ) {
@@ -184,7 +188,7 @@ class DataTable {
             return print_r( $value, true );
         }
 
-        return (string) $value;
+        return $this->format_value( $value, $this->config['empty_text'] );
     }
 
 }

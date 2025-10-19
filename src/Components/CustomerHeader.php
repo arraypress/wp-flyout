@@ -17,6 +17,7 @@ declare( strict_types=1 );
 namespace ArrayPress\WPFlyout\Components;
 
 use ArrayPress\WPFlyout\Traits\Renderable;
+use ArrayPress\WPFlyout\Traits\IconRenderer;
 
 /**
  * Class CustomerHeader
@@ -27,6 +28,7 @@ use ArrayPress\WPFlyout\Traits\Renderable;
  */
 class CustomerHeader {
     use Renderable;
+    use IconRenderer;
 
     /**
      * Customer data
@@ -109,22 +111,22 @@ class CustomerHeader {
                     <div class="customer-contact">
                         <?php if ( ! empty( $this->customer['email'] ) ) : ?>
                             <span class="customer-email">
-								<span class="dashicons dashicons-email-alt"></span>
-								<?php echo esc_html( $this->customer['email'] ); ?>
+								<?php echo $this->render_icon( 'email-alt' ); ?>
+                                <?php echo esc_html( $this->customer['email'] ); ?>
 							</span>
                         <?php endif; ?>
 
                         <?php if ( ! empty( $this->customer['phone'] ) ) : ?>
                             <span class="customer-phone">
-								<span class="dashicons dashicons-phone"></span>
-								<?php echo esc_html( $this->customer['phone'] ); ?>
+								<?php echo $this->render_icon( 'phone' ); ?>
+                                <?php echo esc_html( $this->customer['phone'] ); ?>
 							</span>
                         <?php endif; ?>
 
                         <?php if ( ! empty( $this->customer['company'] ) ) : ?>
                             <span class="customer-company">
-								<span class="dashicons dashicons-building"></span>
-								<?php echo esc_html( $this->customer['company'] ); ?>
+								<?php echo $this->render_icon( 'building' ); ?>
+                                <?php echo esc_html( $this->customer['company'] ); ?>
 							</span>
                         <?php endif; ?>
                     </div>

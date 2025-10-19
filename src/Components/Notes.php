@@ -16,12 +16,14 @@ declare( strict_types=1 );
 namespace ArrayPress\WPFlyout\Components;
 
 use ArrayPress\WPFlyout\Traits\Renderable;
+use ArrayPress\WPFlyout\Traits\DataAttributes;
 
 /**
  * Class NotesPanel
  */
 class Notes {
     use Renderable;
+    use DataAttributes;
 
     /**
      * Notes array
@@ -138,22 +140,6 @@ class Notes {
         </div>
         <?php
         return ob_get_clean();
-    }
-
-    /**
-     * Render data attributes
-     */
-    private function render_data_attributes(): string {
-        if ( empty( $this->config['data'] ) ) {
-            return '';
-        }
-
-        $attrs = [];
-        foreach ( $this->config['data'] as $key => $value ) {
-            $attrs[] = sprintf( 'data-%s="%s"', esc_attr( $key ), esc_attr( $value ) );
-        }
-
-        return implode( ' ', $attrs );
     }
 
     /**

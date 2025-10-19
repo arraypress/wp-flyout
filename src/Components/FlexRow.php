@@ -17,6 +17,7 @@ declare( strict_types=1 );
 namespace ArrayPress\WPFlyout\Components;
 
 use ArrayPress\WPFlyout\Traits\Renderable;
+use ArrayPress\WPFlyout\Traits\ClassBuilder;
 
 /**
  * Class FlexRow
@@ -27,6 +28,7 @@ use ArrayPress\WPFlyout\Traits\Renderable;
  */
 class FlexRow {
     use Renderable;
+    use ClassBuilder;
 
     /**
      * Items to display in the row

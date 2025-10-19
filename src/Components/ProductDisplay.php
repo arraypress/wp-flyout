@@ -15,12 +15,14 @@ declare( strict_types=1 );
 namespace ArrayPress\WPFlyout\Components;
 
 use ArrayPress\WPFlyout\Traits\Renderable;
+use ArrayPress\WPFlyout\Traits\ClassBuilder;
 
 /**
  * Class ProductDisplay
  */
 class ProductDisplay {
     use Renderable;
+    use ClassBuilder;
 
     /**
      * Item data
@@ -71,15 +73,14 @@ class ProductDisplay {
                 $this->config['class'],
                 $this->config['size'] !== 'default' ? $this->config['size'] : '',
                 $this->config['layout'] === 'stacked' ? 'stacked' : '',
-                $this->config['borderless'] ? 'borderless' : ''
+                $this->conditional_class( 'borderless', $this->config['borderless'] )
         ];
 
-        $classes      = array_filter( $classes );
-        $class_string = implode( ' ', $classes );
+        $class_string = $this->build_classes( $classes );
 
         ob_start();
         ?>
-        <div class="<?php echo esc_attr( $class_string ); ?>"
+        <div class="<?php echo $class_string; ?>"
              data-item-id="<?php echo esc_attr( $this->item['id'] ); ?>">
 
             <?php if ( $this->config['show_media'] ) : ?>
