@@ -119,11 +119,11 @@ class OrderItems {
     /**
      * Calculate subtotal
      *
-     * @return int Calculated subtotal in cents
+     * @return int|float Calculated subtotal (accepts both int cents and float dollars)
      * @since 1.0.0
      *
      */
-    private function calculate_subtotal(): int {
+    private function calculate_subtotal() {
         $total = 0;
         foreach ( $this->items as $item ) {
             $total += ( $item['price'] ?? 0 ) * ( $item['quantity'] ?? 1 );

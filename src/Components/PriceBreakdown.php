@@ -74,16 +74,16 @@ class PriceBreakdown {
     /**
      * Add a line item
      *
-     * @param string $name     Item name
-     * @param int    $price    Unit price in cents
-     * @param int    $quantity Quantity
-     * @param array  $meta     Additional metadata
+     * @param string    $name     Item name
+     * @param int|float $price    Unit price in cents (int) or dollars (float)
+     * @param int       $quantity Quantity
+     * @param array     $meta     Additional metadata
      *
      * @return self
      * @since 1.0.0
      *
      */
-    public function add_item( string $name, int $price, int $quantity = 1, array $meta = [] ): self {
+    public function add_item( string $name, $price, int $quantity = 1, array $meta = [] ): self {
         $this->items[] = array_merge( [
                 'name'        => $name,
                 'price'       => $price,
@@ -97,16 +97,16 @@ class PriceBreakdown {
     /**
      * Add an adjustment
      *
-     * @param string $type   Type: 'discount', 'tax', 'fee', 'shipping'
-     * @param string $label  Label
-     * @param int    $amount Amount in cents (positive or negative)
-     * @param array  $meta   Additional metadata
+     * @param string    $type   Type: 'discount', 'tax', 'fee', 'shipping'
+     * @param string    $label  Label
+     * @param int|float $amount Amount in cents (int) or dollars (float) (positive or negative)
+     * @param array     $meta   Additional metadata
      *
      * @return self
      * @since 1.0.0
      *
      */
-    public function add_adjustment( string $type, string $label, int $amount, array $meta = [] ): self {
+    public function add_adjustment( string $type, string $label, $amount, array $meta = [] ): self {
         $this->adjustments[] = array_merge( [
                 'type'       => $type,
                 'label'      => $label,
@@ -207,14 +207,14 @@ class PriceBreakdown {
     /**
      * Render an adjustment
      *
-     * @param array $adjustment Adjustment data
-     * @param int   $subtotal   Subtotal for percentage calculations (in cents)
+     * @param array     $adjustment Adjustment data
+     * @param int|float $subtotal   Subtotal for percentage calculations
      *
      * @return string Generated HTML
      * @since 1.0.0
      *
      */
-    private function render_adjustment( array $adjustment, int $subtotal ): string {
+    private function render_adjustment( array $adjustment, $subtotal ): string {
         $class = 'summary-row adjustment-' . $adjustment['type'];
 
         ob_start();
@@ -241,11 +241,11 @@ class PriceBreakdown {
     /**
      * Calculate subtotal
      *
-     * @return int Subtotal in cents
+     * @return int|float Subtotal (accepts both int cents and float dollars)
      * @since 1.0.0
      *
      */
-    private function calculate_subtotal(): int {
+    private function calculate_subtotal() {
         $subtotal = 0;
         foreach ( $this->items as $item ) {
             $subtotal += $item['price'] * $item['quantity'];
@@ -257,13 +257,13 @@ class PriceBreakdown {
     /**
      * Calculate total
      *
-     * @param int $subtotal Subtotal in cents
+     * @param int|float $subtotal Subtotal
      *
-     * @return int Total in cents
+     * @return int|float Total (accepts both int cents and float dollars)
      * @since 1.0.0
      *
      */
-    private function calculate_total( int $subtotal ): int {
+    private function calculate_total( $subtotal ) {
         $total = $subtotal;
 
         foreach ( $this->adjustments as $adjustment ) {
