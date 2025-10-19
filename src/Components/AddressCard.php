@@ -182,7 +182,7 @@ class AddressCard {
             $lines[] = implode( ', ', $locality );
         }
 
-        // Country
+        // Country - use the Countries library helper function
         if ( ! empty( $this->address['country'] ) ) {
             $lines[] = esc_html( $this->get_country_name( $this->address['country'] ) );
         }
@@ -253,17 +253,20 @@ class AddressCard {
     }
 
     /**
-     * Get country name from code
+     * Get country name from code using ArrayPress Countries library
      *
      * @param string $code Country code
      *
-     * @return string Country name
+     * @return string Country name (or code if not found)
      * @since 1.0.0
      *
      */
     private function get_country_name( string $code ): string {
-        // This would typically use WooCommerce or WordPress country list
-        // For now, return the code
+        if ( function_exists( 'get_country_name' ) ) {
+            return get_country_name( $code );
+        }
+
+        // Fallback if Countries library is not loaded
         return strtoupper( $code );
     }
 

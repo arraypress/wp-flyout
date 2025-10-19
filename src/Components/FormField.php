@@ -312,7 +312,7 @@ class FormField {
                 'name'        => $name,
                 'label'       => $label,
                 'ajax_action' => $ajax_action,
-                'placeholder' => 'Type to search...',
+                'placeholder' => __( 'Type to search...', 'arraypress' ),
         ], $args ) );
     }
 
@@ -638,7 +638,7 @@ class FormField {
                 'name'            => $this->field['name'],
                 'id'              => $this->field['id'],
                 'ajax'            => $this->field['ajax_action'] ?? '',
-                'placeholder'     => $this->field['placeholder'] ?? 'Type to search...',
+                'placeholder'     => $this->field['placeholder'] ?? __( 'Type to search...', 'arraypress' ),
                 'value'           => $this->field['value'] ?? '',
                 'text'            => $this->field['text'] ?? '',
                 'required'        => $this->field['required'] ?? false,

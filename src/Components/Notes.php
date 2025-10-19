@@ -36,10 +36,10 @@ class Notes {
     private array $config = [
             'class'          => 'wp-flyout-notes-panel',
             'editable'       => false,
-            'empty_text'     => 'No notes yet.',
-            'placeholder'    => 'Add a note...',
-            'button_text'    => 'Add Note',
-            'confirm_delete' => 'Delete this note?',
+            'empty_text'     => '',
+            'placeholder'    => '',
+            'button_text'    => '',
+            'confirm_delete' => '',
             'data'           => []
     ];
 
@@ -47,8 +47,17 @@ class Notes {
      * Constructor
      */
     public function __construct( array $notes = [], array $config = [] ) {
-        $this->notes  = $notes;
-        $this->config = array_merge( $this->config, $config );
+        $this->notes = $notes;
+
+        // Set default translatable strings
+        $defaults = [
+                'empty_text'     => __( 'No notes yet.', 'arraypress' ),
+                'placeholder'    => __( 'Add a note...', 'arraypress' ),
+                'button_text'    => __( 'Add Note', 'arraypress' ),
+                'confirm_delete' => __( 'Delete this note?', 'arraypress' ),
+        ];
+
+        $this->config = array_merge( $this->config, $defaults, $config );
     }
 
     /**
@@ -153,7 +162,7 @@ class Notes {
     public static function activity_log( array $entries = [] ): self {
         return new self( $entries, [
                 'editable'   => false,
-                'empty_text' => 'No activity yet.'
+                'empty_text' => __( 'No activity yet.', 'arraypress' )
         ] );
     }
 

@@ -162,23 +162,23 @@ class FieldGroup {
      *
      */
     public static function name_fields(
-            string $first_label = 'First Name',
-            string $last_label = 'Last Name',
+            string $first_label = '',
+            string $last_label = '',
             array $options = []
     ): self {
         $group = new self( $options );
 
         $group->add_field(
-                FormField::text( 'first_name', $first_label, [
+                FormField::text( 'first_name', $first_label ?: __( 'First Name', 'arraypress' ), [
                         'required'    => true,
-                        'placeholder' => 'John'
+                        'placeholder' => __( 'John', 'arraypress' )
                 ] )
         );
 
         $group->add_field(
-                FormField::text( 'last_name', $last_label, [
+                FormField::text( 'last_name', $last_label ?: __( 'Last Name', 'arraypress' ), [
                         'required'    => true,
-                        'placeholder' => 'Doe'
+                        'placeholder' => __( 'Doe', 'arraypress' )
                 ] )
         );
 
@@ -201,7 +201,7 @@ class FieldGroup {
         $group = new self( $options );
 
         $group->add_field(
-                FormField::text( 'password', 'Password', [
+                FormField::text( 'password', __( 'Password', 'arraypress' ), [
                         'type'        => 'password',
                         'required'    => true,
                         'placeholder' => '••••••••'
@@ -209,7 +209,7 @@ class FieldGroup {
         );
 
         $group->add_field(
-                FormField::text( 'password_confirm', 'Confirm Password', [
+                FormField::text( 'password_confirm', __( 'Confirm Password', 'arraypress' ), [
                         'type'        => 'password',
                         'required'    => true,
                         'placeholder' => '••••••••'
@@ -234,13 +234,13 @@ class FieldGroup {
         $group = new self( $options );
 
         $group->add_field(
-                FormField::text( 'city', 'City', [
-                        'placeholder' => 'New York'
+                FormField::text( 'city', __( 'City', 'arraypress' ), [
+                        'placeholder' => __( 'New York', 'arraypress' )
                 ] )
         );
 
         $group->add_field(
-                FormField::text( 'zip', 'ZIP Code', [
+                FormField::text( 'zip', __( 'ZIP Code', 'arraypress' ), [
                         'placeholder' => '10001'
                 ] )
         );
@@ -262,20 +262,20 @@ class FieldGroup {
      *
      */
     public static function date_range_fields(
-            string $start_label = 'Start Date',
-            string $end_label = 'End Date',
+            string $start_label = '',
+            string $end_label = '',
             array $options = []
     ): self {
         $group = new self( $options );
 
         $group->add_field(
-                FormField::text( 'date_start', $start_label, [
+                FormField::text( 'date_start', $start_label ?: __( 'Start Date', 'arraypress' ), [
                         'type' => 'date'
                 ] )
         );
 
         $group->add_field(
-                FormField::text( 'date_end', $end_label, [
+                FormField::text( 'date_end', $end_label ?: __( 'End Date', 'arraypress' ), [
                         'type' => 'date'
                 ] )
         );
@@ -286,10 +286,11 @@ class FieldGroup {
     /**
      * Static factory method for creating a new instance
      *
+     * @param array $config Configuration options
+     *
+     * @return self
      * @since 1.0.0
      *
-     * @param array $config Configuration options
-     * @return self
      */
     public static function create( array $config = [] ): self {
         return new self( $config );

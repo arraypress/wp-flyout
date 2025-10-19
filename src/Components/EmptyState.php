@@ -33,7 +33,7 @@ class EmptyState {
      */
     private array $config = [
             'icon'         => 'admin-page',
-            'title'        => 'No items found',
+            'title'        => '',
             'description'  => '',
             'action_text'  => '',
             'action_url'   => '',
@@ -60,10 +60,13 @@ class EmptyState {
      * @return self
      */
     public static function no_data( string $description = '' ): self {
-        return new self( 'No Data Available', [
-                'icon'        => 'chart-bar',
-                'description' => $description ?: 'There is no data to display at this time.'
-        ] );
+        return new self(
+                __( 'No Data Available', 'arraypress' ),
+                [
+                        'icon'        => 'chart-bar',
+                        'description' => $description ?: __( 'There is no data to display at this time.', 'arraypress' )
+                ]
+        );
     }
 
     /**
@@ -73,13 +76,50 @@ class EmptyState {
      *
      * @return self
      */
-    public static function no_files( string $action_text = 'Add File' ): self {
-        return new self( 'No Files', [
-                'icon'         => 'media-document',
-                'description'  => 'No files have been added yet.',
-                'action_text'  => $action_text,
-                'action_class' => 'button add-file-trigger'
-        ] );
+    public static function no_files( string $action_text = '' ): self {
+        return new self(
+                __( 'No Files', 'arraypress' ),
+                [
+                        'icon'         => 'media-document',
+                        'description'  => __( 'No files have been added yet.', 'arraypress' ),
+                        'action_text'  => $action_text ?: __( 'Add File', 'arraypress' ),
+                        'action_class' => 'button add-file-trigger'
+                ]
+        );
+    }
+
+    /**
+     * Create a "no results" empty state
+     *
+     * @param string $description Optional description
+     *
+     * @return self
+     */
+    public static function no_results( string $description = '' ): self {
+        return new self(
+                __( 'No Results Found', 'arraypress' ),
+                [
+                        'icon'        => 'search',
+                        'description' => $description ?: __( 'Try adjusting your search or filter criteria.', 'arraypress' )
+                ]
+        );
+    }
+
+    /**
+     * Create a "no items" empty state
+     *
+     * @param string $description Optional description
+     *
+     * @return self
+     */
+    public static function no_items( string $description = '' ): self {
+        return new self(
+                __( 'No Items Found', 'arraypress' ),
+                [
+                        'icon'        => 'admin-page',
+                        'description' => $description ?: __( 'No items to display.', 'arraypress' )
+                ]
+        );
     }
 
     /**

@@ -50,10 +50,10 @@ class FileManager {
             'media_picker'     => true,
             'external_urls'    => true,
             'class'            => 'wp-flyout-file-manager',
-            'empty_text'       => 'No files added yet.',
-            'add_button_text'  => 'Add File',
-            'placeholder_name' => 'File name',
-            'placeholder_url'  => 'File URL'
+            'empty_text'       => '',
+            'add_button_text'  => '',
+            'placeholder_name' => '',
+            'placeholder_url'  => ''
     ];
 
     /**
@@ -66,7 +66,16 @@ class FileManager {
     public function __construct( array $files = [], string $name_prefix = 'files', array $config = [] ) {
         $this->files       = $files;
         $this->name_prefix = $name_prefix;
-        $this->config      = array_merge( $this->config, $config );
+
+        // Set default translatable strings
+        $defaults = [
+                'empty_text'       => __( 'No files added yet.', 'arraypress' ),
+                'add_button_text'  => __( 'Add File', 'arraypress' ),
+                'placeholder_name' => __( 'File name', 'arraypress' ),
+                'placeholder_url'  => __( 'File URL', 'arraypress' )
+        ];
+
+        $this->config = array_merge( $this->config, $defaults, $config );
 
         // Ensure at least one empty row
         if ( empty( $this->files ) ) {
@@ -175,14 +184,16 @@ class FileManager {
                             <?php echo ! $this->config['external_urls'] ? 'readonly' : ''; ?>>
 
                     <?php if ( $this->config['media_picker'] ) : ?>
-                        <button type="button" class="button" data-action="browse" title="Select from Media Library">
+                        <button type="button" class="button" data-action="browse"
+                                title="<?php echo esc_attr__( 'Select from Media Library', 'arraypress' ); ?>">
                             <span class="dashicons dashicons-admin-media"></span>
                         </button>
                     <?php endif; ?>
                 </div>
             </div>
 
-            <button type="button" class="button-link" data-action="remove" title="Remove file">
+            <button type="button" class="button-link" data-action="remove"
+                    title="<?php echo esc_attr__( 'Remove file', 'arraypress' ); ?>">
                 <span class="dashicons dashicons-trash"></span>
             </button>
         </div>
@@ -228,14 +239,16 @@ class FileManager {
                             <?php echo ! $this->config['external_urls'] ? 'readonly' : ''; ?>>
 
                     <?php if ( $this->config['media_picker'] ) : ?>
-                        <button type="button" class="button" data-action="browse" title="Select from Media Library">
+                        <button type="button" class="button" data-action="browse"
+                                title="<?php echo esc_attr__( 'Select from Media Library', 'arraypress' ); ?>">
                             <span class="dashicons dashicons-admin-media"></span>
                         </button>
                     <?php endif; ?>
                 </div>
             </div>
 
-            <button type="button" class="button-link" data-action="remove" title="Remove file">
+            <button type="button" class="button-link" data-action="remove"
+                    title="<?php echo esc_attr__( 'Remove file', 'arraypress' ); ?>">
                 <span class="dashicons dashicons-trash"></span>
             </button>
         </div>
@@ -253,8 +266,8 @@ class FileManager {
      */
     public static function downloads( array $files = [], string $prefix = 'downloads' ): self {
         return new self( $files, $prefix, [
-                'add_button_text'  => 'Add Download',
-                'placeholder_name' => 'Download title',
+                'add_button_text'  => __( 'Add Download', 'arraypress' ),
+                'placeholder_name' => __( 'Download title', 'arraypress' ),
         ] );
     }
 
@@ -268,8 +281,8 @@ class FileManager {
      */
     public static function resources( array $files = [], string $prefix = 'resources' ): self {
         return new self( $files, $prefix, [
-                'add_button_text'  => 'Add Resource',
-                'placeholder_name' => 'Resource name',
+                'add_button_text'  => __( 'Add Resource', 'arraypress' ),
+                'placeholder_name' => __( 'Resource name', 'arraypress' ),
                 'placeholder_url'  => 'https://example.com',
         ] );
     }

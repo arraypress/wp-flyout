@@ -42,25 +42,24 @@ class OrderItems {
      * @var array
      */
     private array $config = [
-            'mode'              => 'edit', // 'edit' or 'view'
-            'name_prefix'       => 'order_items',
-            'currency_symbol'   => '$',
-            'currency_position' => 'before', // 'before' or 'after'
-            'subtotal'          => 0,
-            'discount'          => 0,
-            'discount_code'     => '',
-            'tax'               => 0,
-            'total'             => 0,
-            'show_quantity'     => true,
-            'max_items'         => 0, // 0 = unlimited
-            'min_items'         => 0,
-            'class'             => 'wp-flyout-order-items',
-            'empty_text'        => 'No products added yet.',
-            'add_text'          => 'Add',
-            'select_text'       => 'Search for products...',
-            'ajax_action'       => 'search_products', // AJAX action for product search
-            'ajax_nonce'        => '',
-            'data'              => []
+            'mode'          => 'edit', // 'edit' or 'view'
+            'name_prefix'   => 'order_items',
+            'currency'      => 'USD', // Currency code for formatting
+            'subtotal'      => 0,
+            'discount'      => 0,
+            'discount_code' => '',
+            'tax'           => 0,
+            'total'         => 0,
+            'show_quantity' => true,
+            'max_items'     => 0, // 0 = unlimited
+            'min_items'     => 0,
+            'class'         => 'wp-flyout-order-items',
+            'empty_text'    => '',
+            'add_text'      => '',
+            'select_text'   => '',
+            'ajax_action'   => 'search_products', // AJAX action for product search
+            'ajax_nonce'    => '',
+            'data'          => []
     ];
 
     /**
@@ -73,8 +72,16 @@ class OrderItems {
      *
      */
     public function __construct( array $items = [], array $config = [] ) {
-        $this->items  = $items;
-        $this->config = array_merge( $this->config, $config );
+        $this->items = $items;
+
+        // Set default translatable strings
+        $defaults = [
+                'empty_text'  => __( 'No products added yet.', 'arraypress' ),
+                'add_text'    => __( 'Add', 'arraypress' ),
+                'select_text' => __( 'Search for products...', 'arraypress' ),
+        ];
+
+        $this->config = array_merge( $this->config, $defaults, $config );
 
         // Auto-generate nonce if not provided
         if ( empty( $this->config['ajax_nonce'] ) && ! empty( $this->config['ajax_action'] ) ) {
@@ -108,11 +115,11 @@ class OrderItems {
     /**
      * Calculate subtotal
      *
-     * @return float Calculated subtotal
+     * @return int Calculated subtotal in cents
      * @since 1.0.0
      *
      */
-    private function calculate_subtotal(): float {
+    private function calculate_subtotal(): int {
         $total = 0;
         foreach ( $this->items as $item ) {
             $total += ( $item['price'] ?? 0 ) * ( $item['quantity'] ?? 1 );
@@ -122,21 +129,16 @@ class OrderItems {
     }
 
     /**
-     * Format currency
+     * Format currency using wp-currencies library
      *
-     * @param float $amount Amount to format
+     * @param int $amount Amount in cents
      *
      * @return string Formatted currency string
-     * @since 1.0.0
+     * @since 2.0.0
      *
      */
-    private function format_currency( float $amount ): string {
-        $formatted = number_format( $amount, 2 );
-        if ( $this->config['currency_position'] === 'after' ) {
-            return $formatted . $this->config['currency_symbol'];
-        }
-
-        return $this->config['currency_symbol'] . $formatted;
+    private function format_currency( int $amount ): string {
+        return format_currency( $amount, $this->config['currency'] );
     }
 
     /**
@@ -156,8 +158,7 @@ class OrderItems {
              data-name-prefix="<?php echo esc_attr( $this->config['name_prefix'] ); ?>"
              data-max-items="<?php echo esc_attr( (string) $this->config['max_items'] ); ?>"
              data-min-items="<?php echo esc_attr( (string) $this->config['min_items'] ); ?>"
-             data-currency="<?php echo esc_attr( $this->config['currency_symbol'] ); ?>"
-             data-currency-position="<?php echo esc_attr( $this->config['currency_position'] ); ?>"
+             data-currency="<?php echo esc_attr( $this->config['currency'] ); ?>"
              data-ajax-action="<?php echo esc_attr( $this->config['ajax_action'] ); ?>"
                 <?php echo $this->render_data_attributes(); ?>>
 
@@ -245,12 +246,12 @@ class OrderItems {
                 <table>
                     <thead>
                     <tr>
-                        <th class="column-product">Product</th>
+                        <th class="column-product"><?php esc_html_e( 'Product', 'arraypress' ); ?></th>
                         <?php if ( $this->config['show_quantity'] ) : ?>
-                            <th class="column-quantity">Qty</th>
+                            <th class="column-quantity"><?php esc_html_e( 'Qty', 'arraypress' ); ?></th>
                         <?php endif; ?>
-                        <th class="column-price">Price</th>
-                        <th class="column-subtotal">Subtotal</th>
+                        <th class="column-price"><?php esc_html_e( 'Price', 'arraypress' ); ?></th>
+                        <th class="column-subtotal"><?php esc_html_e( 'Subtotal', 'arraypress' ); ?></th>
                         <?php if ( $is_edit ) : ?>
                             <th class="column-actions"></th>
                         <?php endif; ?>
@@ -329,7 +330,8 @@ class OrderItems {
 
             <?php if ( $is_edit ) : ?>
                 <td class="column-actions">
-                    <button type="button" class="button-link" data-action="remove-item" title="Remove">
+                    <button type="button" class="button-link" data-action="remove-item"
+                            title="<?php echo esc_attr__( 'Remove', 'arraypress' ); ?>">
                         <span class="dashicons dashicons-trash"></span>
                     </button>
                 </td>
@@ -382,7 +384,7 @@ class OrderItems {
         ?>
         <div class="order-items-totals">
             <div class="totals-row">
-                <span class="label">Subtotal:</span>
+                <span class="label"><?php esc_html_e( 'Subtotal:', 'arraypress' ); ?></span>
                 <span class="value subtotal-amount" data-value="<?php echo esc_attr( (string) $subtotal ); ?>">
 					<?php echo esc_html( $this->format_currency( $subtotal ) ); ?>
 				</span>
@@ -391,8 +393,8 @@ class OrderItems {
             <?php if ( $discount > 0 ) : ?>
                 <div class="totals-row discount">
 					<span class="label">
-						Discount
-						<?php if ( ! empty( $this->config['discount_code'] ) ) : ?>
+						<?php esc_html_e( 'Discount', 'arraypress' ); ?>
+                        <?php if ( ! empty( $this->config['discount_code'] ) ) : ?>
                             <span class="discount-code">(<?php echo esc_html( $this->config['discount_code'] ); ?>)</span>
                         <?php endif; ?>
 					</span>
@@ -402,13 +404,13 @@ class OrderItems {
 
             <?php if ( $tax > 0 ) : ?>
                 <div class="totals-row tax">
-                    <span class="label">Tax:</span>
+                    <span class="label"><?php esc_html_e( 'Tax:', 'arraypress' ); ?></span>
                     <span class="value"><?php echo esc_html( $this->format_currency( $tax ) ); ?></span>
                 </div>
             <?php endif; ?>
 
             <div class="totals-row total">
-                <span class="label">Total:</span>
+                <span class="label"><?php esc_html_e( 'Total:', 'arraypress' ); ?></span>
                 <span class="value total-amount"><?php echo esc_html( $this->format_currency( $total ) ); ?></span>
             </div>
         </div>
@@ -457,7 +459,8 @@ class OrderItems {
                     <span class="item-subtotal">{{subtotal_formatted}}</span>
                 </td>
                 <td class="column-actions">
-                    <button type="button" class="button-link" data-action="remove-item" title="Remove">
+                    <button type="button" class="button-link" data-action="remove-item"
+                            title="<?php echo esc_attr__( 'Remove', 'arraypress' ); ?>">
                         <span class="dashicons dashicons-trash"></span>
                     </button>
                 </td>
