@@ -1,0 +1,85 @@
+/**
+ * Spinner Component Styles
+ */
+
+.wp-flyout-spinner {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #646970;
+}
+
+.wp-flyout-spinner.hidden {
+    display: none;
+}
+
+/* Spinner icon animation */
+.spinner-icon .dashicons {
+    animation: wp-flyout-spin 1s linear infinite;
+}
+
+@keyframes wp-flyout-spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Inline spinner */
+.wp-flyout-spinner.spinner-inline {
+    padding: 10px;
+}
+
+/* Overlay spinner */
+.wp-flyout-spinner.spinner-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.9);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 999999;
+}
+
+.wp-flyout-spinner.spinner-overlay .spinner-icon .dashicons {
+    font-size: 40px;
+    width: 40px;
+    height: 40px;
+}
+
+.wp-flyout-spinner.spinner-overlay .spinner-text {
+    margin-top: 10px;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+/* Button spinner */
+.wp-flyout-spinner.spinner-button {
+    display: inline-flex;
+    vertical-align: middle;
+}
+
+.wp-flyout-spinner.spinner-button .spinner-icon .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+}
+
+/* Sizes */
+.wp-flyout-spinner.size-small .spinner-icon .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+}
+
+.wp-flyout-spinner.size-large .spinner-icon .dashicons {
+    font-size: 32px;
+    width: 32px;
+    height: 32px;
+}

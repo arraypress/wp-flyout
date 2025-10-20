@@ -1,0 +1,99 @@
+/**
+ * Simple List Component Styles
+ */
+
+.wp-flyout-simple-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.wp-flyout-simple-list .list-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid transparent;
+    transition: all 0.2s;
+}
+
+.wp-flyout-simple-list .list-item:last-child {
+    border-bottom: none;
+}
+
+.wp-flyout-simple-list.bordered .list-item {
+    padding: 12px;
+    border: 1px solid #dcdcde;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    background: #fff;
+}
+
+.wp-flyout-simple-list.bordered .list-item:hover {
+    border-color: #c3c4c7;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.list-item-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+}
+
+.list-item-icon {
+    flex-shrink: 0;
+    color: #646970;
+}
+
+.list-item-icon .dashicons {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+}
+
+.list-item-text {
+    font-size: 14px;
+    color: #1e1e1e;
+}
+
+.list-item-actions {
+    flex-shrink: 0;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.list-item:hover .list-item-actions {
+    opacity: 1;
+}
+
+.list-item-actions .button-link {
+    padding: 4px;
+    color: #646970;
+    text-decoration: none;
+}
+
+.list-item-actions .button-link:hover {
+    color: #2271b1;
+}
+
+.list-item-actions .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+}
+
+/* Responsive */
+@media screen and (max-width: 782px) {
+    .wp-flyout-simple-list .list-item {
+        padding: 8px 0;
+    }
+
+    .wp-flyout-simple-list.bordered .list-item {
+        padding: 10px;
+    }
+
+    .list-item-actions {
+        opacity: 1;
+    }
+}

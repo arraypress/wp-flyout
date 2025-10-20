@@ -145,6 +145,26 @@ class Assets {
 			'style'  => 'css/components/accordion.css',
 			'deps'   => []
 		],
+		'separator'          => [
+			'script' => '',
+			'style'  => 'css/components/separator.css',
+			'deps'   => []
+		],
+		'spinner'            => [
+			'script' => '',
+			'style'  => 'css/components/spinner.css',
+			'deps'   => []
+		],
+		'simple-list'        => [
+			'script' => '',
+			'style'  => 'css/components/simple-list.css',
+			'deps'   => []
+		],
+		'confirmation'       => [
+			'script' => '',
+			'style'  => 'css/components/confirmation.css',
+			'deps'   => []
+		],
 	];
 
 	/**
