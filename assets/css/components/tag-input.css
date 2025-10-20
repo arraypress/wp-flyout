@@ -1,0 +1,179 @@
+/**
+ * Tag Input Component Styles
+ *
+ * Interactive tag input with keyboard support.
+ */
+
+.wp-flyout-tag-input {
+    position: relative;
+}
+
+/* Container */
+.tag-input-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 6px;
+    border: 1px solid #8c8f94;
+    border-radius: 4px;
+    background: #fff;
+    min-height: 40px;
+    cursor: text;
+    transition: border-color 0.15s;
+}
+
+.tag-input-container:focus-within {
+    border-color: #2271b1;
+    box-shadow: 0 0 0 1px #2271b1;
+    outline: 2px solid transparent;
+}
+
+/* Individual tags */
+.tag-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    background: #f0f0f1;
+    border: 1px solid #dcdcde;
+    border-radius: 3px;
+    font-size: 13px;
+    line-height: 1.4;
+    color: #1e1e1e;
+    transition: all 0.2s;
+}
+
+.tag-item:hover {
+    background: #e8e8e9;
+    border-color: #c3c4c7;
+}
+
+.tag-text {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Remove button */
+.tag-remove {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    color: #646970;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s;
+    line-height: 1;
+}
+
+.tag-remove:hover {
+    color: #d63638;
+}
+
+.tag-remove .dashicons {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+}
+
+/* Input field */
+.tag-input-field {
+    flex: 1;
+    min-width: 120px;
+    border: none;
+    padding: 4px;
+    font-size: 13px;
+    background: transparent;
+    outline: none;
+}
+
+.tag-input-field::placeholder {
+    color: #8c8f94;
+}
+
+/* Autocomplete dropdown */
+.tag-autocomplete {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin-top: 4px;
+    max-height: 200px;
+    overflow-y: auto;
+    background: #fff;
+    border: 1px solid #8c8f94;
+    border-radius: 4px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+}
+
+.tag-autocomplete-item {
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: background-color 0.15s;
+    font-size: 13px;
+}
+
+.tag-autocomplete-item:hover,
+.tag-autocomplete-item.active {
+    background: #f0f0f1;
+}
+
+.tag-autocomplete-item.selected {
+    background: #2271b1;
+    color: #fff;
+}
+
+/* States */
+.wp-flyout-tag-input.readonly .tag-input-container {
+    background: #f6f7f7;
+    cursor: default;
+}
+
+.wp-flyout-tag-input.readonly .tag-remove {
+    display: none;
+}
+
+.wp-flyout-tag-input.readonly .tag-input-field {
+    display: none;
+}
+
+.wp-flyout-tag-input.has-error .tag-input-container {
+    border-color: #d63638;
+}
+
+.wp-flyout-tag-input.has-error .tag-input-container:focus-within {
+    border-color: #d63638;
+    box-shadow: 0 0 0 1px #d63638;
+}
+
+/* Max tags reached */
+.wp-flyout-tag-input.max-reached .tag-input-field {
+    display: none;
+}
+
+/* Empty state */
+.tag-input-container:empty .tag-input-field {
+    min-width: 100%;
+}
+
+/* Responsive */
+@media screen and (max-width: 782px) {
+    .tag-input-container {
+        padding: 8px;
+    }
+
+    .tag-item {
+        padding: 6px 10px;
+        font-size: 14px;
+    }
+
+    .tag-input-field {
+        font-size: 14px;
+        padding: 6px;
+    }
+}

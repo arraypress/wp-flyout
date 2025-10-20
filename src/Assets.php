@@ -130,9 +130,19 @@ class Assets {
 			'style'  => 'css/components/ajax-select.css',
 			'deps'   => []
 		],
-		'alert'        => [
+		'alert'              => [
 			'script' => 'js/components/alert.js',
 			'style'  => 'css/components/alert.css',
+			'deps'   => []
+		],
+		'tag-input'          => [
+			'script' => 'js/components/tag-input.js',
+			'style'  => 'css/components/tag-input.css',
+			'deps'   => []
+		],
+		'accordion'          => [
+			'script' => 'js/components/accordion.js',
+			'style'  => 'css/components/accordion.css',
 			'deps'   => []
 		],
 	];

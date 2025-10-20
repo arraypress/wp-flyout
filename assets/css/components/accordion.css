@@ -1,0 +1,241 @@
+/**
+ * Accordion & Collapsible Component Styles
+ */
+
+/* ==========================================
+   ACCORDION
+   ========================================== */
+
+.wp-flyout-accordion {
+    margin: 20px 0;
+}
+
+.accordion-section {
+    border: 1px solid #dcdcde;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    overflow: hidden;
+    transition: all 0.2s;
+}
+
+.accordion-section:last-child {
+    margin-bottom: 0;
+}
+
+.accordion-section.is-disabled {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* Header */
+.accordion-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 15px;
+    background: #f6f7f7;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e1e1e;
+}
+
+.accordion-header:hover {
+    background: #f0f0f1;
+}
+
+.accordion-header:focus {
+    outline: 2px solid #2271b1;
+    outline-offset: -2px;
+}
+
+.accordion-section.is-open .accordion-header {
+    background: #fff;
+    border-bottom: 1px solid #dcdcde;
+}
+
+.accordion-header .dashicons {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: #8c8f94;
+}
+
+.accordion-title {
+    flex: 1;
+}
+
+/* Indicator */
+.accordion-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s;
+}
+
+.accordion-indicator .dashicons {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+}
+
+.accordion-section.is-open .accordion-indicator {
+    transform: rotate(180deg);
+}
+
+/* Content */
+.accordion-content {
+    overflow: hidden;
+}
+
+.accordion-content-inner {
+    padding: 15px;
+}
+
+/* ==========================================
+   COLLAPSIBLE (Single Section)
+   ========================================== */
+
+.wp-flyout-collapsible {
+    margin: 20px 0;
+    border: 1px solid #dcdcde;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+/* Header */
+.collapsible-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 15px;
+    background: #f6f7f7;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e1e1e;
+}
+
+.collapsible-header:hover {
+    background: #f0f0f1;
+}
+
+.collapsible-header:focus {
+    outline: 2px solid #2271b1;
+    outline-offset: -2px;
+}
+
+.wp-flyout-collapsible.is-open .collapsible-header {
+    background: #fff;
+    border-bottom: 1px solid #dcdcde;
+}
+
+.collapsible-header .dashicons {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: #8c8f94;
+}
+
+.collapsible-title {
+    flex: 1;
+}
+
+/* Indicator */
+.collapsible-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s;
+}
+
+.collapsible-indicator .dashicons {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+}
+
+.wp-flyout-collapsible.is-open .collapsible-indicator {
+    transform: rotate(180deg);
+}
+
+/* Content */
+.collapsible-content {
+    overflow: hidden;
+}
+
+.collapsible-content-inner {
+    padding: 15px;
+}
+
+/* ==========================================
+   ANIMATIONS
+   ========================================== */
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        max-height: 0;
+    }
+    to {
+        opacity: 1;
+        max-height: 1000px;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 1;
+        max-height: 1000px;
+    }
+    to {
+        opacity: 0;
+        max-height: 0;
+    }
+}
+
+/* ==========================================
+   RESPONSIVE
+   ========================================== */
+
+@media screen and (max-width: 782px) {
+    .accordion-header,
+    .collapsible-header {
+        padding: 12px;
+        font-size: 13px;
+    }
+
+    .accordion-content-inner,
+    .collapsible-content-inner {
+        padding: 12px;
+    }
+}
+
+/* ==========================================
+   PRINT
+   ========================================== */
+
+@media print {
+    .accordion-section,
+    .wp-flyout-collapsible {
+        border: 1px solid #000 !important;
+    }
+
+    .accordion-indicator,
+    .collapsible-indicator {
+        display: none !important;
+    }
+
+    .accordion-content,
+    .collapsible-content {
+        display: block !important;
+    }
+}
