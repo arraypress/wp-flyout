@@ -8,7 +8,7 @@
  * @package     ArrayPress\WPFlyout\Components
  * @copyright   Copyright (c) 2025, ArrayPress Limited
  * @license     GPL2+
- * @version     3.2.0
+ * @version     4.0.0
  * @author      David Sherlock
  */
 
@@ -315,9 +315,14 @@ class FormField {
      * @param array  $args        Additional arguments
      *
      * @return self
-     * @since 3.1.0
+     * @since 4.0.0
      */
     public static function ajax_select( string $name, string $label, string $ajax_action, array $args = [] ): self {
+        // Auto-generate nonce if not provided
+        if ( empty( $args['nonce'] ) ) {
+            $args['nonce'] = wp_create_nonce( $ajax_action );
+        }
+
         return new self( array_merge( [
                 'type'        => 'ajax_select',
                 'name'        => $name,
@@ -666,26 +671,57 @@ class FormField {
      * Render AJAX select field
      *
      * @return string Generated HTML
-     * @since 3.1.0
+     * @since 4.0.0
      */
     private function render_ajax_select(): string {
-        // Use the internal AjaxSelect component
-        return AjaxSelect::field( [
-                'name'            => $this->field['name'],
-                'id'              => $this->field['id'],
+        // Build data attributes array
+        $data_attrs = [
                 'ajax'            => $this->field['ajax_action'] ?? '',
                 'placeholder'     => $this->field['placeholder'] ?? __( 'Type to search...', 'arraypress' ),
-                'value'           => $this->field['value'] ?? '',
-                'text'            => $this->field['text'] ?? '',
-                'required'        => $this->field['required'] ?? false,
-                'disabled'        => $this->field['disabled'] ?? false,
-                'class'           => $this->field['class'] ?? '',
-                'min_length'      => $this->field['min_length'] ?? 3,
+                'min-length'      => $this->field['min_length'] ?? 3,
                 'delay'           => $this->field['delay'] ?? 300,
-                'initial_results' => $this->field['initial_results'] ?? 20,
-                'empty_option'    => $this->field['empty_option'] ?? null,
-                'nonce'           => $this->field['nonce'] ?? ( ! empty( $this->field['ajax_action'] ) ? wp_create_nonce( $this->field['ajax_action'] ) : '' ),
-                'ajax_url'        => $this->field['ajax_url'] ?? ''
-        ] );
+                'initial-results' => $this->field['initial_results'] ?? 20,
+                'nonce'           => $this->field['nonce'] ?? '',
+        ];
+
+        // Add optional attributes
+        if ( ! empty( $this->field['empty_option'] ) ) {
+            $data_attrs['empty-option'] = $this->field['empty_option'];
+        }
+        if ( ! empty( $this->field['value'] ) ) {
+            $data_attrs['value'] = $this->field['value'];
+        }
+        if ( ! empty( $this->field['text'] ) ) {
+            $data_attrs['text'] = $this->field['text'];
+        }
+        if ( ! empty( $this->field['ajax_url'] ) ) {
+            $data_attrs['ajax-url'] = $this->field['ajax_url'];
+        }
+
+        // Build attribute string
+        $attr_string = sprintf(
+                'id="%s" name="%s" class="%s"',
+                esc_attr( $this->field['id'] ),
+                esc_attr( $this->field['name'] ),
+                esc_attr( $this->field['class'] )
+        );
+
+        // Add data attributes
+        foreach ( $data_attrs as $key => $value ) {
+            if ( $value !== '' && $value !== null ) {
+                $attr_string .= sprintf( ' data-%s="%s"', esc_attr( $key ), esc_attr( (string) $value ) );
+            }
+        }
+
+        // Add boolean attributes
+        if ( $this->field['required'] ) {
+            $attr_string .= ' required';
+        }
+        if ( $this->field['disabled'] ) {
+            $attr_string .= ' disabled';
+        }
+
+        return sprintf( '<select %s></select>', $attr_string );
     }
+
 }
