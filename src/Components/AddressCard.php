@@ -88,8 +88,6 @@ class AddressCard {
      *
      */
     public function render(): string {
-        Assets::enqueue_component('address-card');
-
         $class = $this->config['class'] . ' format-' . $this->config['format'];
 
         ob_start();
