@@ -265,3 +265,16 @@ if ( ! function_exists( 'wp_flyout_file_manager' ) ) {
 		return new FileManager( $files, $name_prefix, $config );
 	}
 }
+
+
+function wp_flyout_tag_input( string $name, string $label, array $config = [] ): TagInput {
+	return new TagInput( $name, $label, $config );
+}
+
+function wp_flyout_accordion( array $config = [] ): Accordion {
+	return new Accordion( $config );
+}
+
+function wp_flyout_collapsible( string $title, string $content, array $config = [] ): Collapsible {
+	return Collapsible::create( $title, $content, $config );
+}
