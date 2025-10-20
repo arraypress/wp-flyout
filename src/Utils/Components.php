@@ -278,3 +278,27 @@ function wp_flyout_accordion( array $config = [] ): Accordion {
 function wp_flyout_collapsible( string $title, string $content, array $config = [] ): Collapsible {
 	return Collapsible::create( $title, $content, $config );
 }
+
+if ( ! function_exists( 'wp_flyout_separator' ) ) {
+	function wp_flyout_separator( string $text = '' ): Separator {
+		return new Separator( $text );
+	}
+}
+
+if ( ! function_exists( 'wp_flyout_spinner' ) ) {
+	function wp_flyout_spinner( array $config = [] ): Spinner {
+		return new Spinner( $config );
+	}
+}
+
+if ( ! function_exists( 'wp_flyout_simple_list' ) ) {
+	function wp_flyout_simple_list( array $items = [], array $config = [] ): SimpleList {
+		return new SimpleList( $items, $config );
+	}
+}
+
+if ( ! function_exists( 'wp_flyout_confirmation' ) ) {
+	function wp_flyout_confirmation( string $message, array $config = [] ): Confirmation {
+		return new Confirmation( $message, $config );
+	}
+}
