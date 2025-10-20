@@ -158,14 +158,6 @@
     color: #dba617;
 }
 
-.wp-flyout-alert.alert-warning .alert-actions a {
-    color: #8a6116;
-}
-
-.wp-flyout-alert.alert-warning .alert-actions a:hover {
-    color: #dba617;
-}
-
 /* Error */
 .wp-flyout-alert.alert-error {
     border-color: #d63638;
@@ -190,7 +182,6 @@
     margin-right: -30px;
     border-radius: 0;
     border-left: none;
-    border-top: 4px solid;
     padding: 16px 50px 16px 30px;
 }
 
