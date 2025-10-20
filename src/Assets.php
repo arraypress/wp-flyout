@@ -30,6 +30,16 @@ class Assets {
 	];
 
 	/**
+	 * Core JavaScript files
+	 *
+	 * @var array
+	 */
+	private static array $core_scripts = [
+		'js/wp-flyout.js',
+		'js/core/forms.js'
+	];
+
+	/**
 	 * Available components and their assets
 	 *
 	 * @var array
@@ -81,7 +91,7 @@ class Assets {
 			'deps'   => []
 		],
 		'address-card'       => [
-			'script' => '',
+			'script' => 'js/components/address-card.js',
 			'style'  => 'css/components/address-card.css',
 			'deps'   => []
 		],
@@ -120,6 +130,11 @@ class Assets {
 			'style'  => 'css/components/ajax-select.css',
 			'deps'   => []
 		],
+		'alert'        => [
+			'script' => 'js/components/alert.js',
+			'style'  => 'css/components/alert.css',
+			'deps'   => []
+		],
 	];
 
 	/**
@@ -140,7 +155,7 @@ class Assets {
 		$base_file = __FILE__;
 		$version   = defined( 'WP_DEBUG' ) && WP_DEBUG ? time() : '1.0.0';
 
-		// Register each core CSS file with constructed handles
+		// Register core CSS files
 		$deps        = [ 'dashicons' ];
 		$last_handle = '';
 		foreach ( self::$core_styles as $css_file ) {
@@ -159,21 +174,34 @@ class Assets {
 			$last_handle = $handle;
 		}
 
-		// Register virtual 'wp-flyout' handle that depends on all core styles
+		// Register virtual 'wp-flyout' style handle
 		wp_register_style( 'wp-flyout', false, [ $last_handle ], $version );
 
-		// Register core JavaScript
-		wp_register_composer_script(
-			'wp-flyout',
-			$base_file,
-			'js/wp-flyout.js',
-			[ 'jquery' ],
-			$version
-		);
+		// Register core JavaScript files
+		$js_deps        = [ 'jquery' ];
+		$last_js_handle = '';
+		foreach ( self::$core_scripts as $js_file ) {
+			$handle = self::get_handle_from_path( $js_file );
+
+			wp_register_composer_script(
+				$handle,
+				$base_file,
+				$js_file,
+				$js_deps,
+				$version
+			);
+
+			// Make each subsequent file depend on the previous one
+			$js_deps        = [ $handle ];
+			$last_js_handle = $handle;
+		}
+
+		// Register virtual 'wp-flyout' script handle (depends on all core scripts)
+		wp_register_script( 'wp-flyout', false, [ $last_js_handle ], $version );
 
 		// Add inline script for global access
 		wp_add_inline_script(
-			'wp-flyout',
+			'wp-flyout-wp-flyout', // First core script
 			'window.WPFlyout = window.WPFlyout || {};',
 			'before'
 		);
@@ -225,7 +253,7 @@ class Assets {
 	 * @return void
 	 */
 	public static function enqueue(): void {
-		// This will enqueue all core CSS via dependencies
+		// This will enqueue all core CSS and JS via dependencies
 		wp_enqueue_style( 'wp-flyout' );
 		wp_enqueue_script( 'wp-flyout' );
 	}

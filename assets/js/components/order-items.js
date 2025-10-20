@@ -8,6 +8,7 @@
  * @version 2.0.0
  * @requires WPAjaxSelect
  */
+
 (function ($) {
     'use strict';
 

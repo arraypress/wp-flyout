@@ -168,3 +168,86 @@
     margin: 5px 0 0 54px;
     font-style: italic;
 }
+
+/* Color input wrapper */
+.wp-flyout-color-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Color input itself */
+.wp-flyout-color-input {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    width: 50px;
+    height: 40px;
+    border: 1px solid #8c8f94;
+    border-radius: 4px;
+    padding: 2px;
+    cursor: pointer;
+    background: #fff;
+    transition: border-color 0.15s;
+}
+
+.wp-flyout-color-input:hover {
+    border-color: #646970;
+}
+
+.wp-flyout-color-input:focus {
+    border-color: var(--wp-flyout-primary);
+    box-shadow: 0 0 0 1px var(--wp-flyout-primary);
+    outline: 2px solid transparent;
+}
+
+/* Remove the color swatch styling on webkit browsers */
+.wp-flyout-color-input::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+
+.wp-flyout-color-input::-webkit-color-swatch {
+    border: none;
+    border-radius: 2px;
+}
+
+/* Firefox */
+.wp-flyout-color-input::-moz-color-swatch {
+    border: none;
+    border-radius: 2px;
+}
+
+/* Color preview text input */
+.wp-flyout-color-preview {
+    font-family: Consolas, Monaco, 'Courier New', monospace;
+    font-size: 13px;
+    text-align: center;
+    text-transform: uppercase;
+    padding: 8px;
+    border: 1px solid #8c8f94;
+    border-radius: 4px;
+    background: #fff;
+    color: #1e1e1e;
+}
+
+/* Disabled state */
+.wp-flyout-color-input:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.wp-flyout-color-input:disabled + .wp-flyout-color-preview {
+    background: #f6f7f7;
+    color: #8c8f94;
+}
+
+/* Responsive */
+@media screen and (max-width: 782px) {
+    .wp-flyout-color-input-wrapper {
+        flex-wrap: wrap;
+    }
+
+    .wp-flyout-color-preview {
+        width: 100%;
+    }
+}

@@ -28,17 +28,6 @@ use ArrayPress\WPFlyout\Assets;
 class AjaxSelect {
 
 	/**
-	 * Load AJAX select assets
-	 *
-	 * @return void
-	 * @since 1.0.0
-	 *
-	 */
-	public static function load_assets(): void {
-		Assets::enqueue_component( 'ajax-select' );
-	}
-
-	/**
 	 * Generate AJAX select field
 	 *
 	 * @param array $args Field configuration
@@ -48,8 +37,6 @@ class AjaxSelect {
 	 *
 	 */
 	public static function field( array $args ): string {
-		// Load assets
-		self::load_assets();
 
 		// Default configuration
 		$defaults = [

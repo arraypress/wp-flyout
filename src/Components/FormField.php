@@ -8,7 +8,7 @@
  * @package     ArrayPress\WPFlyout\Components
  * @copyright   Copyright (c) 2025, ArrayPress Limited
  * @license     GPL2+
- * @version     3.1.0
+ * @version     3.2.0
  * @author      David Sherlock
  */
 
@@ -42,7 +42,6 @@ class FormField {
      * @param array $field Field configuration
      *
      * @since 1.0.0
-     *
      */
     public function __construct( array $field ) {
         $type     = $field['type'] ?? 'text';
@@ -64,7 +63,6 @@ class FormField {
      *
      * @return array Default configuration
      * @since 3.1.0
-     *
      */
     private static function get_field_defaults( string $type ): array {
         $base_defaults = [
@@ -94,6 +92,10 @@ class FormField {
                         'min'  => null,
                         'max'  => null,
                         'step' => 1,
+                ],
+                'color'       => [
+                        'default_color' => '#000000',
+                        'show_preview'  => true,
                 ],
                 'ajax_select' => [
                         'ajax_action'     => '',
@@ -126,7 +128,6 @@ class FormField {
      *
      * @return self
      * @since 1.0.0
-     *
      */
     public static function text( string $name, string $label, array $args = [] ): self {
         return new self( array_merge( [
@@ -145,7 +146,6 @@ class FormField {
      *
      * @return self
      * @since 3.1.0
-     *
      */
     public static function email( string $name, string $label, array $args = [] ): self {
         return new self( array_merge( [
@@ -165,7 +165,6 @@ class FormField {
      *
      * @return self
      * @since 3.1.0
-     *
      */
     public static function url( string $name, string $label, array $args = [] ): self {
         return new self( array_merge( [
@@ -185,7 +184,6 @@ class FormField {
      *
      * @return self
      * @since 3.1.0
-     *
      */
     public static function number( string $name, string $label, array $args = [] ): self {
         return new self( array_merge( [
@@ -204,7 +202,6 @@ class FormField {
      *
      * @return self
      * @since 3.1.0
-     *
      */
     public static function tel( string $name, string $label, array $args = [] ): self {
         return new self( array_merge( [
@@ -224,7 +221,6 @@ class FormField {
      *
      * @return self
      * @since 3.1.0
-     *
      */
     public static function password( string $name, string $label, array $args = [] ): self {
         return new self( array_merge( [
@@ -244,13 +240,31 @@ class FormField {
      *
      * @return self
      * @since 3.1.0
-     *
      */
     public static function date( string $name, string $label, array $args = [] ): self {
         return new self( array_merge( [
                 'type'  => 'date',
                 'name'  => $name,
                 'label' => $label
+        ], $args ) );
+    }
+
+    /**
+     * Create a color field
+     *
+     * @param string $name  Field name
+     * @param string $label Field label
+     * @param array  $args  Additional arguments
+     *
+     * @return self
+     * @since 3.2.0
+     */
+    public static function color( string $name, string $label, array $args = [] ): self {
+        return new self( array_merge( [
+                'type'  => 'color',
+                'name'  => $name,
+                'label' => $label,
+                'value' => '#000000'
         ], $args ) );
     }
 
@@ -264,7 +278,6 @@ class FormField {
      *
      * @return self
      * @since 1.0.0
-     *
      */
     public static function select( string $name, string $label, array $options, array $args = [] ): self {
         return new self( array_merge( [
@@ -284,7 +297,6 @@ class FormField {
      *
      * @return self
      * @since 1.0.0
-     *
      */
     public static function textarea( string $name, string $label, array $args = [] ): self {
         return new self( array_merge( [
@@ -304,7 +316,6 @@ class FormField {
      *
      * @return self
      * @since 3.1.0
-     *
      */
     public static function ajax_select( string $name, string $label, string $ajax_action, array $args = [] ): self {
         return new self( array_merge( [
@@ -328,7 +339,6 @@ class FormField {
      *
      * @return string HTML for hidden field
      * @since 1.0.0
-     *
      */
     public static function hidden( string $name, $value ): string {
         return sprintf(
@@ -346,7 +356,6 @@ class FormField {
      *
      * @return string HTML for nonce field
      * @since 1.0.0
-     *
      */
     public static function nonce( string $action, string $name = '_wpnonce' ): string {
         return self::hidden( $name, wp_create_nonce( $action ) );
@@ -359,7 +368,6 @@ class FormField {
      *
      * @return string HTML for all hidden fields
      * @since 1.0.0
-     *
      */
     public static function hidden_fields( array $fields ): string {
         $output = '';
@@ -380,7 +388,6 @@ class FormField {
      *
      * @return string HTML for metadata fields
      * @since 1.0.0
-     *
      */
     public static function metadata(
             string $id_field_name,
@@ -399,7 +406,6 @@ class FormField {
      *
      * @return string HTML for referer field
      * @since 1.0.0
-     *
      */
     public static function referer( string $name = '_wp_http_referer' ): string {
         $referer = wp_unslash( $_SERVER['REQUEST_URI'] ?? '' );
@@ -414,7 +420,6 @@ class FormField {
      *
      * @return string HTML for action field
      * @since 1.0.0
-     *
      */
     public static function action( string $action ): string {
         return self::hidden( 'action', $action );
@@ -428,7 +433,6 @@ class FormField {
      *
      * @return string HTML for security fields
      * @since 1.0.0
-     *
      */
     public static function security( string $nonce_action, bool $include_referer = false ): string {
         $output = self::nonce( $nonce_action );
@@ -449,7 +453,6 @@ class FormField {
      *
      * @return string Generated HTML
      * @since 1.0.0
-     *
      */
     public function render(): string {
         ob_start();
@@ -479,7 +482,6 @@ class FormField {
      *
      * @return string Generated HTML
      * @since 1.0.0
-     *
      */
     private function render_input(): string {
         switch ( $this->field['type'] ) {
@@ -489,6 +491,8 @@ class FormField {
                 return $this->render_textarea();
             case 'ajax_select':
                 return $this->render_ajax_select();
+            case 'color':
+                return $this->render_color();
             default:
                 return $this->render_text_input();
         }
@@ -499,7 +503,6 @@ class FormField {
      *
      * @return string Generated HTML
      * @since 1.0.0
-     *
      */
     private function render_text_input(): string {
         // Supported HTML5 input types
@@ -514,7 +517,6 @@ class FormField {
                 'datetime-local',
                 'time',
                 'search',
-                'color',
                 'range'
         ];
 
@@ -567,11 +569,47 @@ class FormField {
     }
 
     /**
+     * Render color input
+     *
+     * @return string Generated HTML
+     * @since 3.2.0
+     */
+    private function render_color(): string {
+        $value = $this->field['value'] ?: $this->field['default_color'];
+
+        // Ensure value is a valid hex color
+        if ( ! preg_match( '/^#[a-fA-F0-9]{6}$/', $value ) ) {
+            $value = '#000000';
+        }
+
+        ob_start();
+        ?>
+        <div class="wp-flyout-color-input-wrapper">
+            <input type="color"
+                   id="<?php echo esc_attr( $this->field['id'] ); ?>"
+                   name="<?php echo esc_attr( $this->field['name'] ); ?>"
+                   value="<?php echo esc_attr( $value ); ?>"
+                   class="wp-flyout-color-input"
+                    <?php echo $this->field['required'] ? 'required' : ''; ?>
+                    <?php echo $this->field['disabled'] ? 'disabled' : ''; ?>>
+
+            <?php if ( $this->field['show_preview'] ) : ?>
+                <input type="text"
+                       value="<?php echo esc_attr( $value ); ?>"
+                       class="wp-flyout-color-preview"
+                       readonly
+                       style="width: 80px; margin-left: 10px;">
+            <?php endif; ?>
+        </div>
+        <?php
+        return ob_get_clean();
+    }
+
+    /**
      * Render select field
      *
      * @return string Generated HTML
      * @since 1.0.0
-     *
      */
     private function render_select(): string {
         ob_start();
@@ -607,7 +645,6 @@ class FormField {
      *
      * @return string Generated HTML
      * @since 1.0.0
-     *
      */
     private function render_textarea(): string {
         return sprintf(
@@ -630,7 +667,6 @@ class FormField {
      *
      * @return string Generated HTML
      * @since 3.1.0
-     *
      */
     private function render_ajax_select(): string {
         // Use the internal AjaxSelect component
@@ -652,5 +688,4 @@ class FormField {
                 'ajax_url'        => $this->field['ajax_url'] ?? ''
         ] );
     }
-
 }

@@ -16,6 +16,7 @@ declare( strict_types=1 );
 
 namespace ArrayPress\WPFlyout\Components;
 
+use ArrayPress\WPFlyout\Assets;
 use ArrayPress\WPFlyout\Traits\Renderable;
 use ArrayPress\WPFlyout\Traits\IconRenderer;
 
@@ -87,6 +88,8 @@ class AddressCard {
      *
      */
     public function render(): string {
+        Assets::enqueue_component('address-card');
+
         $class = $this->config['class'] . ' format-' . $this->config['format'];
 
         ob_start();
