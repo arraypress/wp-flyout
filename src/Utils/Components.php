@@ -13,8 +13,11 @@
 declare( strict_types=1 );
 
 use ArrayPress\WPFlyout\Assets;
+use ArrayPress\WPFlyout\Components\Accordion;
 use ArrayPress\WPFlyout\Components\ActionBar;
 use ArrayPress\WPFlyout\Components\Badge;
+use ArrayPress\WPFlyout\Components\Collapsible;
+use ArrayPress\WPFlyout\Components\Confirmation;
 use ArrayPress\WPFlyout\Components\EmptyState;
 use ArrayPress\WPFlyout\Components\FeatureList;
 use ArrayPress\WPFlyout\Components\FileManager;
@@ -22,6 +25,10 @@ use ArrayPress\WPFlyout\Components\FormField;
 use ArrayPress\WPFlyout\Components\InfoGrid;
 use ArrayPress\WPFlyout\Components\SectionHeader;
 use ArrayPress\WPFlyout\Components\DataTable;
+use ArrayPress\WPFlyout\Components\Separator;
+use ArrayPress\WPFlyout\Components\SimpleList;
+use ArrayPress\WPFlyout\Components\Spinner;
+use ArrayPress\WPFlyout\Components\TagInput;
 use ArrayPress\WPFlyout\Components\Toggle;
 
 if ( ! function_exists( 'wp_flyout_action_bar' ) ) {
@@ -217,11 +224,12 @@ if ( ! function_exists( 'wp_flyout_data_table' ) ) {
 	/**
 	 * Create a data table component
 	 *
-	 * @since 1.0.0
-	 *
 	 * @param array $data   Data array (key => value pairs).
 	 * @param array $config Optional configuration.
+	 *
 	 * @return DataTable
+	 * @since 1.0.0
+	 *
 	 */
 	function wp_flyout_data_table( array $data = [], array $config = [] ): DataTable {
 		return new DataTable( $data, $config );
@@ -233,6 +241,7 @@ if ( ! function_exists( 'wp_flyout_enqueue_component' ) ) {
 	 * Enqueue specific flyout component assets
 	 *
 	 * @param string $component Component name (e.g., 'file-manager')
+	 *
 	 * @return bool Whether component was enqueued successfully
 	 */
 	function wp_flyout_enqueue_component( string $component ): bool {
@@ -245,6 +254,7 @@ if ( ! function_exists( 'wp_flyout_has_component' ) ) {
 	 * Check if a component is available
 	 *
 	 * @param string $component Component name
+	 *
 	 * @return bool
 	 */
 	function wp_flyout_has_component( string $component ): bool {
@@ -259,6 +269,7 @@ if ( ! function_exists( 'wp_flyout_file_manager' ) ) {
 	 * @param array  $files       Initial files array
 	 * @param string $name_prefix Input name prefix
 	 * @param array  $config      Optional configuration
+	 *
 	 * @return FileManager
 	 */
 	function wp_flyout_file_manager( array $files = [], string $name_prefix = 'files', array $config = [] ): FileManager {
@@ -266,38 +277,112 @@ if ( ! function_exists( 'wp_flyout_file_manager' ) ) {
 	}
 }
 
-
-function wp_flyout_tag_input( string $name, string $label, array $config = [] ): TagInput {
-	return new TagInput( $name, $label, $config );
+if ( ! function_exists( 'wp_flyout_tag_input' ) ) {
+	/**
+	 * Create a tag input component
+	 *
+	 * @param string $name   Field name.
+	 * @param string $label  Field label.
+	 * @param array  $config Optional configuration.
+	 *
+	 * @return TagInput
+	 * @since 1.0.0
+	 *
+	 */
+	function wp_flyout_tag_input( string $name, string $label, array $config = [] ): TagInput {
+		return new TagInput( $name, $label, $config );
+	}
 }
 
-function wp_flyout_accordion( array $config = [] ): Accordion {
-	return new Accordion( $config );
+if ( ! function_exists( 'wp_flyout_accordion' ) ) {
+	/**
+	 * Create an accordion component
+	 *
+	 * @param array $config Optional configuration.
+	 *
+	 * @return Accordion
+	 * @since 1.0.0
+	 *
+	 */
+	function wp_flyout_accordion( array $config = [] ): Accordion {
+		return new Accordion( $config );
+	}
 }
 
-function wp_flyout_collapsible( string $title, string $content, array $config = [] ): Collapsible {
-	return Collapsible::create( $title, $content, $config );
+if ( ! function_exists( 'wp_flyout_collapsible' ) ) {
+	/**
+	 * Create a collapsible component
+	 *
+	 * @param string $title   Section title.
+	 * @param string $content Section content.
+	 * @param array  $config  Optional configuration.
+	 *
+	 * @return Collapsible
+	 * @since 1.0.0
+	 *
+	 */
+	function wp_flyout_collapsible( string $title, string $content, array $config = [] ): Collapsible {
+		return Collapsible::create( $title, $content, $config );
+	}
 }
 
 if ( ! function_exists( 'wp_flyout_separator' ) ) {
+	/**
+	 * Create a separator component
+	 *
+	 * @param string $text Optional text label.
+	 *
+	 * @return Separator
+	 * @since 1.0.0
+	 *
+	 */
 	function wp_flyout_separator( string $text = '' ): Separator {
 		return new Separator( $text );
 	}
 }
 
 if ( ! function_exists( 'wp_flyout_spinner' ) ) {
+	/**
+	 * Create a spinner component
+	 *
+	 * @param array $config Optional configuration.
+	 *
+	 * @return Spinner
+	 * @since 1.0.0
+	 *
+	 */
 	function wp_flyout_spinner( array $config = [] ): Spinner {
 		return new Spinner( $config );
 	}
 }
 
 if ( ! function_exists( 'wp_flyout_simple_list' ) ) {
+	/**
+	 * Create a simple list component
+	 *
+	 * @param array $items  List items.
+	 * @param array $config Optional configuration.
+	 *
+	 * @return SimpleList
+	 * @since 1.0.0
+	 *
+	 */
 	function wp_flyout_simple_list( array $items = [], array $config = [] ): SimpleList {
 		return new SimpleList( $items, $config );
 	}
 }
 
 if ( ! function_exists( 'wp_flyout_confirmation' ) ) {
+	/**
+	 * Create a confirmation component
+	 *
+	 * @param string $message Confirmation message.
+	 * @param array  $config  Optional configuration.
+	 *
+	 * @return Confirmation
+	 * @since 1.0.0
+	 *
+	 */
 	function wp_flyout_confirmation( string $message, array $config = [] ): Confirmation {
 		return new Confirmation( $message, $config );
 	}
