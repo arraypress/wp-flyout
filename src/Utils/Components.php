@@ -16,6 +16,7 @@ use ArrayPress\WPFlyout\Assets;
 use ArrayPress\WPFlyout\Components\Accordion;
 use ArrayPress\WPFlyout\Components\ActionBar;
 use ArrayPress\WPFlyout\Components\Badge;
+use ArrayPress\WPFlyout\Components\CardChoice;
 use ArrayPress\WPFlyout\Components\Collapsible;
 use ArrayPress\WPFlyout\Components\Confirmation;
 use ArrayPress\WPFlyout\Components\EmptyState;
@@ -385,5 +386,21 @@ if ( ! function_exists( 'wp_flyout_confirmation' ) ) {
 	 */
 	function wp_flyout_confirmation( string $message, array $config = [] ): Confirmation {
 		return new Confirmation( $message, $config );
+	}
+}
+
+if ( ! function_exists( 'wp_flyout_card_choice' ) ) {
+	/**
+	 * Create a card choice component
+	 *
+	 * @param string $name   Field name.
+	 * @param array  $config Configuration options.
+	 *
+	 * @return CardChoice
+	 * @since 1.0.0
+	 *
+	 */
+	function wp_flyout_card_choice( string $name, array $config = [] ): CardChoice {
+		return new CardChoice( $name, $config );
 	}
 }

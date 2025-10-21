@@ -165,6 +165,11 @@ class Assets {
 			'style'  => 'css/components/confirmation.css',
 			'deps'   => []
 		],
+		'card-choice'        => [
+			'script' => '',
+			'style'  => 'css/components/card-choice.css',
+			'deps'   => []
+		]
 	];
 
 	/**

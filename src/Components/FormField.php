@@ -332,6 +332,45 @@ class FormField {
         ], $args ) );
     }
 
+    /**
+     * Create a checkbox field
+     *
+     * @param string $name  Field name
+     * @param string $label Field label
+     * @param array  $args  Additional arguments
+     *
+     * @return self
+     * @since 4.1.0
+     */
+    public static function checkbox( string $name, string $label, array $args = [] ): self {
+        return new self( array_merge( [
+                'type'  => 'checkbox',
+                'name'  => $name,
+                'label' => $label,
+                'value' => '1'
+        ], $args ) );
+    }
+
+    /**
+     * Create a radio button field
+     *
+     * @param string $name    Field name
+     * @param string $label   Field label
+     * @param array  $options Radio options
+     * @param array  $args    Additional arguments
+     *
+     * @return self
+     * @since 4.1.0
+     */
+    public static function radio( string $name, string $label, array $options, array $args = [] ): self {
+        return new self( array_merge( [
+                'type'    => 'radio',
+                'name'    => $name,
+                'label'   => $label,
+                'options' => $options
+        ], $args ) );
+    }
+
     /* =========================================
        FORM HELPER METHODS (Static Utilities)
        ========================================= */
@@ -482,6 +521,7 @@ class FormField {
         return ob_get_clean();
     }
 
+
     /**
      * Render the input element
      *
@@ -498,6 +538,10 @@ class FormField {
                 return $this->render_ajax_select();
             case 'color':
                 return $this->render_color();
+            case 'checkbox':
+                return $this->render_checkbox();
+            case 'radio':
+                return $this->render_radio();
             default:
                 return $this->render_text_input();
         }
@@ -722,6 +766,59 @@ class FormField {
         }
 
         return sprintf( '<select %s></select>', $attr_string );
+    }
+
+    /**
+     * Render checkbox field
+     *
+     * @return string Generated HTML
+     * @since 4.1.0
+     */
+    private function render_checkbox(): string {
+        ob_start();
+        ?>
+        <label class="wp-flyout-checkbox">
+            <input type="checkbox"
+                   id="<?php echo esc_attr( $this->field['id'] ); ?>"
+                   name="<?php echo esc_attr( $this->field['name'] ); ?>"
+                   value="<?php echo esc_attr( $this->field['value'] ); ?>"
+                    <?php checked( $this->field['checked'] ?? false ); ?>
+                    <?php echo $this->field['required'] ? 'required' : ''; ?>
+                    <?php echo $this->field['disabled'] ? 'disabled' : ''; ?>>
+            <span class="checkbox-label"><?php echo esc_html( $this->field['label'] ); ?></span>
+        </label>
+        <?php
+        return ob_get_clean();
+    }
+
+    /**
+     * Render radio field group
+     *
+     * @return string Generated HTML
+     * @since 4.1.0
+     */
+    private function render_radio(): string {
+        if ( empty( $this->field['options'] ) ) {
+            return '';
+        }
+
+        ob_start();
+        ?>
+        <div class="wp-flyout-radio-group">
+            <?php foreach ( $this->field['options'] as $value => $label ) : ?>
+                <label class="wp-flyout-radio">
+                    <input type="radio"
+                           name="<?php echo esc_attr( $this->field['name'] ); ?>"
+                           value="<?php echo esc_attr( $value ); ?>"
+                            <?php checked( $this->field['value'], $value ); ?>
+                            <?php echo $this->field['required'] ? 'required' : ''; ?>
+                            <?php echo $this->field['disabled'] ? 'disabled' : ''; ?>>
+                    <span class="radio-label"><?php echo esc_html( $label ); ?></span>
+                </label>
+            <?php endforeach; ?>
+        </div>
+        <?php
+        return ob_get_clean();
     }
 
 }

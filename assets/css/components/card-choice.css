@@ -1,0 +1,239 @@
+/**
+ * Checkbox/Radio Card Component Styles
+ *
+ * Visual card-style checkboxes and radio buttons
+ *
+ * @package     ArrayPress\WPFlyout\Components
+ * @version     1.0.0
+ */
+
+.wp-flyout-card-choice-group {
+    display: grid;
+    gap: 12px;
+    margin: 20px 0;
+}
+
+.wp-flyout-card-choice-group.columns-1 {
+    grid-template-columns: 1fr;
+}
+
+.wp-flyout-card-choice-group.columns-2 {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.wp-flyout-card-choice-group.columns-3 {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+/* Card Choice Item */
+.card-choice {
+    position: relative;
+    cursor: pointer;
+}
+
+.card-choice input[type="checkbox"],
+.card-choice input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.card-choice-label {
+    display: flex;
+    flex-direction: column;
+    padding: 16px;
+    border: 2px solid #dcdcde;
+    border-radius: 8px;
+    background: #fff;
+    transition: all 0.2s;
+    cursor: pointer;
+    height: 100%;
+}
+
+.card-choice:hover .card-choice-label {
+    border-color: #c3c4c7;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Selected state */
+.card-choice input:checked + .card-choice-label {
+    border-color: #2271b1;
+    background: #f0f6fc;
+    box-shadow: 0 0 0 1px #2271b1;
+}
+
+/* Disabled state */
+.card-choice input:disabled + .card-choice-label {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #f6f7f7;
+}
+
+.card-choice input:disabled:hover + .card-choice-label {
+    border-color: #dcdcde;
+    box-shadow: none;
+}
+
+/* Card Header */
+.card-choice-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.card-choice-icon {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #646970;
+}
+
+.card-choice input:checked + .card-choice-label .card-choice-icon {
+    color: #2271b1;
+}
+
+.card-choice-icon .dashicons {
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+}
+
+.card-choice-check {
+    margin-left: auto;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #c3c4c7;
+    border-radius: 50%;
+    flex-shrink: 0;
+    position: relative;
+    transition: all 0.2s;
+}
+
+/* Checkbox style for multi-select */
+.card-choice input[type="checkbox"] + .card-choice-label .card-choice-check {
+    border-radius: 4px;
+}
+
+/* Checked indicator */
+.card-choice input:checked + .card-choice-label .card-choice-check {
+    border-color: #2271b1;
+    background: #2271b1;
+}
+
+.card-choice input:checked + .card-choice-label .card-choice-check::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 8px;
+    height: 8px;
+    background: #fff;
+    border-radius: 50%;
+}
+
+.card-choice input[type="checkbox"]:checked + .card-choice-label .card-choice-check::after {
+    width: 10px;
+    height: 6px;
+    border: 2px solid #fff;
+    border-top: none;
+    border-right: none;
+    background: transparent;
+    transform: translate(-50%, -60%) rotate(-45deg);
+}
+
+/* Card Content */
+.card-choice-content {
+    flex: 1;
+}
+
+.card-choice-title {
+    margin: 0 0 4px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e1e1e;
+    line-height: 1.4;
+}
+
+.card-choice-description {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #646970;
+}
+
+/* Badge */
+.card-choice-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    margin-left: 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
+    background: #f0f0f1;
+    color: #50575e;
+}
+
+.card-choice-badge.badge-recommended {
+    background: #d4f4dd;
+    color: #007017;
+}
+
+.card-choice-badge.badge-popular {
+    background: #e0f2ff;
+    color: #0a4b78;
+}
+
+.card-choice-badge.badge-new {
+    background: #fcf9e8;
+    color: #8a6116;
+}
+
+/* Compact variant */
+.wp-flyout-card-choice-group.compact .card-choice-label {
+    flex-direction: row;
+    align-items: center;
+    padding: 12px;
+}
+
+.wp-flyout-card-choice-group.compact .card-choice-header {
+    margin-bottom: 0;
+    flex: 1;
+}
+
+.wp-flyout-card-choice-group.compact .card-choice-description {
+    font-size: 12px;
+}
+
+/* Focus state */
+.card-choice input:focus + .card-choice-label {
+    outline: 2px solid #2271b1;
+    outline-offset: 2px;
+}
+
+/* Responsive */
+@media screen and (max-width: 782px) {
+    .wp-flyout-card-choice-group.columns-2,
+    .wp-flyout-card-choice-group.columns-3 {
+        grid-template-columns: 1fr;
+    }
+
+    .card-choice-label {
+        padding: 12px;
+    }
+}
+
+/* Print styles */
+@media print {
+    .card-choice input:checked + .card-choice-label {
+        border: 2px solid #000 !important;
+    }
+
+    .card-choice-check {
+        border: 2px solid #000 !important;
+    }
+}
