@@ -12,7 +12,6 @@
 
 declare( strict_types=1 );
 
-use ArrayPress\WPFlyout\Components\FileManager;
 use ArrayPress\WPFlyout\Flyout;
 use ArrayPress\WPFlyout\Assets;
 
@@ -58,5 +57,18 @@ if ( ! function_exists( 'wp_flyout_enqueue' ) ) {
 	 */
 	function wp_flyout_enqueue(): void {
 		Assets::enqueue();
+	}
+}
+
+if ( ! function_exists( 'wp_flyout_enqueue_component' ) ) {
+	/**
+	 * Enqueue specific flyout component assets
+	 *
+	 * @param string $component Component name (e.g., 'file-manager')
+	 *
+	 * @return bool Whether component was enqueued successfully
+	 */
+	function wp_flyout_enqueue_component( string $component ): bool {
+		return Assets::enqueue_component( $component );
 	}
 }

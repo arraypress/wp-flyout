@@ -37,8 +37,6 @@ trait CurrencyFormatter {
 	 * @param string|null $currency  Currency code (e.g., 'USD', 'EUR'). Optional.
 	 *
 	 * @return string Formatted currency string
-	 * @since 1.0.0
-	 *
 	 */
 	protected function format_currency( $amount, ?string $currency = null ): string {
 		// Determine currency to use

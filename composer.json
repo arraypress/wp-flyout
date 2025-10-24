@@ -21,8 +21,7 @@
       "ArrayPress\\WPFlyout\\": "src/"
     },
     "files": [
-      "src/Utils/Core.php",
-      "src/Utils/Components.php"
+      "src/Utils/Functions.php"
     ]
   },
   "config": {
