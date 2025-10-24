@@ -18,7 +18,6 @@ namespace ArrayPress\WPFlyout\Components;
 
 use ArrayPress\WPFlyout\Traits\Renderable;
 use ArrayPress\WPFlyout\Traits\IconRenderer;
-use ArrayPress\WPFlyout\Traits\ConditionalRender;
 
 /**
  * Class Timeline
@@ -30,7 +29,6 @@ use ArrayPress\WPFlyout\Traits\ConditionalRender;
 class Timeline {
     use Renderable;
     use IconRenderer;
-    use ConditionalRender;
 
     /**
      * Timeline events

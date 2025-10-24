@@ -17,7 +17,6 @@ namespace ArrayPress\WPFlyout\Components;
 
 use ArrayPress\WPFlyout\Traits\Renderable;
 use ArrayPress\WPFlyout\Traits\EmptyValueFormatter;
-use ArrayPress\WPFlyout\Traits\ConditionalRender;
 
 /**
  * Class InfoGrid
@@ -29,7 +28,6 @@ use ArrayPress\WPFlyout\Traits\ConditionalRender;
 class InfoGrid {
     use Renderable;
     use EmptyValueFormatter;
-    use ConditionalRender;
 
     /**
      * Grid items array

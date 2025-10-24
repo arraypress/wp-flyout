@@ -385,30 +385,59 @@ class Flyout {
     }
 
     /**
-     * Add component directly (auto-renders)
+     * Add a single component (auto-renders if needed)
      *
-     * @param string $tab_id    Tab identifier
-     * @param mixed  $component Component object or HTML string
+     * @param string $tab_id    Tab identifier (empty string for main content)
+     * @param mixed  $component Component object with render() method, or HTML string
      *
      * @return self
      * @since 1.0.0
      */
     public function add_component( string $tab_id, $component ): self {
-        $content = is_string( $component ) ? $component : $component->render();
+        // Handle null/empty components gracefully
+        if ( $component === null || $component === '' ) {
+            return $this;
+        }
 
-        return $this->add_content( $tab_id, $content );
+        // If it's a string, add it directly
+        if ( is_string( $component ) ) {
+            return $this->add_content( $tab_id, $component );
+        }
+
+        // If it has a render method, call it
+        if ( is_object( $component ) && method_exists( $component, 'render' ) ) {
+            return $this->add_content( $tab_id, $component->render() );
+        }
+
+        // If it has __toString, use that
+        if ( is_object( $component ) && method_exists( $component, '__toString' ) ) {
+            return $this->add_content( $tab_id, (string) $component );
+        }
+
+        // Fallback: try to cast to string
+        return $this->add_content( $tab_id, (string) $component );
     }
 
     /**
      * Add multiple components at once
      *
-     * @param string $tab_id     Tab identifier
-     * @param array  $components Array of components
+     * Accepts either an array or variadic arguments.
+     * Usage:
+     *   $flyout->add_components('tab', [$comp1, $comp2, $comp3]);
+     *   $flyout->add_components('tab', $comp1, $comp2, $comp3);
+     *
+     * @param string $tab_id        Tab identifier (empty string for main content)
+     * @param mixed  ...$components Components to add (array or variadic)
      *
      * @return self
      * @since 1.0.0
      */
-    public function add_Components( string $tab_id, array $components ): self {
+    public function add_components( string $tab_id, ...$components ): self {
+        // If first argument is an array, use it as the components list
+        if ( count( $components ) === 1 && is_array( $components[0] ) ) {
+            $components = $components[0];
+        }
+
         foreach ( $components as $component ) {
             $this->add_component( $tab_id, $component );
         }
