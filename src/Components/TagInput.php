@@ -269,4 +269,5 @@ class TagInput {
 		<?php
 		return ob_get_clean();
 	}
+
 }

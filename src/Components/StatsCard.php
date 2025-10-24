@@ -228,7 +228,7 @@ class StatsCard {
      * @return self
      * @since 1.0.0
      */
-    public static function fromArray( array $stats, array $config = [] ): self {
+    public static function from_array( array $stats, array $config = [] ): self {
         $card = new self( [], $config );
 
         foreach ( $stats as $stat ) {

@@ -23,7 +23,7 @@ trait ConditionalRender {
 	 *
 	 * @return string Rendered HTML or empty string
 	 */
-	public function renderIf( bool $condition ): string {
+	public function render_if( bool $condition ): string {
 		return $condition ? $this->render() : '';
 	}
 
@@ -34,7 +34,7 @@ trait ConditionalRender {
 	 *
 	 * @return string Rendered HTML or empty string
 	 */
-	public function renderIfNotEmpty( $value ): string {
+	public function render_if_not_empty( $value ): string {
 		return ! empty( $value ) ? $this->render() : '';
 	}
 
@@ -46,7 +46,7 @@ trait ConditionalRender {
 	 *
 	 * @return string Rendered HTML
 	 */
-	public function renderOrElse( bool $condition, $fallback ): string {
+	public function render_or_else( bool $condition, $fallback ): string {
 		if ( $condition ) {
 			return $this->render();
 		}

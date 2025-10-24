@@ -393,7 +393,7 @@ class Flyout {
      * @return self
      * @since 1.0.0
      */
-    public function addComponent( string $tab_id, $component ): self {
+    public function add_component( string $tab_id, $component ): self {
         $content = is_string( $component ) ? $component : $component->render();
 
         return $this->add_content( $tab_id, $content );
@@ -408,9 +408,9 @@ class Flyout {
      * @return self
      * @since 1.0.0
      */
-    public function addComponents( string $tab_id, array $components ): self {
+    public function add_Components( string $tab_id, array $components ): self {
         foreach ( $components as $component ) {
-            $this->addComponent( $tab_id, $component );
+            $this->add_component( $tab_id, $component );
         }
 
         return $this;

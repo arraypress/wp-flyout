@@ -197,11 +197,10 @@ class InfoGrid {
      * @return self
      * @since 1.0.0
      */
-    public static function fromArray( array $data, array $config = [] ): self {
+    public static function from_array( array $data, array $config = [] ): self {
         $grid = new self( [], $config );
 
         foreach ( $data as $label => $value ) {
-            // Check for separator marker
             if ( $label === '---' || $value === '---' ) {
                 $grid->add_separator( is_string( $label ) && $label !== '---' ? $label : '' );
             } else {
