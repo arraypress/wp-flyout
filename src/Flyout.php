@@ -384,4 +384,36 @@ class Flyout {
         return (bool) preg_match( '/<(input|select|textarea)/i', $all_content );
     }
 
+    /**
+     * Add component directly (auto-renders)
+     *
+     * @param string $tab_id    Tab identifier
+     * @param mixed  $component Component object or HTML string
+     *
+     * @return self
+     * @since 1.0.0
+     */
+    public function addComponent( string $tab_id, $component ): self {
+        $content = is_string( $component ) ? $component : $component->render();
+
+        return $this->add_content( $tab_id, $content );
+    }
+
+    /**
+     * Add multiple components at once
+     *
+     * @param string $tab_id     Tab identifier
+     * @param array  $components Array of components
+     *
+     * @return self
+     * @since 1.0.0
+     */
+    public function addComponents( string $tab_id, array $components ): self {
+        foreach ( $components as $component ) {
+            $this->addComponent( $tab_id, $component );
+        }
+
+        return $this;
+    }
+
 }
