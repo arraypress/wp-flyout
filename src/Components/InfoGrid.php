@@ -17,6 +17,7 @@ namespace ArrayPress\WPFlyout\Components;
 
 use ArrayPress\WPFlyout\Traits\Renderable;
 use ArrayPress\WPFlyout\Traits\EmptyValueFormatter;
+use ArrayPress\WPFlyout\Traits\ConditionalRender;
 
 /**
  * Class InfoGrid
@@ -28,6 +29,7 @@ use ArrayPress\WPFlyout\Traits\EmptyValueFormatter;
 class InfoGrid {
     use Renderable;
     use EmptyValueFormatter;
+    use ConditionalRender;
 
     /**
      * Grid items array
@@ -182,6 +184,32 @@ class InfoGrid {
         </div>
         <?php
         return ob_get_clean();
+    }
+
+    /**
+     * Create InfoGrid from associative array
+     *
+     * Supports separators using '---' as key or value
+     *
+     * @param array $data   Associative array of label => value pairs
+     * @param array $config Optional configuration
+     *
+     * @return self
+     * @since 1.0.0
+     */
+    public static function fromArray( array $data, array $config = [] ): self {
+        $grid = new self( [], $config );
+
+        foreach ( $data as $label => $value ) {
+            // Check for separator marker
+            if ( $label === '---' || $value === '---' ) {
+                $grid->add_separator( is_string( $label ) && $label !== '---' ? $label : '' );
+            } else {
+                $grid->add_item( $label, $value );
+            }
+        }
+
+        return $grid;
     }
 
 }

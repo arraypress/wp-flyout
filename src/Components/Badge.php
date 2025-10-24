@@ -112,4 +112,17 @@ class Badge {
 		);
 	}
 
+	/**
+	 * Quick render of badge
+	 *
+	 * @param string $text Badge text
+	 * @param string $type Badge type
+	 *
+	 * @return string Rendered HTML
+	 * @since 1.0.0
+	 */
+	public static function quick( string $text, string $type = 'default' ): string {
+		return ( new self( $text, [ 'type' => $type ] ) )->render();
+	}
+
 }

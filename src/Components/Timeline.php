@@ -18,6 +18,7 @@ namespace ArrayPress\WPFlyout\Components;
 
 use ArrayPress\WPFlyout\Traits\Renderable;
 use ArrayPress\WPFlyout\Traits\IconRenderer;
+use ArrayPress\WPFlyout\Traits\ConditionalRender;
 
 /**
  * Class Timeline
@@ -29,6 +30,7 @@ use ArrayPress\WPFlyout\Traits\IconRenderer;
 class Timeline {
     use Renderable;
     use IconRenderer;
+    use ConditionalRender;
 
     /**
      * Timeline events
@@ -276,6 +278,31 @@ class Timeline {
                             'user' => $status['user'] ?? null
                     ]
             );
+        }
+
+        return $timeline;
+    }
+
+    /**
+     * Create Timeline from array of events
+     *
+     * @param array $events Array of event data
+     * @param array $config Optional configuration
+     *
+     * @return self
+     * @since 1.0.0
+     */
+    public static function fromEvents( array $events, array $config = [] ): self {
+        $timeline = new self( [], $config );
+
+        foreach ( $events as $event ) {
+            if ( is_array( $event ) ) {
+                $timeline->add_event(
+                        $event['title'] ?? '',
+                        $event['description'] ?? null,
+                        $event
+                );
+            }
         }
 
         return $timeline;

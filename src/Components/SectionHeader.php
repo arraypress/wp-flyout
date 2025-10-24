@@ -150,4 +150,18 @@ class SectionHeader {
         );
     }
 
+    /**
+     * Quick render of section header
+     *
+     * @param string      $title       Section title
+     * @param string      $description Optional description
+     * @param string|null $icon        Optional icon
+     *
+     * @return string Rendered HTML
+     * @since 1.0.0
+     */
+    public static function quick( string $title, string $description = '', ?string $icon = null ): string {
+        return self::create( $title, $description, $icon )->render();
+    }
+
 }

@@ -163,4 +163,17 @@ class EmptyState {
         return ob_get_clean();
     }
 
+    /**
+     * Quick render of empty state
+     *
+     * @param string $title       Title text
+     * @param string $description Optional description
+     *
+     * @return string Rendered HTML
+     * @since 1.0.0
+     */
+    public static function quick( string $title, string $description = '' ): string {
+        return ( new self( $title, [ 'description' => $description ] ) )->render();
+    }
+
 }
