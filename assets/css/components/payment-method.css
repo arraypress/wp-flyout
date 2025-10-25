@@ -21,6 +21,7 @@
     justify-content: center;
     background: #f3f4f6;
     border-radius: 8px;
+    overflow: hidden;
 }
 
 .payment-icon .dashicons {
@@ -31,7 +32,16 @@
 }
 
 .payment-brand-icon {
-    font-size: 24px;
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.payment-brand-icon svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
 }
 
 .payment-details {
