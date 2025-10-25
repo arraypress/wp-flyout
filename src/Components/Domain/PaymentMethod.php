@@ -147,13 +147,13 @@ class PaymentMethod {
 
         $icons = [
                 'bank'   => 'bank',
-                'crypto' => 'bitcoin',
+                'crypto' => 'tickets-alt',
                 'wallet' => 'smartphone'
         ];
 
         $icon = $icons[ $this->payment['type'] ] ?? 'money-alt';
 
-        return '<span class="dashicons dashicons-' . $icon . '"></span>';
+        return '<span class="dashicons dashicons-' . esc_attr( $icon ) . '"></span>';
     }
 
     /**
