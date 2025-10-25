@@ -171,19 +171,19 @@ class PaymentMethod {
 
         // Map brand names to SVG filenames
         $brand_files = [
-                'visa'       => 'images/payment-methods/visa.svg',
-                'mastercard' => 'images/payment-methods/mastercard.svg',
-                'amex'       => 'images/payment-methods/amex.svg',
-                'discover'   => 'images/payment-methods/discover.svg',
-                'diners'     => 'images/payment-methods/diners.svg',
-                'jcb'        => 'images/payment-methods/jcb.svg',
-                'unionpay'   => 'images/payment-methods/unionpay.svg',
-                'maestro'    => 'images/payment-methods/maestro.svg',
-                'elo'        => 'images/payment-methods/elo.svg',
-                'alipay'     => 'images/payment-methods/alipay.svg',
-                'hiper'      => 'images/payment-methods/hiper.svg',
-                'hipercard'  => 'images/payment-methods/hipercard.svg',
-                'mir'        => 'images/payment-methods/mir.svg'
+            'visa'       => 'images/payment-methods/visa.svg',
+            'mastercard' => 'images/payment-methods/mastercard.svg',
+            'amex'       => 'images/payment-methods/amex.svg',
+            'discover'   => 'images/payment-methods/discover.svg',
+            'diners'     => 'images/payment-methods/diners.svg',
+            'jcb'        => 'images/payment-methods/jcb.svg',
+            'unionpay'   => 'images/payment-methods/unionpay.svg',
+            'maestro'    => 'images/payment-methods/maestro.svg',
+            'elo'        => 'images/payment-methods/elo.svg',
+            'alipay'     => 'images/payment-methods/alipay.svg',
+            'hiper'      => 'images/payment-methods/hiper.svg',
+            'hipercard'  => 'images/payment-methods/hipercard.svg',
+            'mir'        => 'images/payment-methods/mir.svg'
         ];
 
         $file = $brand_files[ $brand ] ?? 'images/payment-methods/generic.svg';
