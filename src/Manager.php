@@ -180,6 +180,7 @@ class Manager {
 			// Check for error
 			if ( isset( $result['success'] ) && $result['success'] === false ) {
 				wp_send_json_error( $result['message'] ?? $handler['error_message'] );
+
 				return;
 			}
 			// Pass through array response
@@ -247,7 +248,7 @@ class Manager {
 			wp_send_json_error( 'Delete handler not configured', 500 );
 		}
 
-		$data = $this->get_request_data();
+		$data   = $this->get_request_data();
 		$result = call_user_func( $handler['delete_callback'], $data );
 
 		// Handle response
@@ -282,7 +283,7 @@ class Manager {
 			wp_send_json_error( 'Custom action not configured', 500 );
 		}
 
-		$data = $this->get_request_data();
+		$data   = $this->get_request_data();
 		$result = call_user_func( $callback, $data, $action );
 
 		// Pass through result
@@ -311,7 +312,7 @@ class Manager {
 				continue;
 			}
 			// Clean up data_ prefix if present
-			if ( strpos( $key, 'data_' ) === 0 ) {
+			if ( str_starts_with( $key, 'data_' ) ) {
 				$key = substr( $key, 5 );
 			}
 			$data[ $key ] = is_string( $value ) ? sanitize_text_field( $value ) : $value;
@@ -355,17 +356,17 @@ class Manager {
 		}
 
 		// Button settings
-		$text = $args['text'] ?? 'Open';
+		$text  = $args['text'] ?? 'Open';
 		$class = $args['class'] ?? 'button';
-		$icon = $args['icon'] ?? '';
+		$icon  = $args['icon'] ?? '';
 
 		// Build button
 		$attrs = [
-			'type' => 'button',
-			'class' => 'wp-flyout-trigger ' . $class,
+			'type'                => 'button',
+			'class'               => 'wp-flyout-trigger ' . $class,
 			'data-flyout-manager' => $this->prefix,
 			'data-flyout-handler' => $handler_id,
-			'data-flyout-nonce' => wp_create_nonce( $handler['nonce_action'] ),
+			'data-flyout-nonce'   => wp_create_nonce( $handler['nonce_action'] ),
 		];
 
 		// Add data attributes
@@ -411,11 +412,11 @@ class Manager {
 		}
 
 		$attrs = [
-			'href' => '#',
-			'class' => 'wp-flyout-trigger',
+			'href'                => '#',
+			'class'               => 'wp-flyout-trigger',
 			'data-flyout-manager' => $this->prefix,
 			'data-flyout-handler' => $handler_id,
-			'data-flyout-nonce' => wp_create_nonce( $handler['nonce_action'] ),
+			'data-flyout-nonce'   => wp_create_nonce( $handler['nonce_action'] ),
 		];
 
 		// Add data attributes
