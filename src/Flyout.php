@@ -9,7 +9,7 @@
  * @package     ArrayPress\WPFlyout
  * @copyright   Copyright (c) 2025, ArrayPress Limited
  * @license     GPL2+
- * @version     1.0.0
+ * @version     2.0.0
  * @author      David Sherlock
  */
 
@@ -29,7 +29,6 @@ class Flyout {
     /**
      * Unique identifier for this flyout
      *
-     * @since 1.0.0
      * @var string
      */
     private string $id;
@@ -37,7 +36,6 @@ class Flyout {
     /**
      * Flyout title displayed in header
      *
-     * @since 1.0.0
      * @var string
      */
     private string $title = '';
@@ -45,7 +43,6 @@ class Flyout {
     /**
      * Tab configuration array
      *
-     * @since 1.0.0
      * @var array
      */
     private array $tabs = [];
@@ -53,7 +50,6 @@ class Flyout {
     /**
      * Active tab identifier
      *
-     * @since 1.0.0
      * @var string
      */
     private string $active_tab = '';
@@ -61,7 +57,6 @@ class Flyout {
     /**
      * Content for each tab
      *
-     * @since 1.0.0
      * @var array
      */
     private array $tab_content = [];
@@ -69,7 +64,6 @@ class Flyout {
     /**
      * Footer content HTML
      *
-     * @since 1.0.0
      * @var string
      */
     private string $footer_content = '';
@@ -77,12 +71,12 @@ class Flyout {
     /**
      * Flyout configuration
      *
-     * @since 1.0.0
      * @var array
      */
     private array $config = [
-            'width'   => 'medium', // small, medium, large, full
-            'classes' => [],
+            'width'    => 'medium', // small, medium, large, full
+            'classes'  => [],
+            'position' => 'right', // right or left
     ];
 
     /**
@@ -92,7 +86,6 @@ class Flyout {
      * @param array  $config Optional configuration array.
      *
      * @since 1.0.0
-     *
      */
     public function __construct( string $id, array $config = [] ) {
         $this->id     = $id;
@@ -106,12 +99,55 @@ class Flyout {
      *
      * @return self
      * @since 1.0.0
-     *
      */
     public function set_title( string $title ): self {
         $this->title = $title;
 
         return $this;
+    }
+
+    /**
+     * Get flyout title
+     *
+     * @return string
+     * @since 2.0.0
+     */
+    public function get_title(): string {
+        return $this->title;
+    }
+
+    /**
+     * Set flyout width
+     *
+     * @param string $width Width size (small, medium, large, full)
+     *
+     * @return self
+     * @since 2.0.0
+     */
+    public function set_width( string $width ): self {
+        $this->config['width'] = $width;
+
+        return $this;
+    }
+
+    /**
+     * Get flyout width
+     *
+     * @return string
+     * @since 2.0.0
+     */
+    public function get_width(): string {
+        return $this->config['width'];
+    }
+
+    /**
+     * Get flyout ID
+     *
+     * @return string
+     * @since 2.0.0
+     */
+    public function get_id(): string {
+        return $this->id;
     }
 
     /**
@@ -124,7 +160,6 @@ class Flyout {
      *
      * @return self
      * @since 1.0.0
-     *
      */
     public function add_tab( string $id, string $label, bool $active = false, array $args = [] ): self {
         $this->tabs[ $id ] = array_merge(
@@ -158,7 +193,6 @@ class Flyout {
      *
      * @return self
      * @since 1.0.0
-     *
      */
     public function add_content( string $tab_id, string $content ): self {
         if ( empty( $tab_id ) && empty( $this->tabs ) ) {
@@ -175,13 +209,31 @@ class Flyout {
     }
 
     /**
+     * Set content for a tab (replaces existing content)
+     *
+     * @param string $tab_id  Tab identifier
+     * @param string $content HTML content
+     *
+     * @return self
+     * @since 2.0.0
+     */
+    public function set_tab_content( string $tab_id, string $content ): self {
+        if ( empty( $tab_id ) && empty( $this->tabs ) ) {
+            $tab_id = '_main';
+        }
+
+        $this->tab_content[ $tab_id ] = $content;
+
+        return $this;
+    }
+
+    /**
      * Set footer content
      *
      * @param string $content Footer HTML content.
      *
      * @return self
      * @since 1.0.0
-     *
      */
     public function set_footer( string $content ): self {
         $this->footer_content = $content;
@@ -190,14 +242,33 @@ class Flyout {
     }
 
     /**
+     * Get footer content
+     *
+     * @return string
+     * @since 2.0.0
+     */
+    public function get_footer(): string {
+        return $this->footer_content;
+    }
+
+    /**
      * Check if flyout has tabs
      *
      * @return bool
      * @since 1.0.0
-     *
      */
     private function has_tabs(): bool {
         return ! empty( $this->tabs );
+    }
+
+    /**
+     * Check if flyout has footer
+     *
+     * @return bool
+     * @since 2.0.0
+     */
+    public function has_footer(): bool {
+        return ! empty( $this->footer_content );
     }
 
     /**
@@ -205,13 +276,13 @@ class Flyout {
      *
      * @return string Generated HTML.
      * @since 1.0.0
-     *
      */
     public function render(): string {
         $classes = array_merge(
                 [
                         'wp-flyout',
                         'wp-flyout-' . $this->config['width'],
+                        'wp-flyout-' . $this->config['position'],
                 ],
                 $this->config['classes']
         );
@@ -240,7 +311,6 @@ class Flyout {
      *
      * @return string Generated HTML.
      * @since 1.0.0
-     *
      */
     private function render_header(): string {
         ob_start();
@@ -260,7 +330,6 @@ class Flyout {
      *
      * @return string Generated HTML.
      * @since 1.0.0
-     *
      */
     private function render_tabs(): string {
         ob_start();
@@ -306,7 +375,6 @@ class Flyout {
      *
      * @return string Generated HTML.
      * @since 1.0.0
-     *
      */
     private function render_body(): string {
         $is_form = $this->has_form_content();
@@ -343,7 +411,6 @@ class Flyout {
      *
      * @return string Generated HTML.
      * @since 1.0.0
-     *
      */
     private function render_body_content(): string {
         ob_start();
@@ -376,7 +443,6 @@ class Flyout {
      *
      * @return bool
      * @since 1.0.0
-     *
      */
     private function has_form_content(): bool {
         $all_content = implode( '', $this->tab_content );
@@ -445,4 +511,69 @@ class Flyout {
         return $this;
     }
 
+    /**
+     * Clear all content
+     *
+     * @return self
+     * @since 2.0.0
+     */
+    public function clear_content(): self {
+        $this->tab_content = [];
+        foreach ( $this->tabs as $tab ) {
+            $this->tab_content[ $tab['id'] ] = '';
+        }
+        if ( empty( $this->tabs ) ) {
+            $this->tab_content['_main'] = '';
+        }
+
+        return $this;
+    }
+
+    /**
+     * Clear specific tab content
+     *
+     * @param string $tab_id Tab identifier
+     *
+     * @return self
+     * @since 2.0.0
+     */
+    public function clear_tab_content( string $tab_id ): self {
+        if ( isset( $this->tab_content[ $tab_id ] ) ) {
+            $this->tab_content[ $tab_id ] = '';
+        }
+
+        return $this;
+    }
+
+    /**
+     * Add CSS class to flyout
+     *
+     * @param string $class CSS class name
+     *
+     * @return self
+     * @since 2.0.0
+     */
+    public function add_class( string $class ): self {
+        if ( ! in_array( $class, $this->config['classes'], true ) ) {
+            $this->config['classes'][] = $class;
+        }
+
+        return $this;
+    }
+
+    /**
+     * Set position (left or right)
+     *
+     * @param string $position Position (left or right)
+     *
+     * @return self
+     * @since 2.0.0
+     */
+    public function set_position( string $position ): self {
+        if ( in_array( $position, [ 'left', 'right' ], true ) ) {
+            $this->config['position'] = $position;
+        }
+
+        return $this;
+    }
 }
