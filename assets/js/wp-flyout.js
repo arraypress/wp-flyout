@@ -1,278 +1,483 @@
 /**
  * WP Flyout Core JavaScript
  *
- * Handles flyout UI mechanics - opening, closing, and tab management.
- * Business logic should be handled by the implementing plugin.
+ * Handles flyout open/close mechanics and provides API for Manager integration
  *
- * @package WPFlyout
  * @version 1.0.0
  */
-(function ($, window, document) {
+(function ($) {
     'use strict';
 
     /**
-     * WP Flyout Manager
-     *
-     * @since 1.0.0
-     * @type {Object}
+     * WP Flyout Core
      */
-    const WPFlyout = {
+    window.WPFlyout = window.WPFlyout || {};
 
-        /**
-         * Active flyout instances
-         *
-         * @since 1.0.0
-         * @type {Object}
-         */
-        instances: {},
+    // Default configuration
+    WPFlyout.defaults = {
+        width: 'medium',
+        position: 'right',
+        closeOnEscape: true,
+        closeOnOverlay: true,
+        animationDuration: 300
+    };
 
-        /**
-         * Configuration
-         *
-         * @since 1.0.0
-         * @type {Object}
-         */
-        config: {
-            animationDelay: 10,
-            animationDuration: 300,
-            focusDelay: 350
-        },
+    // Active flyouts tracking
+    WPFlyout.active = [];
 
-        /**
-         * Initialize flyout system
-         *
-         * @since 1.0.0
-         * @return {void}
-         */
-        init: function () {
-            this.bindGlobalEvents();
-        },
+    /**
+     * Open a flyout
+     *
+     * @param {Object} options Flyout options
+     */
+    WPFlyout.open = function (options) {
+        const settings = $.extend({}, WPFlyout.defaults, options);
 
-        /**
-         * Open a flyout
-         *
-         * @since 1.0.0
-         * @param {string} id Flyout element ID
-         * @return {boolean} Success status
-         */
-        open: function (id) {
-            const $flyout = $('#' + id);
+        // Create unique ID if not provided
+        const flyoutId = settings.id || 'flyout-' + Date.now();
 
-            if (!$flyout.length) {
-                return false;
-            }
+        // Check if already exists
+        let $flyout = $('#' + flyoutId);
+        if ($flyout.length === 0) {
+            $flyout = WPFlyout.create(flyoutId, settings);
+        }
 
-            // Create overlay if needed
-            this.ensureOverlay();
+        // Update content if provided
+        if (settings.content) {
+            WPFlyout.setContent($flyout, settings.content);
+        }
 
-            // Store instance
-            this.instances[id] = $flyout;
+        // Update title if provided
+        if (settings.title) {
+            WPFlyout.setTitle($flyout, settings.title);
+        }
 
-            // Add body class
-            $('body').addClass('wp-flyout-open');
+        // Update width class
+        WPFlyout.setWidth($flyout, settings.width);
 
-            // Activate with delay for animation
-            setTimeout(() => {
-                $('.wp-flyout-overlay').addClass('active');
-                $flyout.addClass('active');
-            }, this.config.animationDelay);
+        // Show overlay
+        WPFlyout.showOverlay();
 
-            // Initialize tabs if present
-            this.initTabs($flyout);
+        // Add active class
+        $flyout.addClass('active');
 
-            // Focus management and trigger events after animation
-            setTimeout(() => {
-                // Focus first input
-                $flyout.find('input:visible, select:visible, textarea:visible')
-                    .not(':disabled')
-                    .first()
-                    .focus();
+        // Track active flyout
+        WPFlyout.active.push(flyoutId);
 
-                // Trigger events
-                const eventData = {
-                    id: id,
-                    element: $flyout[0]
-                };
+        // Bind events
+        WPFlyout.bindEvents($flyout, settings);
 
-                $(document).trigger('wpflyout:opened', eventData);
-                $flyout.trigger('flyout:ready');
-            }, this.config.focusDelay);
+        // Trigger opened event
+        $(document).trigger('wpflyout:opened', {
+            element: $flyout[0],
+            id: flyoutId,
+            settings: settings
+        });
 
-            return true;
-        },
+        return $flyout;
+    };
 
-        /**
-         * Close a flyout
-         *
-         * @since 1.0.0
-         * @param {string} id Flyout element ID
-         * @return {boolean} Success status
-         */
-        close: function (id) {
-            const $flyout = this.instances[id];
+    /**
+     * Create flyout element
+     */
+    WPFlyout.create = function (id, settings) {
+        const html = `
+            <div id="${id}" class="wp-flyout wp-flyout-${settings.position} wp-flyout-${settings.width}">
+                <div class="wp-flyout-header">
+                    <h2></h2>
+                    <button type="button" class="wp-flyout-close" aria-label="Close">
+                        <span class="dashicons dashicons-no-alt"></span>
+                    </button>
+                </div>
+                <div class="wp-flyout-content">
+                    <div class="wp-flyout-body"></div>
+                </div>
+                <div class="wp-flyout-footer" style="display: none;"></div>
+            </div>
+        `;
 
-            if (!$flyout) {
-                return false;
-            }
+        return $(html).appendTo('body');
+    };
 
-            // Start close animation
-            $flyout.removeClass('active');
+    /**
+     * Open flyout from HTML content
+     */
+    WPFlyout.openFromHTML = function (html, config) {
+        const settings = $.extend({}, WPFlyout.defaults, config);
 
-            // Clean up after animation
-            setTimeout(() => {
-                $flyout.remove();
-                delete this.instances[id];
+        // Parse the HTML to see if it's already a flyout structure
+        const $temp = $('<div>').html(html);
+        const $existingFlyout = $temp.find('.wp-flyout').first();
 
-                // Remove overlay if no more flyouts
-                if (this.isEmpty()) {
-                    this.removeOverlay();
-                }
+        if ($existingFlyout.length) {
+            // Use existing flyout structure
+            const flyoutId = $existingFlyout.attr('id') || 'flyout-' + Date.now();
+            $existingFlyout.attr('id', flyoutId);
 
-                // Trigger event
-                $(document).trigger('wpflyout:closed', {id: id});
-            }, this.config.animationDuration);
+            // Remove any existing instance
+            $('#' + flyoutId).remove();
 
-            return true;
-        },
+            // Append to body
+            $existingFlyout.appendTo('body');
 
-        /**
-         * Close all open flyouts
-         *
-         * @since 1.0.0
-         * @return {void}
-         */
-        closeAll: function () {
-            Object.keys(this.instances).forEach(id => this.close(id));
-        },
+            // Show overlay
+            WPFlyout.showOverlay();
 
-        /**
-         * Get the last opened flyout ID
-         *
-         * @since 1.0.0
-         * @return {string|null}
-         */
-        getLastId: function () {
-            const keys = Object.keys(this.instances);
-            return keys.length ? keys[keys.length - 1] : null;
-        },
+            // Add active class
+            $existingFlyout.addClass('active');
 
-        /**
-         * Check if there are no active flyouts
-         *
-         * @since 1.0.0
-         * @return {boolean}
-         */
-        isEmpty: function () {
-            return Object.keys(this.instances).length === 0;
-        },
+            // Track active flyout
+            WPFlyout.active.push(flyoutId);
 
-        /**
-         * Ensure overlay exists
-         *
-         * @since 1.0.0
-         * @return {void}
-         */
-        ensureOverlay: function () {
-            if (!$('.wp-flyout-overlay').length) {
-                $('body').append('<div class="wp-flyout-overlay"></div>');
-            }
-        },
+            // Bind events
+            WPFlyout.bindEvents($existingFlyout, settings);
 
-        /**
-         * Remove overlay
-         *
-         * @since 1.0.0
-         * @return {void}
-         */
-        removeOverlay: function () {
-            $('.wp-flyout-overlay').removeClass('active');
-            $('body').removeClass('wp-flyout-open');
-
-            setTimeout(() => {
-                $('.wp-flyout-overlay').remove();
-            }, this.config.animationDuration);
-        },
-
-        /**
-         * Initialize tab switching
-         *
-         * @since 1.0.0
-         * @param {jQuery} $flyout Flyout element
-         * @return {void}
-         */
-        initTabs: function ($flyout) {
-            $flyout.off('click.flyout-tabs').on('click.flyout-tabs', '.wp-flyout-tab', function (e) {
-                e.preventDefault();
-
-                const $tab = $(this);
-
-                if ($tab.hasClass('disabled')) {
-                    return;
-                }
-
-                const tabId = $tab.data('tab');
-
-                // Update active states
-                $flyout.find('.wp-flyout-tab')
-                    .removeClass('active')
-                    .attr('aria-selected', 'false');
-
-                $tab.addClass('active')
-                    .attr('aria-selected', 'true');
-
-                // Switch content
-                $flyout.find('.wp-flyout-tab-content').removeClass('active');
-                $flyout.find('#tab-' + tabId).addClass('active');
-
-                // Trigger event
-                $(document).trigger('wpflyout:tab-changed', {
-                    flyoutId: $flyout.attr('id'),
-                    tabId: tabId
-                });
-            });
-        },
-
-        /**
-         * Bind global event handlers
-         *
-         * @since 1.0.0
-         * @return {void}
-         */
-        bindGlobalEvents: function () {
-            const self = this;
-
-            // Close button
-            $(document).on('click', '.wp-flyout-close', function () {
-                const flyoutId = $(this).closest('.wp-flyout').attr('id');
-                self.close(flyoutId);
+            // Trigger opened event
+            $(document).trigger('wpflyout:opened', {
+                element: $existingFlyout[0],
+                id: flyoutId,
+                settings: settings
             });
 
-            // Overlay click
-            $(document).on('click', '.wp-flyout-overlay', function () {
-                const lastId = self.getLastId();
-                if (lastId) {
-                    self.close(lastId);
-                }
-            });
+            return $existingFlyout;
+        } else {
+            // Treat as content for new flyout
+            return WPFlyout.open($.extend(settings, {
+                content: html
+            }));
+        }
+    };
 
-            // Escape key
-            $(document).on('keydown', function (e) {
-                if (e.key === 'Escape' || e.keyCode === 27) {
-                    const lastId = self.getLastId();
-                    if (lastId) {
-                        self.close(lastId);
+    /**
+     * Close a flyout
+     */
+    WPFlyout.close = function (flyout) {
+        const $flyout = typeof flyout === 'string' ? $('#' + flyout) : $(flyout);
+
+        if (!$flyout.length) return;
+
+        const flyoutId = $flyout.attr('id');
+
+        // Trigger closing event
+        const event = $.Event('wpflyout:closing');
+        $(document).trigger(event, {
+            element: $flyout[0],
+            id: flyoutId
+        });
+
+        if (event.isDefaultPrevented()) {
+            return;
+        }
+
+        // Remove active class
+        $flyout.removeClass('active');
+
+        // Remove from active tracking
+        WPFlyout.active = WPFlyout.active.filter(id => id !== flyoutId);
+
+        // Hide overlay if no more active flyouts
+        if (WPFlyout.active.length === 0) {
+            WPFlyout.hideOverlay();
+        }
+
+        // Remove after animation
+        setTimeout(function () {
+            $flyout.remove();
+
+            // Trigger closed event
+            $(document).trigger('wpflyout:closed', {
+                id: flyoutId
+            });
+        }, WPFlyout.defaults.animationDuration);
+    };
+
+    /**
+     * Close all flyouts
+     */
+    WPFlyout.closeAll = function () {
+        const flyouts = [...WPFlyout.active];
+        flyouts.forEach(id => WPFlyout.close(id));
+    };
+
+    /**
+     * Set flyout content
+     */
+    WPFlyout.setContent = function ($flyout, content) {
+        $flyout.find('.wp-flyout-body').html(content);
+    };
+
+    /**
+     * Set flyout title
+     */
+    WPFlyout.setTitle = function ($flyout, title) {
+        $flyout.find('.wp-flyout-header h2').text(title);
+    };
+
+    /**
+     * Set flyout width
+     */
+    WPFlyout.setWidth = function ($flyout, width) {
+        $flyout.removeClass('wp-flyout-small wp-flyout-medium wp-flyout-large wp-flyout-full')
+            .addClass('wp-flyout-' + width);
+    };
+
+    /**
+     * Show loading state
+     */
+    WPFlyout.showLoading = function (flyout, message) {
+        const $flyout = typeof flyout === 'string' ? $('#' + flyout) : $(flyout);
+        const loadingHtml = `
+            <div class="wp-flyout-loading">
+                <span class="spinner is-active"></span>
+                <p>${message || 'Loading...'}</p>
+            </div>
+        `;
+
+        WPFlyout.setContent($flyout, loadingHtml);
+    };
+
+    /**
+     * Show error state
+     */
+    WPFlyout.showError = function (flyout, message) {
+        const $flyout = typeof flyout === 'string' ? $('#' + flyout) : $(flyout);
+        const errorHtml = `
+            <div class="notice notice-error">
+                <p>${message || 'An error occurred'}</p>
+            </div>
+        `;
+
+        WPFlyout.setContent($flyout, errorHtml);
+    };
+
+    /**
+     * Show message
+     */
+    WPFlyout.showMessage = function (flyout, message, type) {
+        const $flyout = typeof flyout === 'string' ? $('#' + flyout) : $(flyout);
+        const $content = $flyout.find('.wp-flyout-content');
+
+        // Remove existing notices
+        $content.find('.wp-flyout-notice').remove();
+
+        // Add new notice
+        const noticeClass = type === 'error' ? 'notice-error' : 'notice-success';
+        const $notice = $(`
+            <div class="notice ${noticeClass} wp-flyout-notice is-dismissible">
+                <p>${message}</p>
+            </div>
+        `).prependTo($content);
+
+        // Auto dismiss success messages
+        if (type === 'success') {
+            setTimeout(() => {
+                $notice.fadeOut(() => $notice.remove());
+            }, 3000);
+        }
+    };
+
+    /**
+     * Bind form auto-submit
+     */
+    WPFlyout.bindFormAutoSubmit = function (flyout, handler) {
+        const $flyout = typeof flyout === 'string' ? $('#' + flyout) : $(flyout);
+
+        $flyout.find('form').off('submit.wpflyout').on('submit.wpflyout', function (e) {
+            e.preventDefault();
+
+            if (handler && typeof handler === 'function') {
+                handler($(this));
+            }
+
+            // Trigger form submit event
+            $(document).trigger('wpflyout:formsubmit', {
+                element: $flyout[0],
+                form: this
+            });
+        });
+    };
+
+    /**
+     * Track dirty state
+     */
+    WPFlyout.trackDirty = function (flyout) {
+        const $flyout = typeof flyout === 'string' ? $('#' + flyout) : $(flyout);
+
+        $flyout.data('isDirty', false);
+
+        $flyout.find('form :input').on('change.dirty input.dirty', function () {
+            $flyout.data('isDirty', true);
+        });
+
+        return $flyout;
+    };
+
+    /**
+     * Check if flyout has unsaved changes
+     */
+    WPFlyout.isDirty = function (flyout) {
+        const $flyout = typeof flyout === 'string' ? $('#' + flyout) : $(flyout);
+        return $flyout.data('isDirty') === true;
+    };
+
+    /**
+     * Reset dirty state
+     */
+    WPFlyout.resetDirty = function (flyout) {
+        const $flyout = typeof flyout === 'string' ? $('#' + flyout) : $(flyout);
+        $flyout.data('isDirty', false);
+    };
+
+    /**
+     * Show overlay
+     */
+    WPFlyout.showOverlay = function () {
+        let $overlay = $('.wp-flyout-overlay');
+
+        if ($overlay.length === 0) {
+            $overlay = $('<div class="wp-flyout-overlay"></div>').appendTo('body');
+        }
+
+        // Small delay to ensure transition works
+        setTimeout(function () {
+            $overlay.addClass('active');
+        }, 10);
+    };
+
+    /**
+     * Hide overlay
+     */
+    WPFlyout.hideOverlay = function () {
+        const $overlay = $('.wp-flyout-overlay');
+
+        $overlay.removeClass('active');
+
+        setTimeout(function () {
+            $overlay.remove();
+        }, WPFlyout.defaults.animationDuration);
+    };
+
+    /**
+     * Bind flyout events
+     */
+    WPFlyout.bindEvents = function ($flyout, settings) {
+        const flyoutId = $flyout.attr('id');
+
+        // Close button
+        $flyout.find('.wp-flyout-close').off('click.wpflyout').on('click.wpflyout', function () {
+            WPFlyout.close($flyout);
+        });
+
+        // Overlay click
+        if (settings.closeOnOverlay) {
+            $('.wp-flyout-overlay').off('click.wpflyout-' + flyoutId).on('click.wpflyout-' + flyoutId, function () {
+                // Check for dirty state
+                if (WPFlyout.isDirty($flyout)) {
+                    if (!confirm('You have unsaved changes. Are you sure you want to close?')) {
+                        return;
+                    }
+                }
+                WPFlyout.close($flyout);
+            });
+        }
+
+        // ESC key
+        if (settings.closeOnEscape) {
+            $(document).off('keydown.wpflyout-' + flyoutId).on('keydown.wpflyout-' + flyoutId, function (e) {
+                if (e.key === 'Escape') {
+                    // Only close the topmost flyout
+                    if (WPFlyout.active[WPFlyout.active.length - 1] === flyoutId) {
+                        // Check for dirty state
+                        if (WPFlyout.isDirty($flyout)) {
+                            if (!confirm('You have unsaved changes. Are you sure you want to close?')) {
+                                return;
+                            }
+                        }
+                        WPFlyout.close($flyout);
                     }
                 }
             });
         }
+
+        // Tab navigation
+        WPFlyout.bindTabNavigation($flyout);
     };
 
-    // Initialize on ready
+    /**
+     * Bind tab navigation
+     */
+    WPFlyout.bindTabNavigation = function ($flyout) {
+        $flyout.find('.wp-flyout-tabs a').off('click.tabs').on('click.tabs', function (e) {
+            e.preventDefault();
+
+            const $tab = $(this);
+            const target = $tab.attr('href');
+
+            // Update active states
+            $flyout.find('.wp-flyout-tabs li').removeClass('active');
+            $tab.parent().addClass('active');
+
+            // Show target panel
+            $flyout.find('.wp-flyout-tab-panel').removeClass('active');
+            $(target).addClass('active');
+
+            // Trigger tab change event
+            $(document).trigger('wpflyout:tabchange', {
+                element: $flyout[0],
+                tab: target
+            });
+        });
+    };
+
+    /**
+     * Get active flyout
+     */
+    WPFlyout.getActive = function () {
+        if (WPFlyout.active.length === 0) return null;
+        return $('#' + WPFlyout.active[WPFlyout.active.length - 1]);
+    };
+
+    /**
+     * Refresh element via AJAX
+     */
+    WPFlyout.refreshElement = function (selector) {
+        const $element = $(selector);
+        if (!$element.length) return;
+
+        // Add loading state
+        $element.css('opacity', '0.5');
+
+        // Reload the page content
+        $.get(window.location.href, function (html) {
+            const $newElement = $(html).find(selector);
+            if ($newElement.length) {
+                $element.replaceWith($newElement);
+
+                // Trigger refresh event
+                $(document).trigger('wpflyout:refreshed', {
+                    selector: selector
+                });
+            }
+        }).always(function () {
+            $element.css('opacity', '1');
+        });
+    };
+
+    /**
+     * Initialize on ready
+     */
     $(document).ready(function () {
-        WPFlyout.init();
+        // Clean up on page unload
+        $(window).on('beforeunload', function () {
+            if (WPFlyout.active.length > 0) {
+                const $dirty = WPFlyout.active.map(id => $('#' + id))
+                    .filter($f => WPFlyout.isDirty($f));
+
+                if ($dirty.length > 0) {
+                    return 'You have unsaved changes. Are you sure you want to leave?';
+                }
+            }
+        });
     });
 
-    // Export to global
-    window.WPFlyout = WPFlyout;
-
-})(jQuery, window, document);
+})(jQuery);

@@ -36,7 +36,8 @@ class Assets {
 	 */
 	private static array $core_scripts = [
 		'js/wp-flyout.js',
-		'js/core/forms.js'
+		'js/core/forms.js',
+		'js/core/manager.js'
 	];
 
 	/**
