@@ -26,7 +26,8 @@ class Assets {
 		'css/flyout/core.css',
 		'css/flyout/form.css',
 		'css/flyout/ui-elements.css',
-		'css/flyout/data-display.css'
+		'css/flyout/data-display.css',
+		'css/flyout/alert.css',
 	];
 
 	/**
@@ -37,7 +38,8 @@ class Assets {
 	private static array $core_scripts = [
 		'js/wp-flyout.js',
 		'js/core/forms.js',
-		'js/core/manager.js'
+		'js/core/manager.js',
+		'js/core/alert.js'
 	];
 
 	/**

@@ -1,13 +1,13 @@
 /**
- * WP Flyout Manager - Complete Working Version
+ * WP Flyout Manager - Uses WPFlyoutAlert component
  */
-(function($) {
+(function ($) {
     'use strict';
 
-    $(document).ready(function() {
+    $(document).ready(function () {
 
         // Handle trigger clicks
-        $(document).on('click', '.wp-flyout-trigger', function(e) {
+        $(document).on('click', '.wp-flyout-trigger', function (e) {
             e.preventDefault();
 
             const $btn = $(this);
@@ -17,7 +17,7 @@
 
             // Collect data attributes
             const data = {};
-            $.each(this.dataset, function(key, value) {
+            $.each(this.dataset, function (key, value) {
                 if (key !== 'flyoutHandler' && key !== 'flyoutManager' && key !== 'flyoutNonce') {
                     data[key] = value;
                 }
@@ -31,7 +31,7 @@
                 nonce: nonce,
                 ...data
             })
-                .done(function(response) {
+                .done(function (response) {
                     if (response.success) {
                         // Remove existing flyouts
                         $('.wp-flyout').remove();
@@ -53,7 +53,7 @@
                         $flyout.data('request-data', data);
 
                         // Bind save button
-                        $flyout.on('click', '.wp-flyout-save', function(e) {
+                        $flyout.on('click', '.wp-flyout-save', function (e) {
                             e.preventDefault();
 
                             const $saveBtn = $(this);
@@ -78,18 +78,29 @@
                                 form_data: formData,
                                 ...data
                             })
-                                .done(function(saveResponse) {
+                                .done(function (saveResponse) {
                                     $saveBtn.prop('disabled', false).text(originalText);
 
                                     if (saveResponse.success) {
                                         const responseData = saveResponse.data || {};
 
-                                        // Show success alert
-                                        showAlert($flyout, responseData.message || 'Saved!', 'success');
+                                        // Use WPFlyoutAlert component
+                                        if (window.WPFlyoutAlert) {
+                                            WPFlyoutAlert.show(
+                                                responseData.message || 'Saved successfully!',
+                                                'success',
+                                                {
+                                                    target: $flyout.find('.wp-flyout-body'),
+                                                    prepend: true,
+                                                    timeout: 3000,
+                                                    dismissible: true
+                                                }
+                                            );
+                                        }
 
                                         // Auto close and reload if specified
                                         if (responseData.autoClose !== false || responseData.reload) {
-                                            setTimeout(function() {
+                                            setTimeout(function () {
                                                 WPFlyout.close(flyoutId);
 
                                                 if (responseData.reload) {
@@ -99,17 +110,38 @@
                                         }
                                     } else {
                                         // Show error alert
-                                        showAlert($flyout, saveResponse.data || 'Save failed', 'error');
+                                        if (window.WPFlyoutAlert) {
+                                            WPFlyoutAlert.show(
+                                                saveResponse.data || 'An error occurred. Please try again.',
+                                                'error',
+                                                {
+                                                    target: $flyout.find('.wp-flyout-body'),
+                                                    prepend: true,
+                                                    dismissible: true
+                                                }
+                                            );
+                                        }
                                     }
                                 })
-                                .fail(function() {
+                                .fail(function () {
                                     $saveBtn.prop('disabled', false).text(originalText);
-                                    showAlert($flyout, 'Connection error. Please try again.', 'error');
+
+                                    if (window.WPFlyoutAlert) {
+                                        WPFlyoutAlert.show(
+                                            'Connection error. Please check your internet connection and try again.',
+                                            'error',
+                                            {
+                                                target: $flyout.find('.wp-flyout-body'),
+                                                prepend: true,
+                                                dismissible: true
+                                            }
+                                        );
+                                    }
                                 });
                         });
 
-                        // Bind delete button (without double confirm)
-                        $flyout.on('click', '.wp-flyout-delete', function(e) {
+                        // Bind delete button
+                        $flyout.on('click', '.wp-flyout-delete', function (e) {
                             e.preventDefault();
 
                             const $deleteBtn = $(this);
@@ -128,11 +160,21 @@
                                 ...data,
                                 id: deleteId
                             })
-                                .done(function(response) {
+                                .done(function (response) {
                                     if (response.success) {
-                                        showAlert($flyout, response.data.message || 'Deleted!', 'success');
+                                        if (window.WPFlyoutAlert) {
+                                            WPFlyoutAlert.show(
+                                                response.data.message || 'Item deleted successfully!',
+                                                'success',
+                                                {
+                                                    target: $flyout.find('.wp-flyout-body'),
+                                                    prepend: true,
+                                                    timeout: 2000
+                                                }
+                                            );
+                                        }
 
-                                        setTimeout(function() {
+                                        setTimeout(function () {
                                             WPFlyout.close(flyoutId);
                                             if (response.data.reload) {
                                                 location.reload();
@@ -140,85 +182,53 @@
                                         }, 1000);
                                     } else {
                                         $deleteBtn.prop('disabled', false).text(originalText);
-                                        showAlert($flyout, response.data || 'Delete failed', 'error');
+
+                                        if (window.WPFlyoutAlert) {
+                                            WPFlyoutAlert.show(
+                                                response.data || 'Failed to delete item',
+                                                'error',
+                                                {
+                                                    target: $flyout.find('.wp-flyout-body'),
+                                                    prepend: true,
+                                                    dismissible: true
+                                                }
+                                            );
+                                        }
                                     }
                                 })
-                                .fail(function() {
+                                .fail(function () {
                                     $deleteBtn.prop('disabled', false).text(originalText);
-                                    showAlert($flyout, 'Connection error', 'error');
+
+                                    if (window.WPFlyoutAlert) {
+                                        WPFlyoutAlert.show(
+                                            'Connection error. Could not delete item.',
+                                            'error',
+                                            {
+                                                target: $flyout.find('.wp-flyout-body'),
+                                                prepend: true,
+                                                dismissible: true
+                                            }
+                                        );
+                                    }
                                 });
                         });
 
                         // Bind close button
-                        $flyout.on('click', '.wp-flyout-close', function(e) {
+                        $flyout.on('click', '.wp-flyout-close', function (e) {
                             e.preventDefault();
                             WPFlyout.close(flyoutId);
                         });
 
-                        // Bind alert dismiss
-                        $flyout.on('click', '.alert-dismiss', function(e) {
-                            e.preventDefault();
-                            $(this).closest('.wp-flyout-alert').fadeOut(function() {
-                                $(this).remove();
-                            });
-                        });
-
                     } else {
-                        alert(response.data || 'Failed to load');
+                        // Show error in a basic alert if flyout fails to load
+                        alert(response.data || 'Failed to load flyout');
                     }
                 })
-                .fail(function() {
-                    alert('Failed to load flyout');
+                .fail(function () {
+                    alert('Failed to connect to server');
                 });
         });
 
-        /**
-         * Show alert message in flyout using nice Alert component style
-         */
-        function showAlert($flyout, message, type) {
-            // Remove existing alerts
-            $flyout.find('.wp-flyout-alert').remove();
-
-            // Determine icon
-            const icons = {
-                'success': 'yes-alt',
-                'error': 'dismiss',
-                'warning': 'warning',
-                'info': 'info'
-            };
-            const icon = icons[type] || 'info';
-
-            // Build alert HTML matching Alert component
-            const alertHtml = `
-                <div class="wp-flyout-alert alert-${type} is-dismissible" role="alert">
-                    <div class="alert-content-wrapper">
-                        <div class="alert-icon">
-                            <span class="dashicons dashicons-${icon}"></span>
-                        </div>
-                        <div class="alert-content">
-                            <div class="alert-message">
-                                ${message}
-                            </div>
-                        </div>
-                        <button type="button" class="alert-dismiss" aria-label="Dismiss alert">
-                            <span class="dashicons dashicons-no-alt"></span>
-                        </button>
-                    </div>
-                </div>
-            `;
-
-            // Add to body
-            $flyout.find('.wp-flyout-body').prepend(alertHtml);
-
-            // Auto-dismiss success messages after 5 seconds
-            if (type === 'success') {
-                setTimeout(function() {
-                    $flyout.find('.wp-flyout-alert').fadeOut(function() {
-                        $(this).remove();
-                    });
-                }, 5000);
-            }
-        }
     });
 
 })(jQuery);
