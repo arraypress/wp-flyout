@@ -2,7 +2,7 @@
  * WP Flyout Manager JavaScript
  * Automatic flyout orchestration based on data attributes
  *
- * @version 1.0.0
+ * @version 2.0.0 - Fixed
  */
 (function ($) {
     'use strict';
@@ -11,7 +11,6 @@
      * Flyout Manager
      */
     window.WPFlyoutManager = window.WPFlyoutManager || {};
-
     WPFlyoutManager.instances = {};
 
     /**
@@ -25,6 +24,7 @@
             this.currentHandler = null;
             this.currentHandlerId = null;
             this.currentNonce = null;
+            this.currentTrigger = null;
 
             this.init();
         }
@@ -43,19 +43,29 @@
             const self = this;
 
             // Use event delegation for dynamic elements
-            $(document).on('click', `.wp-flyout-trigger[data-flyout-prefix="${this.prefix}"]`, function (e) {
+            // NOTE: PHP generates data-flyout-manager and data-flyout-handler
+            $(document).on('click', `.wp-flyout-trigger[data-flyout-manager="${this.prefix}"]`, function (e) {
                 e.preventDefault();
 
                 const $trigger = $(this);
-                const handlerId = $trigger.data('flyout-id');
+                self.currentTrigger = $trigger;
+
+                // Get the correct attributes that PHP generates
+                const handlerId = $trigger.data('flyout-handler');
                 const nonce = $trigger.data('flyout-nonce');
+
+                if (!handlerId) {
+                    console.error('WP Flyout: No handler ID found on trigger');
+                    return;
+                }
 
                 // Collect all data attributes
                 const data = {};
                 $.each($trigger[0].dataset, function (key, value) {
-                    if (key !== 'flyoutPrefix' && key !== 'flyoutId' && key !== 'flyoutNonce') {
-                        // Convert camelCase to snake_case for PHP
-                        const snakeKey = key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+                    // Skip flyout-specific attributes
+                    if (key !== 'flyoutManager' && key !== 'flyoutHandler' && key !== 'flyoutNonce') {
+                        // Convert from camelCase to snake_case for PHP
+                        const snakeKey = key.replace(/([A-Z])/g, '_$1').toLowerCase();
                         data['data_' + snakeKey] = value;
                     }
                 });
@@ -69,10 +79,10 @@
          */
         open(handlerId, nonce, data = {}) {
             const self = this;
-            const handler = this.config.handlers[handlerId];
+            const handler = this.config.handlers ? this.config.handlers[handlerId] : null;
 
             if (!handler) {
-                console.error('WP Flyout: Handler not found:', handlerId);
+                console.error('WP Flyout: Handler configuration not found:', handlerId);
                 return;
             }
 
@@ -80,234 +90,136 @@
             this.currentHandlerId = handlerId;
             this.currentNonce = nonce;
 
-            // Create flyout with loading state
-            const flyoutId = `flyout-${this.prefix}-${handlerId}`;
-            const $flyout = WPFlyout.open({
-                id: flyoutId,
-                title: handler.title,
-                width: handler.width,
-                position: handler.position || 'right'
-            });
+            // Show loading state (could use a temporary loading div)
+            const loadingHtml = `
+                <div class="wp-flyout-loading">
+                    <span class="spinner is-active"></span>
+                    <p>${this.config.strings.loading || 'Loading...'}</p>
+                </div>
+            `;
 
-            this.currentFlyout = $flyout;
-
-            // Show loading
-            WPFlyout.showLoading($flyout, this.config.strings.loading);
-
-            // Load content via AJAX
+            // Load content via AJAX first
             $.ajax({
                 url: this.config.ajaxUrl,
                 type: 'POST',
                 data: {
                     action: `wp_flyout_${this.prefix}`,
-                    handler_id: handlerId,
-                    flyout_action: 'load',
-                    _wpnonce: nonce,
+                    handler: handlerId,
+                    handler_action: 'load',
+                    nonce: nonce,
                     ...data
                 },
                 success: function (response) {
-                    if (response.success) {
-                        self.displayContent(response.data);
+                    if (response.success && response.data) {
+                        // Create temporary div with the flyout HTML
+                        const $temp = $('<div>').html(response.data.html);
+                        const $flyoutHtml = $temp.find('.wp-flyout').first();
+
+                        if ($flyoutHtml.length) {
+                            // Add the flyout HTML to the page
+                            $('body').append($flyoutHtml);
+
+                            // Get the flyout ID from the rendered HTML
+                            const flyoutId = $flyoutHtml.attr('id');
+
+                            // Open using the legacy method (string ID)
+                            const result = WPFlyout.open(flyoutId);
+
+                            if (result) {
+                                self.currentFlyout = $('#' + flyoutId);
+                                self.setupFlyout();
+                            }
+                        } else {
+                            console.error('WP Flyout: No flyout HTML in response');
+                        }
                     } else {
-                        WPFlyout.showError($flyout, response.data || self.config.strings.error);
+                        alert(response.data || self.config.strings.error || 'Error loading flyout');
                     }
                 },
                 error: function (xhr, status, error) {
-                    WPFlyout.showError($flyout, self.config.strings.error);
                     console.error('WP Flyout AJAX Error:', error);
+                    alert(self.config.strings.error || 'Error loading flyout');
                 }
             });
         }
 
         /**
-         * Display the flyout content
+         * Setup the flyout after it's opened
          */
-        displayContent(data) {
+        setupFlyout() {
             const self = this;
             const $flyout = this.currentFlyout;
             const handler = this.currentHandler;
 
-            // Set content
-            WPFlyout.setContent($flyout, data.html);
-
-            // Update title if provided
-            if (data.title) {
-                WPFlyout.setTitle($flyout, data.title);
-            }
-
-            // Update width if provided
-            if (data.width) {
-                WPFlyout.setWidth($flyout, data.width);
-            }
-
-            // Show/hide footer based on configuration
-            if (data.showFooter === false || handler.showFooter === false) {
-                $flyout.find('.wp-flyout-footer').hide();
-            } else if (!$flyout.find('.wp-flyout-footer').children().length) {
-                // Add default footer buttons if not already in content
-                this.addDefaultFooter($flyout);
-            }
-
-            // Bind form handling
-            this.bindFormHandling($flyout);
-
-            // Track dirty state
-            WPFlyout.trackDirty($flyout);
-
-            // Bind custom actions
-            this.bindCustomActions($flyout);
-
-            // Trigger content loaded event
-            $(document).trigger('wpflyout:contentloaded', {
-                element: $flyout[0],
-                handler: handler,
-                data: data
-            });
-        }
-
-        /**
-         * Add default footer buttons
-         */
-        addDefaultFooter($flyout) {
-            const handler = this.currentHandler;
-            const $footer = $flyout.find('.wp-flyout-footer');
-
-            // Only add if footer is empty
-            if ($footer.children().length > 0) {
+            if (!$flyout || !$flyout.length) {
                 return;
             }
 
-            let footerHtml = '';
-
-            // Add save button if save handler exists
-            if (handler.hasSave) {
-                footerHtml += `
-                    <button type="button" class="button button-primary wp-flyout-save">
-                        <span class="dashicons dashicons-saved"></span>
-                        ${this.config.strings.save}
-                    </button>
-                `;
-            }
-
-            // Add delete button if delete handler exists
-            if (handler.hasDelete) {
-                footerHtml += `
-                    <button type="button" class="button button-link-delete wp-flyout-delete">
-                        <span class="dashicons dashicons-trash"></span>
-                        ${this.config.strings.delete}
-                    </button>
-                `;
-            }
-
-            // Add close button
-            footerHtml += `
-                <button type="button" class="button wp-flyout-close">
-                    ${this.config.strings.close}
-                </button>
-            `;
-
-            $footer.html(footerHtml).show();
-
-            // Bind footer events
-            this.bindFooterEvents($flyout);
-        }
-
-        /**
-         * Bind form handling
-         */
-        bindFormHandling($flyout) {
-            const self = this;
-
-            // Auto-bind form submission
-            WPFlyout.bindFormAutoSubmit($flyout, function ($form) {
-                self.handleFormSubmit($form);
+            // Bind save button
+            $flyout.find('.wp-flyout-save').off('click.manager').on('click.manager', function (e) {
+                e.preventDefault();
+                self.handleSave();
             });
 
-            // Also bind to save button click
-            $flyout.find('.wp-flyout-save').off('click.manager').on('click.manager', function () {
-                const $form = $flyout.find('form').first();
-                if ($form.length) {
-                    self.handleFormSubmit($form);
-                } else {
-                    // No form, just call save with empty data
-                    self.handleFormSubmit(null);
-                }
-            });
-        }
-
-        /**
-         * Bind footer events
-         */
-        bindFooterEvents($flyout) {
-            const self = this;
-
-            // Delete button
-            $flyout.find('.wp-flyout-delete').off('click.manager').on('click.manager', function () {
-                if (confirm(self.config.strings.confirmDelete)) {
+            // Bind delete button
+            $flyout.find('.wp-flyout-delete').off('click.manager').on('click.manager', function (e) {
+                e.preventDefault();
+                if (confirm(self.config.strings.confirmDelete || 'Are you sure you want to delete this item?')) {
                     self.handleDelete();
                 }
             });
 
-            // Close button
-            $flyout.find('.wp-flyout-close').off('click.manager').on('click.manager', function () {
-                // Check dirty state
-                if (WPFlyout.isDirty($flyout)) {
-                    if (!confirm(self.config.strings.confirmClose)) {
-                        return;
-                    }
-                }
-                WPFlyout.close($flyout);
-            });
-        }
-
-        /**
-         * Bind custom action buttons
-         */
-        bindCustomActions($flyout) {
-            const self = this;
-
-            $flyout.find('[data-flyout-action]').off('click.manager').on('click.manager', function () {
+            // Bind custom action buttons
+            $flyout.find('[data-flyout-action]').off('click.manager').on('click.manager', function (e) {
+                e.preventDefault();
                 const $button = $(this);
                 const action = $button.data('flyout-action');
+                self.handleCustomAction(action, {}, $button);
+            });
 
-                // Get any additional data attributes
-                const actionData = {};
-                $.each($button[0].dataset, function (key, value) {
-                    if (key !== 'flyoutAction') {
-                        const snakeKey = key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
-                        actionData['data_' + snakeKey] = value;
-                    }
+            // Bind form submission
+            $flyout.find('form').off('submit.manager').on('submit.manager', function (e) {
+                e.preventDefault();
+                self.handleSave();
+            });
+
+            // Track dirty state if configured
+            if (handler.trackDirty) {
+                $flyout.find('form :input').on('change.dirty input.dirty', function () {
+                    $flyout.data('isDirty', true);
                 });
+            }
 
-                self.handleCustomAction(action, actionData, $button);
+            // Trigger ready event
+            $(document).trigger('wpflyout:ready', {
+                element: $flyout[0],
+                handler: handler
             });
         }
 
         /**
-         * Handle form submission
+         * Handle save action
          */
-        handleFormSubmit($form) {
+        handleSave() {
             const self = this;
-            const handler = this.currentHandler;
             const $flyout = this.currentFlyout;
+            const $form = $flyout.find('form').first();
 
-            // Check if save handler exists
-            if (!handler.hasSave) {
-                console.warn('WP Flyout: No save handler defined for', this.currentHandlerId);
+            if (!$form.length) {
+                console.warn('WP Flyout: No form found in flyout');
                 return;
             }
 
-            // Show saving state
             const $saveBtn = $flyout.find('.wp-flyout-save');
-            const originalText = $saveBtn.html();
-            $saveBtn.prop('disabled', true).html(
-                `<span class="spinner is-active"></span> ${this.config.strings.saving}`
-            );
+            const originalText = $saveBtn.text();
+
+            // Show saving state
+            $saveBtn.prop('disabled', true).text(this.config.strings.saving || 'Saving...');
 
             // Collect form data
-            const formData = $form ? $form.serialize() : '';
+            const formData = $form.serialize();
 
-            // Get original data attributes
+            // Get original data attributes from trigger
             const data = this.getCurrentData();
 
             $.ajax({
@@ -315,14 +227,14 @@
                 type: 'POST',
                 data: {
                     action: `wp_flyout_${this.prefix}`,
-                    handler_id: this.currentHandlerId,
-                    flyout_action: 'save',
+                    handler: this.currentHandlerId,
+                    handler_action: 'save',
                     form_data: formData,
-                    _wpnonce: $form ? ($form.find('[name="_wpnonce"]').val() || this.currentNonce) : this.currentNonce,
+                    nonce: this.currentNonce,
                     ...data
                 },
                 success: function (response) {
-                    $saveBtn.prop('disabled', false).html(originalText);
+                    $saveBtn.prop('disabled', false).text(originalText);
 
                     if (response.success) {
                         self.handleSaveSuccess(response.data);
@@ -331,8 +243,8 @@
                     }
                 },
                 error: function () {
-                    $saveBtn.prop('disabled', false).html(originalText);
-                    self.handleSaveError(self.config.strings.error);
+                    $saveBtn.prop('disabled', false).text(originalText);
+                    self.handleSaveError(self.config.strings.error || 'Save failed');
                 }
             });
         }
@@ -343,40 +255,28 @@
         handleSaveSuccess(data) {
             const handler = this.currentHandler;
             const $flyout = this.currentFlyout;
-            const message = data.message || handler.successMessage || this.config.strings.saved;
+            const message = data.message || handler.successMessage || 'Saved successfully!';
 
             // Show success message
-            WPFlyout.showMessage($flyout, message, 'success');
+            this.showMessage(message, 'success');
 
             // Reset dirty flag
-            WPFlyout.resetDirty($flyout);
+            $flyout.data('isDirty', false);
 
-            // Trigger success event
+            // Trigger saved event
             $(document).trigger('wpflyout:saved', {
                 element: $flyout[0],
                 data: data
             });
 
-            // Handle reload if requested
-            if (data.reload) {
-                this.reloadContent();
-                return;
-            }
-
             // Auto close if configured
             if (handler.autoClose) {
                 setTimeout(() => {
-                    WPFlyout.close($flyout);
+                    WPFlyout.close($flyout.attr('id'));
 
                     // Refresh if configured
                     if (handler.refresh) {
-                        if (handler.refreshTarget) {
-                            // Refresh specific element
-                            WPFlyout.refreshElement(handler.refreshTarget);
-                        } else {
-                            // Refresh page
-                            window.location.reload();
-                        }
+                        window.location.reload();
                     }
                 }, 1500);
             }
@@ -386,11 +286,8 @@
          * Handle save error
          */
         handleSaveError(message) {
-            const handler = this.currentHandler;
-            const $flyout = this.currentFlyout;
-
-            message = message || handler.errorMessage || this.config.strings.error;
-            WPFlyout.showMessage($flyout, message, 'error');
+            message = message || this.config.strings.error || 'Save failed';
+            this.showMessage(message, 'error');
         }
 
         /**
@@ -398,46 +295,43 @@
          */
         handleDelete() {
             const self = this;
-            const handler = this.currentHandler;
             const $flyout = this.currentFlyout;
+            const data = this.getCurrentData();
 
             const $deleteBtn = $flyout.find('.wp-flyout-delete');
-            const originalText = $deleteBtn.html();
-            $deleteBtn.prop('disabled', true).html(
-                `<span class="spinner is-active"></span> ${this.config.strings.deleting}`
-            );
+            const originalText = $deleteBtn.text();
 
-            const data = this.getCurrentData();
+            $deleteBtn.prop('disabled', true).text(this.config.strings.deleting || 'Deleting...');
 
             $.ajax({
                 url: this.config.ajaxUrl,
                 type: 'POST',
                 data: {
                     action: `wp_flyout_${this.prefix}`,
-                    handler_id: this.currentHandlerId,
-                    flyout_action: 'delete',
-                    _wpnonce: this.currentNonce,
+                    handler: this.currentHandlerId,
+                    handler_action: 'delete',
+                    nonce: this.currentNonce,
                     ...data
                 },
                 success: function (response) {
-                    $deleteBtn.prop('disabled', false).html(originalText);
+                    $deleteBtn.prop('disabled', false).text(originalText);
 
                     if (response.success) {
-                        WPFlyout.showMessage($flyout, response.data.message || self.config.strings.deleted, 'success');
+                        self.showMessage(response.data.message || 'Deleted successfully!', 'success');
 
                         setTimeout(() => {
-                            WPFlyout.close($flyout);
-                            if (handler.refresh) {
+                            WPFlyout.close($flyout.attr('id'));
+                            if (self.currentHandler.refresh) {
                                 window.location.reload();
                             }
                         }, 1500);
                     } else {
-                        WPFlyout.showMessage($flyout, response.data || self.config.strings.error, 'error');
+                        self.showMessage(response.data || 'Delete failed', 'error');
                     }
                 },
                 error: function () {
-                    $deleteBtn.prop('disabled', false).html(originalText);
-                    WPFlyout.showMessage($flyout, self.config.strings.error, 'error');
+                    $deleteBtn.prop('disabled', false).text(originalText);
+                    self.showMessage('Delete failed', 'error');
                 }
             });
         }
@@ -447,79 +341,83 @@
          */
         handleCustomAction(action, actionData, $button) {
             const self = this;
-            const $flyout = this.currentFlyout;
             const data = this.getCurrentData();
 
-            // Show loading on button
-            const originalText = $button.html();
-            $button.prop('disabled', true).html(
-                `<span class="spinner is-active"></span> ${this.config.strings.loading}`
-            );
-
-            // Merge all data
-            const requestData = {
-                action: `wp_flyout_${this.prefix}`,
-                handler_id: this.currentHandlerId,
-                flyout_action: action,
-                _wpnonce: this.currentNonce,
-                ...data,
-                ...actionData
-            };
+            const originalText = $button.text();
+            $button.prop('disabled', true).text('Processing...');
 
             $.ajax({
                 url: this.config.ajaxUrl,
                 type: 'POST',
-                data: requestData,
+                data: {
+                    action: `wp_flyout_${this.prefix}`,
+                    handler: this.currentHandlerId,
+                    handler_action: action,
+                    nonce: this.currentNonce,
+                    ...data,
+                    ...actionData
+                },
                 success: function (response) {
-                    $button.prop('disabled', false).html(originalText);
+                    $button.prop('disabled', false).text(originalText);
 
                     if (response.success) {
                         // Trigger custom event
                         $(document).trigger(`wpflyout:${action}`, {
-                            element: $flyout[0],
+                            element: self.currentFlyout[0],
                             data: response.data
                         });
 
                         // Show message if provided
                         if (response.data && response.data.message) {
-                            WPFlyout.showMessage($flyout, response.data.message, 'success');
-                        }
-
-                        // Reload content if requested
-                        if (response.data && response.data.reload) {
-                            self.reloadContent();
+                            self.showMessage(response.data.message, 'success');
                         }
                     } else {
-                        WPFlyout.showMessage($flyout, response.data || self.config.strings.error, 'error');
+                        self.showMessage(response.data || 'Action failed', 'error');
                     }
                 },
                 error: function () {
-                    $button.prop('disabled', false).html(originalText);
-                    WPFlyout.showMessage($flyout, self.config.strings.error, 'error');
+                    $button.prop('disabled', false).text(originalText);
+                    self.showMessage('Action failed', 'error');
                 }
             });
         }
 
         /**
-         * Reload flyout content
+         * Show message in flyout
          */
-        reloadContent() {
-            const data = this.getCurrentData();
-            WPFlyout.close(this.currentFlyout);
-            this.open(this.currentHandlerId, this.currentNonce, data);
+        showMessage(message, type) {
+            const $flyout = this.currentFlyout;
+            const $content = $flyout.find('.wp-flyout-body').first();
+
+            // Remove existing notices
+            $content.find('.notice').remove();
+
+            // Add new notice
+            const noticeClass = type === 'error' ? 'notice-error' : 'notice-success';
+            const $notice = $(`
+                <div class="notice ${noticeClass} is-dismissible">
+                    <p>${message}</p>
+                </div>
+            `).prependTo($content);
+
+            // Auto dismiss success messages
+            if (type === 'success') {
+                setTimeout(() => {
+                    $notice.fadeOut(() => $notice.remove());
+                }, 3000);
+            }
         }
 
         /**
-         * Get current data attributes
+         * Get current data attributes from trigger
          */
         getCurrentData() {
             const data = {};
-            const $trigger = $(`.wp-flyout-trigger[data-flyout-id="${this.currentHandlerId}"][data-flyout-prefix="${this.prefix}"]`).first();
 
-            if ($trigger.length) {
-                $.each($trigger[0].dataset, function (key, value) {
-                    if (key !== 'flyoutPrefix' && key !== 'flyoutId' && key !== 'flyoutNonce') {
-                        const snakeKey = key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+            if (this.currentTrigger) {
+                $.each(this.currentTrigger[0].dataset, function (key, value) {
+                    if (key !== 'flyoutManager' && key !== 'flyoutHandler' && key !== 'flyoutNonce') {
+                        const snakeKey = key.replace(/([A-Z])/g, '_$1').toLowerCase();
                         data['data_' + snakeKey] = value;
                     }
                 });
@@ -541,6 +439,8 @@
 
                 // Create manager instance
                 WPFlyoutManager.instances[prefix] = new FlyoutManagerInstance(prefix, config);
+
+                console.log('WP Flyout Manager initialized:', prefix);
             }
         }
     });
