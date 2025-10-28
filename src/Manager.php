@@ -1,27 +1,36 @@
 <?php
 /**
- * WP Flyout Manager - Clean Version
+ * WP Flyout Manager
  *
- * Handles flyout AJAX operations with minimal complexity.
+ * Manages flyout registration, AJAX handling, and asset management.
+ * Provides a clean API for creating modal flyouts with minimal configuration.
  *
  * @package     ArrayPress\WPFlyout
  * @copyright   Copyright (c) 2025, ArrayPress Limited
  * @license     GPL2+
- * @version     3.0.0
+ * @version     5.0.0
+ * @author      David Sherlock
  */
 
 declare( strict_types=1 );
 
 namespace ArrayPress\WPFlyout;
 
+use Exception;
+
 /**
  * Class Manager
+ *
+ * Orchestrates flyout operations with automatic asset management.
+ *
+ * @since 1.0.0
  */
 class Manager {
 
 	/**
 	 * Unique prefix for this manager instance
 	 *
+	 * @since 1.0.0
 	 * @var string
 	 */
 	private string $prefix;
@@ -29,13 +38,31 @@ class Manager {
 	/**
 	 * Registered flyout handlers
 	 *
+	 * @since 1.0.0
 	 * @var array
 	 */
 	private array $handlers = [];
 
 	/**
+	 * Admin pages where assets should load
+	 *
+	 * @since 2.0.0
+	 * @var array
+	 */
+	private array $admin_pages = [];
+
+	/**
+	 * Components required across all handlers
+	 *
+	 * @since 2.0.0
+	 * @var array
+	 */
+	private array $components = [];
+
+	/**
 	 * Whether assets have been enqueued
 	 *
+	 * @since 1.0.0
 	 * @var bool
 	 */
 	private bool $assets_enqueued = false;
@@ -43,7 +70,9 @@ class Manager {
 	/**
 	 * Constructor
 	 *
-	 * @param string $prefix Unique prefix for this manager
+	 * @param string $prefix Unique prefix for this manager instance
+	 *
+	 * @since 1.0.0
 	 */
 	public function __construct( string $prefix ) {
 		$this->prefix = sanitize_key( $prefix );
@@ -52,8 +81,8 @@ class Manager {
 		add_action( 'wp_ajax_wp_flyout_' . $this->prefix, [ $this, 'handle_ajax' ] );
 		add_action( 'wp_ajax_nopriv_wp_flyout_' . $this->prefix, [ $this, 'handle_ajax' ] );
 
-		// Auto-enqueue assets
-		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_assets' ] );
+		// Auto-enqueue assets on admin pages
+		add_action( 'admin_enqueue_scripts', [ $this, 'maybe_enqueue_assets' ] );
 	}
 
 	/**
@@ -62,35 +91,46 @@ class Manager {
 	 * @param string $id      Unique handler ID
 	 * @param array  $options Handler configuration
 	 *
-	 * @return self
+	 * @return self Returns instance for method chaining
+	 * @since 1.0.0
 	 */
 	public function register( string $id, array $options ): self {
 		$defaults = [
 			// Display
 			'title'           => '',
 			'width'           => 'medium',
-			'show_footer'     => true,
 
-			// Callbacks (required)
+			// Callbacks
 			'load_callback'   => null,
 			'save_callback'   => null,
 			'delete_callback' => null,
-			'custom_actions'  => [],
 
 			// Security
 			'capability'      => 'manage_options',
 			'nonce_action'    => 'wp_flyout_' . $id,
 
-			// Behavior
-			'auto_close'      => false,
-			'refresh'         => false,
-
-			// Messages
-			'success_message' => 'Saved successfully!',
-			'error_message'   => 'An error occurred.',
+			// Asset management
+			'admin_pages'     => [],
+			'components'      => [],
 		];
 
-		$this->handlers[ $id ] = wp_parse_args( $options, $defaults );
+		$handler = wp_parse_args( $options, $defaults );
+
+		// Track admin pages
+		if ( ! empty( $handler['admin_pages'] ) ) {
+			$this->admin_pages = array_unique(
+				array_merge( $this->admin_pages, $handler['admin_pages'] )
+			);
+		}
+
+		// Track required components
+		if ( ! empty( $handler['components'] ) ) {
+			$this->components = array_unique(
+				array_merge( $this->components, $handler['components'] )
+			);
+		}
+
+		$this->handlers[ $id ] = $handler;
 
 		return $this;
 	}
@@ -98,10 +138,13 @@ class Manager {
 	/**
 	 * Handle AJAX requests
 	 *
-	 * @return void
+	 * Routes AJAX requests to appropriate handler callbacks.
+	 *
+	 * @return void Sends JSON response and exits
+	 * @since 1.0.0
 	 */
 	public function handle_ajax(): void {
-		// Get handler ID and action
+		// Get request parameters
 		$handler_id = sanitize_key( $_POST['handler'] ?? '' );
 		$action     = sanitize_key( $_POST['handler_action'] ?? 'load' );
 
@@ -122,200 +165,104 @@ class Manager {
 			wp_send_json_error( 'Security check failed', 403 );
 		}
 
-		// Route to appropriate handler
-		switch ( $action ) {
-			case 'load':
-				$this->handle_load( $handler_id, $handler );
-				break;
+		// Route to appropriate callback
+		$callback_key = $action . '_callback';
 
-			case 'save':
-				$this->handle_save( $handler_id, $handler );
-				break;
-
-			case 'delete':
-				$this->handle_delete( $handler_id, $handler );
-				break;
-
-			default:
-				// Check for custom action
-				if ( isset( $handler['custom_actions'][ $action ] ) ) {
-					$this->handle_custom( $handler_id, $handler, $action );
-				} else {
-					wp_send_json_error( 'Invalid action', 400 );
-				}
-		}
-	}
-
-	/**
-	 * Handle load action
-	 *
-	 * @param string $handler_id Handler ID
-	 * @param array  $handler    Handler configuration
-	 *
-	 * @return void
-	 */
-	private function handle_load( string $handler_id, array $handler ): void {
-		if ( ! is_callable( $handler['load_callback'] ) ) {
-			wp_send_json_error( 'Load handler not configured', 500 );
+		if ( ! isset( $handler[ $callback_key ] ) || ! is_callable( $handler[ $callback_key ] ) ) {
+			wp_send_json_error( 'Invalid action', 400 );
 		}
 
-		// Get data from request
+		// Get request data
 		$data = $this->get_request_data();
 
-		// Call the load callback
-		$result = call_user_func( $handler['load_callback'], $data );
+		// Execute callback
+		try {
+			$result = call_user_func( $handler[ $callback_key ], $data );
+			$this->send_response( $result );
+		} catch ( Exception $e ) {
+			wp_send_json_error( $e->getMessage(), 500 );
+		}
+	}
 
-		// Handle response
-		if ( is_string( $result ) ) {
-			// Simple HTML string
+	/**
+	 * Send AJAX response based on result type
+	 *
+	 * @param mixed $result Callback result
+	 *
+	 * @return void Sends JSON response and exits
+	 * @since 1.0.0
+	 */
+	private function send_response( $result ): void {
+		// Handle Flyout object
+		if ( $result instanceof Flyout ) {
 			wp_send_json_success( [
-				'html' => $result,
+				'html' => $result->render()
 			] );
-		} elseif ( $result instanceof Flyout ) {
-			// Flyout object - just render it
-			wp_send_json_success( [
-				'html' => $result->render(),
-			] );
-		} elseif ( is_array( $result ) ) {
-			// Check for error
-			if ( isset( $result['success'] ) && $result['success'] === false ) {
-				wp_send_json_error( $result['message'] ?? $handler['error_message'] );
-
-				return;
-			}
-			// Pass through array response
-			wp_send_json_success( $result );
-		} else {
-			wp_send_json_error( 'Invalid response from load handler', 500 );
-		}
-	}
-
-	/**
-	 * Handle save action
-	 *
-	 * @param string $handler_id Handler ID
-	 * @param array  $handler    Handler configuration
-	 *
-	 * @return void
-	 */
-	private function handle_save( string $handler_id, array $handler ): void {
-		if ( ! is_callable( $handler['save_callback'] ) ) {
-			wp_send_json_error( 'Save handler not configured', 500 );
 		}
 
-		// Get form data
-		$form_data = $_POST['form_data'] ?? [];
-
-		// Parse if serialized
-		if ( is_string( $form_data ) ) {
-			parse_str( $form_data, $form_data );
-		}
-
-		// Get other data
-		$data = array_merge( $this->get_request_data(), $form_data );
-
-		// Call save callback
-		$result = call_user_func( $handler['save_callback'], $data );
-
-		// Handle response
-		if ( is_bool( $result ) ) {
-			if ( $result ) {
-				wp_send_json_success( [ 'message' => $handler['success_message'] ] );
-			} else {
-				wp_send_json_error( $handler['error_message'] );
-			}
-		} elseif ( is_array( $result ) ) {
-			if ( ! empty( $result['success'] ) ) {
-				wp_send_json_success( $result );
-			} else {
-				wp_send_json_error( $result['message'] ?? $handler['error_message'] );
-			}
-		} else {
-			wp_send_json_success( [ 'message' => $handler['success_message'] ] );
-		}
-	}
-
-	/**
-	 * Handle delete action
-	 *
-	 * @param string $handler_id Handler ID
-	 * @param array  $handler    Handler configuration
-	 *
-	 * @return void
-	 */
-	private function handle_delete( string $handler_id, array $handler ): void {
-		if ( ! is_callable( $handler['delete_callback'] ) ) {
-			wp_send_json_error( 'Delete handler not configured', 500 );
-		}
-
-		$data   = $this->get_request_data();
-		$result = call_user_func( $handler['delete_callback'], $data );
-
-		// Handle response
-		if ( is_bool( $result ) ) {
-			if ( $result ) {
-				wp_send_json_success( [ 'message' => 'Deleted successfully' ] );
-			} else {
-				wp_send_json_error( 'Delete failed' );
-			}
-		} elseif ( is_array( $result ) ) {
-			if ( ! empty( $result['success'] ) ) {
-				wp_send_json_success( $result );
-			} else {
-				wp_send_json_error( $result['message'] ?? 'Delete failed' );
-			}
-		}
-	}
-
-	/**
-	 * Handle custom action
-	 *
-	 * @param string $handler_id Handler ID
-	 * @param array  $handler    Handler configuration
-	 * @param string $action     Action name
-	 *
-	 * @return void
-	 */
-	private function handle_custom( string $handler_id, array $handler, string $action ): void {
-		$callback = $handler['custom_actions'][ $action ] ?? null;
-
-		if ( ! is_callable( $callback ) ) {
-			wp_send_json_error( 'Custom action not configured', 500 );
-		}
-
-		$data   = $this->get_request_data();
-		$result = call_user_func( $callback, $data, $action );
-
-		// Pass through result
+		// Handle array response
 		if ( is_array( $result ) ) {
 			if ( isset( $result['success'] ) && ! $result['success'] ) {
-				wp_send_json_error( $result['message'] ?? 'Action failed' );
-			} else {
-				wp_send_json_success( $result );
+				wp_send_json_error(
+					$result['message'] ?? 'An error occurred',
+					$result['code'] ?? 400
+				);
 			}
-		} else {
-			wp_send_json_success( [ 'result' => $result ] );
+			wp_send_json_success( $result );
 		}
+
+		// Handle string (raw HTML)
+		if ( is_string( $result ) ) {
+			wp_send_json_success( [
+				'html' => $result
+			] );
+		}
+
+		// Handle boolean
+		if ( is_bool( $result ) ) {
+			if ( $result ) {
+				wp_send_json_success( [
+					'message' => 'Operation completed successfully'
+				] );
+			} else {
+				wp_send_json_error( 'Operation failed', 400 );
+			}
+		}
+
+		// Invalid response type
+		wp_send_json_error( 'Invalid response from handler', 500 );
 	}
 
 	/**
-	 * Get request data
+	 * Extract request data from POST
 	 *
-	 * @return array
+	 * Merges form data and custom data attributes.
+	 *
+	 * @return array Sanitized request data
+	 * @since 1.0.0
 	 */
 	private function get_request_data(): array {
 		$data = [];
 
+		// Parse form data if present
+		if ( isset( $_POST['form_data'] ) ) {
+			if ( is_string( $_POST['form_data'] ) ) {
+				parse_str( $_POST['form_data'], $form_data );
+				$data = array_merge( $data, $form_data );
+			} else {
+				$data = array_merge( $data, $_POST['form_data'] );
+			}
+		}
+
+		// Add other POST data (excluding system keys)
+		$exclude = [ 'action', 'handler', 'handler_action', 'nonce', 'form_data' ];
+
 		foreach ( $_POST as $key => $value ) {
-			// Skip WordPress/AJAX specific keys
-			if ( in_array( $key, [ 'action', 'handler', 'handler_action', 'nonce', 'form_data' ] ) ) {
-				continue;
+			if ( ! in_array( $key, $exclude, true ) ) {
+				$data[ $key ] = is_string( $value )
+					? sanitize_text_field( $value )
+					: $value;
 			}
-			// Clean up data_ prefix if present
-			if ( str_starts_with( $key, 'data_' ) ) {
-				$key = substr( $key, 5 );
-			}
-			$data[ $key ] = is_string( $value ) ? sanitize_text_field( $value ) : $value;
 		}
 
 		return $data;
@@ -324,11 +271,12 @@ class Manager {
 	/**
 	 * Render a trigger button
 	 *
-	 * @param string $handler_id Handler ID
-	 * @param array  $data       Data to pass
-	 * @param array  $args       Button arguments
+	 * @param string $handler_id Handler ID to trigger
+	 * @param array  $data       Data attributes to pass
+	 * @param array  $args       Button configuration
 	 *
-	 * @return void
+	 * @return void Outputs HTML
+	 * @since 1.0.0
 	 */
 	public function button( string $handler_id, array $data = [], array $args = [] ): void {
 		echo $this->get_button( $handler_id, $data, $args );
@@ -337,30 +285,26 @@ class Manager {
 	/**
 	 * Get trigger button HTML
 	 *
-	 * @param string $handler_id Handler ID
-	 * @param array  $data       Data to pass
-	 * @param array  $args       Button arguments
+	 * @param string $handler_id Handler ID to trigger
+	 * @param array  $data       Data attributes to pass
+	 * @param array  $args       Button configuration
 	 *
-	 * @return string
+	 * @return string Button HTML or empty string if unauthorized
+	 * @since 1.0.0
 	 */
 	public function get_button( string $handler_id, array $data = [], array $args = [] ): string {
-		if ( ! isset( $this->handlers[ $handler_id ] ) ) {
+		if ( ! $this->can_access( $handler_id ) ) {
 			return '';
 		}
 
 		$handler = $this->handlers[ $handler_id ];
 
-		// Check capability
-		if ( ! current_user_can( $handler['capability'] ) ) {
-			return '';
-		}
-
-		// Button settings
-		$text  = $args['text'] ?? 'Open';
+		// Parse arguments
+		$text  = $args['text'] ?? __( 'Open', 'wp-flyout' );
 		$class = $args['class'] ?? 'button';
 		$icon  = $args['icon'] ?? '';
 
-		// Build button
+		// Build attributes
 		$attrs = [
 			'type'                => 'button',
 			'class'               => 'wp-flyout-trigger ' . $class,
@@ -369,9 +313,9 @@ class Manager {
 			'data-flyout-nonce'   => wp_create_nonce( $handler['nonce_action'] ),
 		];
 
-		// Add data attributes
+		// Add custom data attributes
 		foreach ( $data as $key => $value ) {
-			$attrs[ 'data-' . $key ] = esc_attr( $value );
+			$attrs[ 'data-' . $key ] = esc_attr( (string) $value );
 		}
 
 		// Build HTML
@@ -381,11 +325,16 @@ class Manager {
 		}
 		$html .= '>';
 
+		// Add icon if specified
 		if ( $icon ) {
-			$html .= sprintf( '<span class="dashicons dashicons-%s"></span> ', $icon );
+			$html .= sprintf(
+				'<span class="dashicons dashicons-%s"></span> ',
+				esc_attr( $icon )
+			);
 		}
 
-		$html .= esc_html( $text ) . '</button>';
+		$html .= esc_html( $text );
+		$html .= '</button>';
 
 		return $html;
 	}
@@ -393,35 +342,36 @@ class Manager {
 	/**
 	 * Create a trigger link
 	 *
-	 * @param string $handler_id Handler ID
+	 * @param string $handler_id Handler ID to trigger
 	 * @param string $text       Link text
-	 * @param array  $data       Data to pass
+	 * @param array  $data       Data attributes to pass
+	 * @param array  $args       Additional link arguments
 	 *
-	 * @return string
+	 * @return string Link HTML or empty string if unauthorized
+	 * @since 1.0.0
 	 */
-	public function link( string $handler_id, string $text, array $data = [] ): string {
-		if ( ! isset( $this->handlers[ $handler_id ] ) ) {
+	public function link( string $handler_id, string $text, array $data = [], array $args = [] ): string {
+		if ( ! $this->can_access( $handler_id ) ) {
 			return '';
 		}
 
 		$handler = $this->handlers[ $handler_id ];
 
-		// Check capability
-		if ( ! current_user_can( $handler['capability'] ) ) {
-			return '';
-		}
+		// Parse arguments
+		$class = $args['class'] ?? '';
 
+		// Build attributes
 		$attrs = [
 			'href'                => '#',
-			'class'               => 'wp-flyout-trigger',
+			'class'               => trim( 'wp-flyout-trigger ' . $class ),
 			'data-flyout-manager' => $this->prefix,
 			'data-flyout-handler' => $handler_id,
 			'data-flyout-nonce'   => wp_create_nonce( $handler['nonce_action'] ),
 		];
 
-		// Add data attributes
+		// Add custom data attributes
 		foreach ( $data as $key => $value ) {
-			$attrs[ 'data-' . $key ] = esc_attr( $value );
+			$attrs[ 'data-' . $key ] = esc_attr( (string) $value );
 		}
 
 		// Build HTML
@@ -435,54 +385,131 @@ class Manager {
 	}
 
 	/**
-	 * Enqueue assets
+	 * Check if current user can access handler
+	 *
+	 * @param string $handler_id Handler ID
+	 *
+	 * @return bool True if user has capability
+	 * @since 1.0.0
+	 */
+	private function can_access( string $handler_id ): bool {
+		if ( ! isset( $this->handlers[ $handler_id ] ) ) {
+			return false;
+		}
+
+		$handler = $this->handlers[ $handler_id ];
+
+		return current_user_can( $handler['capability'] );
+	}
+
+	/**
+	 * Maybe enqueue assets based on current admin page
+	 *
+	 * @param string $hook_suffix Current admin page hook
 	 *
 	 * @return void
+	 * @since 2.0.0
 	 */
-	public function enqueue_assets(): void {
-		// Only enqueue once
+	public function maybe_enqueue_assets( string $hook_suffix ): void {
+		// Skip if already enqueued
 		if ( $this->assets_enqueued ) {
 			return;
 		}
 
-		// Only if we have handlers
+		// Skip if no handlers registered
 		if ( empty( $this->handlers ) ) {
 			return;
 		}
 
-		// Load WP Flyout assets
-		Assets::init();
+		// Check if we should load on this page
+		if ( $this->should_enqueue( $hook_suffix ) ) {
+			$this->enqueue_assets();
+		}
+	}
+
+	/**
+	 * Determine if assets should be enqueued
+	 *
+	 * @param string $hook_suffix Current admin page hook
+	 *
+	 * @return bool True if assets should load
+	 * @since 2.0.0
+	 */
+	private function should_enqueue( string $hook_suffix ): bool {
+		// If specific pages configured, check against them
+		if ( ! empty( $this->admin_pages ) ) {
+			return in_array( $hook_suffix, $this->admin_pages, true );
+		}
+
+		// Otherwise load on common admin pages
+		$default_pages = [
+			'index.php',
+			'edit.php',
+			'post.php',
+			'post-new.php',
+			'users.php',
+			'user-edit.php',
+			'profile.php',
+			'options-general.php',
+			'tools.php',
+		];
+
+		// Also check for custom post type pages
+		if ( str_starts_with( $hook_suffix, 'page_' ) ||
+		     str_starts_with( $hook_suffix, 'toplevel_page_' ) ) {
+			return true;
+		}
+
+		return in_array( $hook_suffix, $default_pages, true );
+	}
+
+	/**
+	 * Enqueue required assets
+	 *
+	 * @return void
+	 * @since 1.0.0
+	 */
+	public function enqueue_assets(): void {
+		// Enqueue core WP Flyout assets
 		Assets::enqueue();
 
-		// Localize script
-		wp_localize_script(
-			'wp-flyout-manager',
-			'wpFlyoutManager_' . str_replace( '-', '_', $this->prefix ),
-			[
-				'ajaxUrl'  => admin_url( 'admin-ajax.php' ),
-				'prefix'   => $this->prefix,
-				'handlers' => $this->get_handler_configs(),
-			]
-		);
+		// Enqueue required components
+		foreach ( $this->components as $component ) {
+			Assets::enqueue_component( strtolower( $component ) );
+		}
 
 		$this->assets_enqueued = true;
 	}
 
 	/**
-	 * Get handler configs for JS
+	 * Get all registered handlers
 	 *
-	 * @return array
+	 * @return array Handler configurations
+	 * @since 2.0.0
 	 */
-	private function get_handler_configs(): array {
-		$configs = [];
+	public function get_handlers(): array {
+		return $this->handlers;
+	}
 
-		foreach ( $this->handlers as $id => $handler ) {
-			$configs[ $id ] = [
-				'autoClose' => $handler['auto_close'],
-				'refresh'   => $handler['refresh'],
-			];
-		}
+	/**
+	 * Check if handler is registered
+	 *
+	 * @param string $handler_id Handler ID
+	 *
+	 * @return bool True if handler exists
+	 * @since 2.0.0
+	 */
+	public function has_handler( string $handler_id ): bool {
+		return isset( $this->handlers[ $handler_id ] );
+	}
 
-		return $configs;
+	/**
+	 * Get manager prefix
+	 *
+	 * @return string Manager prefix
+	 * @since 2.0.0
+	 */
+	public function get_prefix(): string {
+		return $this->prefix;
 	}
 }

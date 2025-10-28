@@ -133,11 +133,6 @@ class Assets {
 			'style'  => 'css/components/ajax-select.css',
 			'deps'   => []
 		],
-		'alert'              => [
-			'script' => 'js/components/alert.js',
-			'style'  => 'css/components/alert.css',
-			'deps'   => []
-		],
 		'tag-input'          => [
 			'script' => 'js/components/tag-input.js',
 			'style'  => 'css/components/tag-input.css',
