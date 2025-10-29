@@ -576,4 +576,5 @@ class Flyout {
 
         return $this;
     }
+
 }

@@ -28,6 +28,9 @@ class Assets {
 		'css/flyout/ui-elements.css',
 		'css/flyout/data-display.css',
 		'css/flyout/alert.css',
+		'css/flyout/separator.css',
+		'css/flyout/field-group.css',
+		'css/flyout/flex-row.css'
 	];
 
 	/**
@@ -66,16 +69,6 @@ class Assets {
 		'product-display'    => [
 			'script' => '',
 			'style'  => 'css/components/product-display.css',
-			'deps'   => []
-		],
-		'field-group'        => [
-			'script' => '',
-			'style'  => 'css/components/field-group.css',
-			'deps'   => []
-		],
-		'flex-row'           => [
-			'script' => '',
-			'style'  => 'css/components/flex-row.css',
 			'deps'   => []
 		],
 		'timeline'           => [
@@ -133,24 +126,14 @@ class Assets {
 			'style'  => 'css/components/ajax-select.css',
 			'deps'   => []
 		],
-		'tag-input'          => [
-			'script' => 'js/components/tag-input.js',
-			'style'  => 'css/components/tag-input.css',
+		'tags'          => [
+			'script' => 'js/components/tags.js',
+			'style'  => 'css/components/tags.css',
 			'deps'   => []
 		],
 		'accordion'          => [
 			'script' => 'js/components/accordion.js',
 			'style'  => 'css/components/accordion.css',
-			'deps'   => []
-		],
-		'separator'          => [
-			'script' => '',
-			'style'  => 'css/components/separator.css',
-			'deps'   => []
-		],
-		'spinner'            => [
-			'script' => '',
-			'style'  => 'css/components/spinner.css',
 			'deps'   => []
 		],
 		'simple-list'        => [
