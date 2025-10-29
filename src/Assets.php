@@ -286,6 +286,11 @@ class Assets {
 	 * @return void
 	 */
 	public static function enqueue(): void {
+		// Ensure assets are registered
+		if ( ! wp_style_is( 'wp-flyout', 'registered' ) ) {
+			self::register_assets();
+		}
+
 		// This will enqueue all core CSS and JS via dependencies
 		wp_enqueue_style( 'wp-flyout' );
 		wp_enqueue_script( 'wp-flyout' );
