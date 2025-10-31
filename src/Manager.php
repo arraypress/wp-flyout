@@ -91,19 +91,20 @@ class Manager {
 	 * @var array
 	 */
 	private const FIELD_COMPONENT_MAP = [
-		'order_items'  => 'order-items',
-		'notes'        => 'notes',
-		'files'        => 'file-manager',
-		'ajax_select'  => 'ajax-select',
-		'tags'         => 'tags'
+		'order_items' => 'order-items',
+		'notes'       => 'notes',
+		'files'       => 'file-manager',
+		'ajax_select' => 'ajax-select',
+		'tags'        => 'tags'
 	];
 
 	/**
 	 * Constructor
 	 *
+	 * @param string $prefix Unique prefix for this manager instance
+	 *
 	 * @since 1.0.0
 	 *
-	 * @param string $prefix Unique prefix for this manager instance
 	 */
 	public function __construct( string $prefix ) {
 		$this->prefix = sanitize_key( $prefix );
@@ -119,24 +120,24 @@ class Manager {
 	/**
 	 * Register a flyout with declarative configuration
 	 *
+	 * @param string  $id          Unique flyout identifier
+	 * @param array   $config      {
+	 *                             Flyout configuration array
+	 *
+	 * @type string   $title       Flyout title
+	 * @type string   $width       Width size: 'small', 'medium', 'large', 'full'
+	 * @type array    $tabs        Tab configurations (optional)
+	 * @type array    $fields      Field configurations for single view
+	 * @type array    $actions     Footer action buttons
+	 * @type string   $capability  Required capability (default: 'manage_options')
+	 * @type array    $admin_pages Admin page hooks to load on
+	 * @type callable $load_data   Function to load data: function($id)
+	 * @type callable $save_data   Function to save data: function($id, $data)
+	 * @type callable $delete_data Function to delete data: function($id)
+	 *                             }
+	 * @return self Returns instance for method chaining
 	 * @since 6.0.0
 	 *
-	 * @param string $id     Unique flyout identifier
-	 * @param array  $config {
-	 *     Flyout configuration array
-	 *
-	 *     @type string   $title       Flyout title
-	 *     @type string   $width       Width size: 'small', 'medium', 'large', 'full'
-	 *     @type array    $tabs        Tab configurations (optional)
-	 *     @type array    $fields      Field configurations for single view
-	 *     @type array    $actions     Footer action buttons
-	 *     @type string   $capability  Required capability (default: 'manage_options')
-	 *     @type array    $admin_pages Admin page hooks to load on
-	 *     @type callable $load_data   Function to load data: function($id)
-	 *     @type callable $save_data   Function to save data: function($id, $data)
-	 *     @type callable $delete_data Function to delete data: function($id)
-	 * }
-	 * @return self Returns instance for method chaining
 	 */
 	public function register_flyout( string $id, array $config ): self {
 		$defaults = [
@@ -178,9 +179,9 @@ class Manager {
 	 *
 	 * Routes AJAX requests to appropriate flyout handlers.
 	 *
+	 * @return void Sends JSON response and exits
 	 * @since 1.0.0
 	 *
-	 * @return void Sends JSON response and exits
 	 */
 	public function handle_ajax(): void {
 		// Get request parameters
@@ -228,15 +229,16 @@ class Manager {
 	/**
 	 * Load flyout and build interface
 	 *
-	 * @since 6.0.0
-	 *
 	 * @param string $id      Flyout identifier
 	 * @param array  $request Request data from AJAX
+	 *
 	 * @return Flyout Configured flyout instance
+	 * @since 6.0.0
+	 *
 	 */
 	private function load_flyout( string $id, array $request ): Flyout {
 		$config = $this->flyouts[ $id ];
-		$data = [];
+		$data   = [];
 
 		// Load data if callback provided
 		if ( $config['load_data'] ) {
@@ -251,7 +253,7 @@ class Manager {
 
 		// Build flyout instance
 		$flyout_instance_id = $id . '_' . ( $request['id'] ?? 'new' );
-		$flyout = new Flyout( $flyout_instance_id );
+		$flyout             = new Flyout( $flyout_instance_id );
 		$flyout->set_title( $config['title'] );
 
 		// FIX: Actually set the width!
@@ -288,12 +290,13 @@ class Manager {
 	/**
 	 * Build tabbed interface for flyout
 	 *
-	 * @since 6.0.0
-	 *
 	 * @param Flyout $flyout Flyout instance
 	 * @param array  $tabs   Tab configurations
 	 * @param mixed  $data   Data for field population
+	 *
 	 * @return void
+	 * @since 6.0.0
+	 *
 	 */
 	private function build_tabbed_interface( Flyout $flyout, array $tabs, $data ): void {
 		foreach ( $tabs as $tab_id => $tab ) {
@@ -308,11 +311,12 @@ class Manager {
 	/**
 	 * Save flyout data
 	 *
-	 * @since 6.0.0
-	 *
 	 * @param string $id      Flyout identifier
 	 * @param array  $request Request data from AJAX
+	 *
 	 * @return array Response array
+	 * @since 6.0.0
+	 *
 	 */
 	private function save_flyout( string $id, array $request ): array {
 		$config = $this->flyouts[ $id ];
@@ -338,11 +342,12 @@ class Manager {
 	/**
 	 * Delete flyout data
 	 *
-	 * @since 6.0.0
-	 *
 	 * @param string $id      Flyout identifier
 	 * @param array  $request Request data from AJAX
+	 *
 	 * @return array Response array
+	 * @since 6.0.0
+	 *
 	 */
 	private function delete_flyout( string $id, array $request ): array {
 		$config = $this->flyouts[ $id ];
@@ -366,11 +371,12 @@ class Manager {
 	/**
 	 * Call a data handler function
 	 *
-	 * @since 6.0.0
-	 *
 	 * @param callable|string $handler Handler function
 	 * @param mixed           ...$args Arguments to pass
+	 *
 	 * @return mixed Handler result
+	 * @since 6.0.0
+	 *
 	 */
 	private function call_data_handler( $handler, ...$args ) {
 		if ( is_callable( $handler ) ) {
@@ -385,11 +391,12 @@ class Manager {
 	/**
 	 * Normalize handler response
 	 *
+	 * @param mixed  $result          Handler result
+	 * @param string $success_message Default success message
+	 *
+	 * @return array Normalized response array
 	 * @since 6.0.0
 	 *
-	 * @param mixed  $result         Handler result
-	 * @param string $success_message Default success message
-	 * @return array Normalized response array
 	 */
 	private function normalize_response( $result, string $success_message = 'Operation successful' ): array {
 		if ( $result === true ) {
@@ -416,11 +423,12 @@ class Manager {
 	/**
 	 * Render fields from configuration
 	 *
-	 * @since 6.0.0
-	 *
 	 * @param array $fields Field configurations
 	 * @param mixed $data   Data for field values
+	 *
 	 * @return string Generated HTML
+	 * @since 6.0.0
+	 *
 	 */
 	private function render_fields( array $fields, $data ): string {
 		$output = '';
@@ -433,11 +441,11 @@ class Manager {
 
 			// Check if field type requires special component handling
 			if ( in_array( $field['type'], self::COMPONENT_FIELD_TYPES, true ) ) {
-				$output .= $this->render_component_field( $field );
+				$output .= $this->render_component_field( $field, $data ); // Pass $data here!
 			} else {
 				// Standard form field
 				$form_field = new FormField( $field );
-				$output .= $form_field->render();
+				$output     .= $form_field->render();
 			}
 		}
 
@@ -447,26 +455,36 @@ class Manager {
 	/**
 	 * Render component-based field
 	 *
-	 * @since 6.0.0
-	 *
 	 * @param array $field Field configuration
+	 * @param mixed $data  Data for field values
+	 *
 	 * @return string Generated HTML
+	 * @since 6.0.0
 	 */
-	private function render_component_field( array $field ): string {
+	private function render_component_field( array $field, $data ): string {
 		$type = $field['type'];
-		$config = wp_parse_args( $field, [
-			'name'  => $type,
-			$type   => $field['value'] ?? []
-		] );
+
+		// Pass the entire field array to the component (minus the 'type')
+		$component_config = $field;
+		unset( $component_config['type'] ); // Component doesn't need to know its type
+
+		// Ensure we have the value from data if not already set
+		if ( ! isset( $component_config['value'] ) && isset( $component_config['name'] ) ) {
+			// For components, the value is often stored under the field name
+			$component_config['items'] = $this->extract_value( $data, $component_config['name'] );
+		}
 
 		if ( $type === 'order_items' ) {
-			$component = new OrderItems( $config );
+			$component = new OrderItems( $component_config );
+
 			return $component->render();
 		} elseif ( $type === 'notes' ) {
-			$component = new Notes( $config );
+			$component = new Notes( $component_config );
+
 			return $component->render();
 		} elseif ( $type === 'files' ) {
-			$component = new FileManager( $config );
+			$component = new FileManager( $component_config );
+
 			return $component->render();
 		}
 
@@ -478,11 +496,12 @@ class Manager {
 	 *
 	 * Supports direct properties, array keys, and getter methods.
 	 *
-	 * @since 6.0.0
-	 *
 	 * @param mixed  $data       Data object or array
 	 * @param string $field_name Field name to extract
+	 *
 	 * @return mixed Extracted value or null
+	 * @since 6.0.0
+	 *
 	 */
 	private function extract_value( $data, string $field_name ) {
 		if ( ! $data ) {
@@ -520,23 +539,26 @@ class Manager {
 	/**
 	 * Render action buttons for footer
 	 *
+	 * @param array $actions Action button configurations
+	 *
+	 * @return string Generated HTML
 	 * @since 6.0.0
 	 *
-	 * @param array $actions Action button configurations
-	 * @return string Generated HTML
 	 */
 	private function render_actions( array $actions ): string {
 		$action_bar = new ActionBar( [ 'actions' => $actions ] );
+
 		return $action_bar->render();
 	}
 
 	/**
 	 * Get default action buttons based on configuration
 	 *
+	 * @param array $config Flyout configuration
+	 *
+	 * @return array Default action buttons
 	 * @since 6.0.0
 	 *
-	 * @param array $config Flyout configuration
-	 * @return array Default action buttons
 	 */
 	private function get_default_actions( array $config = [] ): array {
 		$actions = [];
@@ -571,10 +593,11 @@ class Manager {
 	/**
 	 * Detect and register required components from configuration
 	 *
+	 * @param array $config Flyout configuration
+	 *
+	 * @return void
 	 * @since 6.0.0
 	 *
-	 * @param array $config Flyout configuration
-	 * @return void
 	 */
 	private function detect_components( array $config ): void {
 		$all_fields = $config['fields'];
@@ -597,11 +620,12 @@ class Manager {
 	/**
 	 * Register AJAX endpoints for components
 	 *
-	 * @since 6.0.0
-	 *
 	 * @param string $flyout_id Flyout identifier
 	 * @param array  $config    Flyout configuration
+	 *
 	 * @return void
+	 * @since 6.0.0
+	 *
 	 */
 	private function register_component_endpoints( string $flyout_id, array $config ): void {
 		$all_fields = $config['fields'];
@@ -624,11 +648,12 @@ class Manager {
 	/**
 	 * Register a single AJAX endpoint
 	 *
-	 * @since 6.0.0
-	 *
 	 * @param string        $endpoint Endpoint name
 	 * @param callable|null $callback Callback function
+	 *
 	 * @return void
+	 * @since 6.0.0
+	 *
 	 */
 	private function register_ajax_endpoint( string $endpoint, $callback = null ): void {
 		if ( ! $callback ) {
@@ -645,10 +670,11 @@ class Manager {
 	/**
 	 * Send AJAX response based on result type
 	 *
+	 * @param mixed $result Callback result
+	 *
+	 * @return void Sends JSON response and exits
 	 * @since 6.0.0
 	 *
-	 * @param mixed $result Callback result
-	 * @return void Sends JSON response and exits
 	 */
 	private function send_response( $result ): void {
 		// Handle Flyout object
@@ -683,12 +709,13 @@ class Manager {
 	/**
 	 * Render a trigger button
 	 *
-	 * @since 1.0.0
-	 *
 	 * @param string $flyout_id Flyout identifier
 	 * @param array  $data      Data attributes to pass
 	 * @param array  $args      Button configuration
+	 *
 	 * @return void Outputs HTML
+	 * @since 1.0.0
+	 *
 	 */
 	public function button( string $flyout_id, array $data = [], array $args = [] ): void {
 		echo $this->get_button( $flyout_id, $data, $args );
@@ -697,18 +724,18 @@ class Manager {
 	/**
 	 * Get trigger button HTML
 	 *
-	 * @since 1.0.0
-	 *
 	 * @param string $flyout_id Flyout identifier
 	 * @param array  $data      Data attributes to pass
 	 * @param array  $args      {
-	 *     Button configuration
+	 *                          Button configuration
 	 *
-	 *     @type string $text  Button text (default: 'Open')
-	 *     @type string $class CSS class (default: 'button')
-	 *     @type string $icon  Dashicon name (optional)
-	 * }
+	 * @type string  $text      Button text (default: 'Open')
+	 * @type string  $class     CSS class (default: 'button')
+	 * @type string  $icon      Dashicon name (optional)
+	 *                          }
 	 * @return string Button HTML or empty string if unauthorized
+	 * @since 1.0.0
+	 *
 	 */
 	public function get_button( string $flyout_id, array $data = [], array $args = [] ): string {
 		if ( ! $this->can_access( $flyout_id ) ) {
@@ -745,21 +772,22 @@ class Manager {
 	/**
 	 * Create a trigger link
 	 *
-	 * @since 1.0.0
-	 *
 	 * @param string $flyout_id Flyout identifier
 	 * @param string $text      Link text
 	 * @param array  $data      Data attributes to pass
 	 * @param array  $args      Additional link arguments
+	 *
 	 * @return string Link HTML or empty string if unauthorized
+	 * @since 1.0.0
+	 *
 	 */
 	public function link( string $flyout_id, string $text, array $data = [], array $args = [] ): string {
 		if ( ! $this->can_access( $flyout_id ) ) {
 			return '';
 		}
 
-		$class = $args['class'] ?? '';
-		$attrs = $this->build_trigger_attributes( $flyout_id, $data, $class );
+		$class         = $args['class'] ?? '';
+		$attrs         = $this->build_trigger_attributes( $flyout_id, $data, $class );
 		$attrs['href'] = '#';
 
 		// Build HTML
@@ -775,12 +803,13 @@ class Manager {
 	/**
 	 * Build trigger element attributes
 	 *
-	 * @since 6.0.0
-	 *
 	 * @param string $flyout_id Flyout identifier
 	 * @param array  $data      Data attributes
 	 * @param string $class     Additional CSS classes
+	 *
 	 * @return array Attributes array
+	 * @since 6.0.0
+	 *
 	 */
 	private function build_trigger_attributes( string $flyout_id, array $data, string $class = '' ): array {
 		$attrs = [
@@ -801,10 +830,11 @@ class Manager {
 	/**
 	 * Check if current user can access flyout
 	 *
+	 * @param string $flyout_id Flyout identifier
+	 *
+	 * @return bool True if user has required capability
 	 * @since 6.0.0
 	 *
-	 * @param string $flyout_id Flyout identifier
-	 * @return bool True if user has required capability
 	 */
 	private function can_access( string $flyout_id ): bool {
 		if ( ! isset( $this->flyouts[ $flyout_id ] ) ) {
@@ -812,16 +842,18 @@ class Manager {
 		}
 
 		$config = $this->flyouts[ $flyout_id ];
+
 		return current_user_can( $config['capability'] );
 	}
 
 	/**
 	 * Maybe enqueue assets based on current admin page
 	 *
+	 * @param string $hook_suffix Current admin page hook
+	 *
+	 * @return void
 	 * @since 2.0.0
 	 *
-	 * @param string $hook_suffix Current admin page hook
-	 * @return void
 	 */
 	public function maybe_enqueue_assets( string $hook_suffix ): void {
 		// Skip if already enqueued
@@ -843,10 +875,11 @@ class Manager {
 	/**
 	 * Determine if assets should be enqueued
 	 *
+	 * @param string $hook_suffix Current admin page hook
+	 *
+	 * @return bool True if assets should load
 	 * @since 2.0.0
 	 *
-	 * @param string $hook_suffix Current admin page hook
-	 * @return bool True if assets should load
 	 */
 	private function should_enqueue( string $hook_suffix ): bool {
 		// Check specific configured pages first
@@ -879,9 +912,9 @@ class Manager {
 	/**
 	 * Enqueue required assets
 	 *
+	 * @return void
 	 * @since 1.0.0
 	 *
-	 * @return void
 	 */
 	public function enqueue_assets(): void {
 		// Enqueue core WP Flyout assets
@@ -898,9 +931,9 @@ class Manager {
 	/**
 	 * Get all registered flyouts
 	 *
+	 * @return array Flyout configurations
 	 * @since 6.0.0
 	 *
-	 * @return array Flyout configurations
 	 */
 	public function get_flyouts(): array {
 		return $this->flyouts;
@@ -909,10 +942,11 @@ class Manager {
 	/**
 	 * Check if flyout is registered
 	 *
+	 * @param string $flyout_id Flyout identifier
+	 *
+	 * @return bool True if flyout exists
 	 * @since 6.0.0
 	 *
-	 * @param string $flyout_id Flyout identifier
-	 * @return bool True if flyout exists
 	 */
 	public function has_flyout( string $flyout_id ): bool {
 		return isset( $this->flyouts[ $flyout_id ] );
@@ -921,9 +955,9 @@ class Manager {
 	/**
 	 * Get manager prefix
 	 *
+	 * @return string Manager prefix
 	 * @since 2.0.0
 	 *
-	 * @return string Manager prefix
 	 */
 	public function get_prefix(): string {
 		return $this->prefix;
