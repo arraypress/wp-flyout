@@ -1,14 +1,13 @@
 <?php
 /**
- * Info Grid Component - Simplified
+ * InfoGrid Component
  *
- * Displays key-value pairs in a clean grid layout.
+ * Displays information in a structured grid layout.
  *
- * @package     ArrayPress\WPFlyout\Components
+ * @package     ArrayPress\WPFlyout\Components\Data
  * @copyright   Copyright (c) 2025, ArrayPress Limited
  * @license     GPL2+
- * @version     1.0.0
- * @author      David Sherlock
+ * @version     2.0.0
  */
 
 declare( strict_types=1 );
@@ -17,112 +16,82 @@ namespace ArrayPress\WPFlyout\Components\Data;
 
 use ArrayPress\WPFlyout\Traits\Renderable;
 use ArrayPress\WPFlyout\Traits\EmptyValueFormatter;
+use ArrayPress\WPFlyout\Traits\ClassBuilder;
 
-/**
- * Class InfoGrid
- *
- * Creates a grid of label/value pairs for displaying structured information.
- *
- * @since 1.0.0
- */
 class InfoGrid {
     use Renderable;
     use EmptyValueFormatter;
+    use ClassBuilder;
 
     /**
-     * Grid items array
+     * Component configuration
      *
-     * @since 1.0.0
      * @var array
      */
-    private array $items = [];
+    private array $config;
 
     /**
-     * Grid configuration
+     * Default configuration
      *
-     * @since 1.0.0
      * @var array
      */
-    private array $config = [
-            'columns'    => 2,
-            'class'      => 'wp-flyout-info-grid',
-            'empty_text' => '—',
+    private const DEFAULTS = [
+            'id'          => '',
+            'class'       => '',
+            'items'       => [],
+            'columns'     => 2,
+            'gap'         => 'medium',
+            'label_width' => 'auto',
+            'separator'   => true,
+            'empty_value' => '—',
+            'responsive'  => true
     ];
 
     /**
      * Constructor
      *
-     * @param array $items  Initial items to add.
-     * @param array $config Optional configuration.
-     *
-     * @since 1.0.0
-     *
+     * @param array $config Configuration options
      */
-    public function __construct( array $items = [], array $config = [] ) {
-        $this->config = array_merge( $this->config, $config );
+    public function __construct( array $config = [] ) {
+        $this->config = wp_parse_args( $config, self::DEFAULTS );
 
-        foreach ( $items as $label => $value ) {
-            $this->add_item( $label, $value );
+        // Auto-generate ID if not provided
+        if ( empty( $this->config['id'] ) ) {
+            $this->config['id'] = 'info-grid-' . wp_generate_uuid4();
         }
     }
 
     /**
-     * Add an item to the grid
+     * Render the component
      *
-     * @param string $label  Item label.
-     * @param mixed  $value  Item value.
-     * @param bool   $escape Whether to escape HTML (default true).
-     *
-     * @return self
-     * @since 1.0.0
-     *
-     */
-    public function add_item( string $label, $value, bool $escape = true ): self {
-        $this->items[] = [
-                'label'  => $label,
-                'value'  => $value,
-                'escape' => $escape,
-        ];
-
-        return $this;
-    }
-
-    /**
-     * Add a separator between items
-     *
-     * @param string $title Optional separator title.
-     *
-     * @return self
-     * @since 1.0.0
-     *
-     */
-    public function add_separator( string $title = '' ): self {
-        $this->items[] = [
-                'type'  => 'separator',
-                'title' => $title,
-        ];
-
-        return $this;
-    }
-
-    /**
-     * Render the info grid
-     *
-     * @return string Generated HTML.
-     * @since 1.0.0
-     *
+     * @return string
      */
     public function render(): string {
-        if ( empty( $this->items ) ) {
+        if ( empty( $this->config['items'] ) ) {
             return '';
+        }
+
+        $classes = $this->build_classes( [
+                'info-grid'                                  => true,
+                'info-grid-cols-' . $this->config['columns'] => true,
+                'info-grid-gap-' . $this->config['gap']      => true,
+                'info-grid-responsive'                       => $this->config['responsive'],
+                'info-grid-separated'                        => $this->config['separator'],
+                $this->config['class']                       => ! empty( $this->config['class'] )
+        ] );
+
+        $style = '';
+        if ( $this->config['label_width'] !== 'auto' ) {
+            $style = 'style="--label-width: ' . esc_attr( $this->config['label_width'] ) . '"';
         }
 
         ob_start();
         ?>
-        <div class="<?php echo esc_attr( $this->config['class'] ); ?>"
-             data-columns="<?php echo esc_attr( (string) $this->config['columns'] ); ?>">
-            <?php foreach ( $this->items as $item ) : ?>
-                <?php echo $this->render_item( $item ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+        <div id="<?php echo esc_attr( $this->config['id'] ); ?>"
+             class="<?php echo esc_attr( $classes ); ?>"
+                <?php echo $style; ?>>
+            <?php foreach ( $this->config['items'] as $item ) : ?>
+                <?php $this->render_item( $item ); ?>
             <?php endforeach; ?>
         </div>
         <?php
@@ -132,93 +101,62 @@ class InfoGrid {
     /**
      * Render a single grid item
      *
-     * @param array $item Item configuration.
-     *
-     * @return string Generated HTML.
-     * @since 1.0.0
-     *
+     * @param array $item Item configuration
      */
-    private function render_item( array $item ): string {
-        if ( isset( $item['type'] ) && 'separator' === $item['type'] ) {
-            return $this->render_separator( $item );
+    private function render_item( array $item ): void {
+        if ( empty( $item['label'] ) ) {
+            return;
         }
 
-        $value = $this->format_value( $item['value'], $this->config['empty_text'] );
+        $value       = $item['value'] ?? '';
+        $description = $item['description'] ?? '';
+        $callback    = $item['callback'] ?? null;
+        $class       = $item['class'] ?? '';
+        $icon        = $item['icon'] ?? '';
+        $badge       = $item['badge'] ?? '';
+        $link        = $item['link'] ?? '';
+        $colspan     = $item['colspan'] ?? 1;
 
-        ob_start();
-        ?>
-        <div class="wp-flyout-info-item">
-            <span class="wp-flyout-info-label"><?php echo esc_html( $item['label'] ); ?></span>
-            <span class="wp-flyout-info-value">
-				<?php
-                if ( $item['escape'] ) {
-                    echo esc_html( $value );
-                } else {
-                    echo $value; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-                }
-                ?>
-			</span>
-        </div>
-        <?php
-        return ob_get_clean();
-    }
-
-    /**
-     * Render a separator
-     *
-     * @param array $item Separator configuration.
-     *
-     * @return string Generated HTML.
-     * @since 1.0.0
-     *
-     */
-    private function render_separator( array $item ): string {
-        ob_start();
-        ?>
-        <div class="wp-flyout-info-separator">
-            <?php if ( ! empty( $item['title'] ) ) : ?>
-                <span><?php echo esc_html( $item['title'] ); ?></span>
-            <?php endif; ?>
-        </div>
-        <?php
-        return ob_get_clean();
-    }
-
-    /**
-     * Create InfoGrid from associative array
-     *
-     * Supports separators using '---' as key or value
-     *
-     * @param array $data   Associative array of label => value pairs
-     * @param array $config Optional configuration
-     *
-     * @return self
-     * @since 1.0.0
-     */
-    public static function from_array( array $data, array $config = [] ): self {
-        $grid = new self( [], $config );
-
-        foreach ( $data as $label => $value ) {
-            if ( $label === '---' || $value === '---' ) {
-                $grid->add_separator( is_string( $label ) && $label !== '---' ? $label : '' );
-            } else {
-                $grid->add_item( $label, $value );
-            }
+        // Process value through callback if provided
+        if ( is_callable( $callback ) ) {
+            $value = call_user_func( $callback, $value, $item );
+        } elseif ( empty( $value ) ) {
+            $value = $this->format_value( $this->config['empty_value'] );
         }
 
-        return $grid;
-    }
+        $item_classes = $this->build_classes( [
+                'info-grid-item'                  => true,
+                'info-grid-item-span-' . $colspan => $colspan > 1,
+                $class                            => ! empty( $class )
+        ] );
+        ?>
+        <div class="<?php echo esc_attr( $item_classes ); ?>">
+            <dt class="info-grid-label">
+                <?php if ( $icon ) : ?>
+                    <span class="dashicons dashicons-<?php echo esc_attr( $icon ); ?>"></span>
+                <?php endif; ?>
+                <?php echo esc_html( $item['label'] ); ?>
+            </dt>
+            <dd class="info-grid-value">
+                <?php if ( $link ) : ?>
+                    <a href="<?php echo esc_url( $link ); ?>"
+                            <?php echo isset( $item['target'] ) ? 'target="' . esc_attr( $item['target'] ) . '"' : ''; ?>>
+                        <?php echo wp_kses_post( $value ); ?>
+                    </a>
+                <?php else : ?>
+                    <?php echo wp_kses_post( $value ); ?>
+                <?php endif; ?>
 
-    /**
-     * Quick render of info grid
-     *
-     * @param array $items Grid items.
-     *
-     * @return string Rendered HTML.
-     * @since 1.0.0
-     */
-    public static function quick( array $items ): string {
-        return self::from_array( $items )->render();
+                <?php if ( $badge ) : ?>
+                    <span class="badge"><?php echo esc_html( $badge ); ?></span>
+                <?php endif; ?>
+
+                <?php if ( $description ) : ?>
+                    <p class="info-grid-description"><?php echo esc_html( $description ); ?></p>
+                <?php endif; ?>
+            </dd>
+        </div>
+        <?php
     }
 
 }

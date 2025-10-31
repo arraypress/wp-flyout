@@ -1,14 +1,13 @@
 <?php
 /**
- * Notes Panel Component
+ * Notes Component
  *
- * Displays notes/comments in a chronological list with optional add/delete UI.
- * All data handling is done by the implementing plugin via callbacks.
+ * Displays notes/comments with optional add/edit functionality.
  *
- * @package     ArrayPress\WPFlyout\Components
+ * @package     ArrayPress\WPFlyout\Components\Interactive
  * @copyright   Copyright (c) 2025, ArrayPress Limited
  * @license     GPL2+
- * @version     2.0.0
+ * @version     3.0.0
  */
 
 declare( strict_types=1 );
@@ -16,82 +15,120 @@ declare( strict_types=1 );
 namespace ArrayPress\WPFlyout\Components\Interactive;
 
 use ArrayPress\WPFlyout\Traits\Renderable;
-use ArrayPress\WPFlyout\Traits\DataAttributes;
 
-/**
- * Class NotesPanel
- */
 class Notes {
     use Renderable;
-    use DataAttributes;
 
     /**
-     * Notes array
+     * Component configuration
+     *
      * @var array
      */
-    private array $notes = [];
+    private array $config;
 
     /**
-     * Panel configuration
+     * Default configuration
+     *
      * @var array
      */
-    private array $config = [
-            'class'          => 'wp-flyout-notes-panel',
-            'editable'       => false,
-            'empty_text'     => '',
-            'placeholder'    => '',
-            'button_text'    => '',
-            'confirm_delete' => '',
-            'data'           => []
+    private const DEFAULTS = [
+            'id'          => '',
+            'name'        => 'notes',
+            'items'       => [],
+            'editable'    => false,
+            'show_author' => true,
+            'show_date'   => true,
+            'date_format' => 'M j, Y g:i A',
+            'empty_text'  => 'No notes yet.',
+            'placeholder' => 'Add a note...',
+            'button_text' => 'Add Note',
+            'class'       => '',
+        // AJAX-related attributes
+            'object_type' => '',
+            'object_id'   => '',
+            'author_name' => '',
+            'ajax_action' => '',
+            'nonce'       => ''
     ];
 
     /**
      * Constructor
+     *
+     * @param array $config Configuration options
      */
-    public function __construct( array $notes = [], array $config = [] ) {
-        $this->notes = $notes;
+    public function __construct( array $config = [] ) {
+        $this->config = wp_parse_args( $config, self::DEFAULTS );
 
-        // Set default translatable strings
-        $defaults = [
-                'empty_text'     => __( 'No notes yet.', 'arraypress' ),
-                'placeholder'    => __( 'Add a note...', 'arraypress' ),
-                'button_text'    => __( 'Add Note', 'arraypress' ),
-                'confirm_delete' => __( 'Delete this note?', 'arraypress' ),
-        ];
+        // Auto-generate ID if not provided
+        if ( empty( $this->config['id'] ) ) {
+            $this->config['id'] = 'notes-' . wp_generate_uuid4();
+        }
 
-        $this->config = array_merge( $this->config, $defaults, $config );
+        // Ensure items is array
+        if ( ! is_array( $this->config['items'] ) ) {
+            $this->config['items'] = [];
+        }
+
+        // Normalize notes
+        $this->config['items'] = $this->normalize_notes( $this->config['items'] );
     }
 
     /**
-     * Add a note
+     * Normalize note data
+     *
+     * @param array $notes Raw notes array
+     *
+     * @return array
      */
-    public function add_note( string $content, array $meta = [] ): self {
-        $this->notes[] = array_merge( [
-                'id'        => uniqid(),
-                'content'   => $content,
-                'author'    => '',
-                'date'      => '',
-                'deletable' => $this->config['editable']
-        ], $meta );
+    private function normalize_notes( array $notes ): array {
+        $normalized = [];
 
-        return $this;
+        foreach ( $notes as $note ) {
+            if ( is_string( $note ) ) {
+                $note = [ 'content' => $note ];
+            }
+
+            $normalized[] = wp_parse_args( $note, [
+                    'id'        => uniqid(),
+                    'content'   => '',
+                    'author'    => '',
+                    'date'      => current_time( 'mysql' ),
+                    'deletable' => false
+            ] );
+        }
+
+        return $normalized;
     }
 
     /**
-     * Render the panel
+     * Render the component
+     *
+     * @return string
      */
     public function render(): string {
+        $classes = [ 'wp-flyout-notes-panel' ];
+        if ( ! empty( $this->config['class'] ) ) {
+            $classes[] = $this->config['class'];
+        }
+
         ob_start();
         ?>
-        <div class="<?php echo esc_attr( $this->config['class'] ); ?>"
-                <?php echo $this->render_data_attributes(); ?>>
+        <div id="<?php echo esc_attr( $this->config['id'] ); ?>"
+             class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>"
+             data-name="<?php echo esc_attr( $this->config['name'] ); ?>"
+             data-object-type="<?php echo esc_attr( $this->config['object_type'] ); ?>"
+             data-object-id="<?php echo esc_attr( $this->config['object_id'] ); ?>"
+             data-author-name="<?php echo esc_attr( $this->config['author_name'] ); ?>"
+             data-action="<?php echo esc_attr( $this->config['ajax_action'] ); ?>"
+             data-nonce="<?php echo esc_attr( $this->config['nonce'] ); ?>"
+             data-note-count="<?php echo count( $this->config['items'] ); ?>">
 
             <div class="notes-list">
-                <?php if ( empty( $this->notes ) ) : ?>
+                <?php if ( empty( $this->config['items'] ) ) : ?>
                     <p class="no-notes"><?php echo esc_html( $this->config['empty_text'] ); ?></p>
                 <?php else : ?>
-                    <?php foreach ( $this->notes as $note ) : ?>
-                        <?php echo $this->render_note( $note ); ?>
+                    <?php foreach ( $this->config['items'] as $note ) : ?>
+                        <?php $this->render_note( $note ); ?>
                     <?php endforeach; ?>
                 <?php endif; ?>
             </div>
@@ -99,8 +136,9 @@ class Notes {
             <?php if ( $this->config['editable'] ) : ?>
                 <div class="note-add-form">
 					<textarea class="note-input"
+                              name="<?php echo esc_attr( $this->config['name'] ); ?>_new"
                               placeholder="<?php echo esc_attr( $this->config['placeholder'] ); ?>"
-                              data-field="content"></textarea>
+                              rows="3"></textarea>
                     <button type="button" class="button button-primary" data-action="add-note">
                         <?php echo esc_html( $this->config['button_text'] ); ?>
                     </button>
@@ -112,54 +150,35 @@ class Notes {
     }
 
     /**
-     * Render a single note
+     * Render single note
+     *
+     * @param array $note Note data
      */
-    private function render_note( array $note ): string {
-        ob_start();
+    private function render_note( array $note ): void {
         ?>
         <div class="note-item" data-note-id="<?php echo esc_attr( $note['id'] ); ?>">
             <div class="note-header">
-                <?php if ( ! empty( $note['author'] ) ) : ?>
+                <?php if ( $this->config['show_author'] && $note['author'] ) : ?>
                     <span class="note-author"><?php echo esc_html( $note['author'] ); ?></span>
                 <?php endif; ?>
 
-                <?php if ( ! empty( $note['date'] ) ) : ?>
-                    <span class="note-date"><?php echo esc_html( $note['date'] ); ?></span>
+                <?php if ( $this->config['show_date'] && $note['date'] ) : ?>
+                    <span class="note-date">
+						<?php echo esc_html( date( $this->config['date_format'], strtotime( $note['date'] ) ) ); ?>
+					</span>
                 <?php endif; ?>
 
-                <?php if ( ! empty( $note['deletable'] ) && $this->config['editable'] ) : ?>
-                    <button type="button" class="button-link" data-action="delete-note"
-                            data-confirm="<?php echo esc_attr( $this->config['confirm_delete'] ); ?>">
+                <?php if ( $this->config['editable'] && $note['deletable'] ) : ?>
+                    <button type="button" class="button-link" data-action="delete-note" data-confirm="Are you sure?">
                         <span class="dashicons dashicons-trash"></span>
                     </button>
                 <?php endif; ?>
             </div>
             <div class="note-content">
-                <?php echo wp_kses_post( $note['content'] ); ?>
+                <?php echo wp_kses_post( nl2br( $note['content'] ) ); ?>
             </div>
         </div>
         <?php
-        return ob_get_clean();
-    }
-
-    /**
-     * Static factory for activity log
-     */
-    public static function activity_log( array $entries = [] ): self {
-        return new self( $entries, [
-                'editable'   => false,
-                'empty_text' => __( 'No activity yet.', 'arraypress' )
-        ] );
-    }
-
-    /**
-     * Static factory for editable notes
-     */
-    public static function editable( array $notes = [], array $data = [] ): self {
-        return new self( $notes, [
-                'editable' => true,
-                'data'     => $data
-        ] );
     }
 
 }

@@ -5,16 +5,13 @@
  * @package     ArrayPress\WPFlyout
  * @copyright   Copyright (c) 2025, ArrayPress Limited
  * @license     GPL2+
- * @version     1.0.0
+ * @version     2.0.0
  */
 
 declare( strict_types=1 );
 
 namespace ArrayPress\WPFlyout;
 
-/**
- * Class Assets
- */
 class Assets {
 
 	/**
@@ -29,8 +26,7 @@ class Assets {
 		'css/flyout/data-display.css',
 		'css/flyout/alert.css',
 		'css/flyout/separator.css',
-		'css/flyout/field-group.css',
-		'css/flyout/flex-row.css'
+		'css/flyout/field-group.css'
 	];
 
 	/**
@@ -51,104 +47,117 @@ class Assets {
 	 * @var array
 	 */
 	private static array $components = [
-		'file-manager'       => [
+		// Interactive Components
+		'file-manager'    => [
 			'script' => 'js/components/file-manager.js',
 			'style'  => 'css/components/file-manager.css',
 			'deps'   => [ 'jquery-ui-sortable' ]
 		],
-		'notes'              => [
+		'notes'           => [
 			'script' => 'js/components/notes.js',
 			'style'  => 'css/components/notes.css',
 			'deps'   => []
 		],
-		'order-items'        => [
+		'order-items'     => [
 			'script' => 'js/components/order-items.js',
 			'style'  => 'css/components/order-items.css',
 			'deps'   => [ 'wp-flyout-ajax-select' ]
 		],
-		'product-display'    => [
-			'script' => '',
-			'style'  => 'css/components/product-display.css',
-			'deps'   => []
-		],
-		'timeline'           => [
-			'script' => '',
-			'style'  => 'css/components/timeline.css',
-			'deps'   => []
-		],
-		'customer-header'    => [
-			'script' => '',
-			'style'  => 'css/components/customer-header.css',
-			'deps'   => []
-		],
-		'stats-card'         => [
-			'script' => '',
-			'style'  => 'css/components/stats-card.css',
-			'deps'   => []
-		],
-		'address-card'       => [
-			'script' => 'js/components/address-card.js',
-			'style'  => 'css/components/address-card.css',
-			'deps'   => []
-		],
-		'payment-method'     => [
-			'script' => '',
-			'style'  => 'css/components/payment-method.css',
-			'deps'   => []
-		],
-		'price-breakdown'    => [
-			'script' => '',
-			'style'  => 'css/components/price-breakdown.css',
-			'deps'   => []
-		],
-		'range-slider'       => [
-			'script' => 'js/components/range-slider.js',
-			'style'  => 'css/components/range-slider.css',
-			'deps'   => []
-		],
-		'code-block'         => [
+		'code-block'      => [
 			'script' => 'js/components/code-block.js',
 			'style'  => 'css/components/code-block.css',
 			'deps'   => []
 		],
-		'status-indicator'   => [
+
+		// Data Components
+		'data-table'      => [
 			'script' => '',
-			'style'  => 'css/components/status-indicator.css',
+			'style'  => 'css/components/data-table.css',
 			'deps'   => []
 		],
-		'progress-indicator' => [
+		'info-grid'       => [
 			'script' => '',
-			'style'  => 'css/components/progress-indicator.css',
+			'style'  => 'css/components/info-grid.css',
 			'deps'   => []
 		],
-		'ajax-select'        => [
+		'timeline'        => [
+			'script' => '',
+			'style'  => 'css/components/timeline.css',
+			'deps'   => []
+		],
+		'stats-card'      => [
+			'script' => '',
+			'style'  => 'css/components/stats-card.css',
+			'deps'   => []
+		],
+
+		// Display Components
+		'alert'           => [
+			'script' => 'js/components/alert.js',
+			'style'  => 'css/components/alert.css',
+			'deps'   => []
+		],
+		'empty-state'     => [
+			'script' => '',
+			'style'  => 'css/components/empty-state.css',
+			'deps'   => []
+		],
+
+		// Domain Components
+		'entity-header'   => [
+			'script' => '',
+			'style'  => 'css/components/entity-header.css',
+			'deps'   => []
+		],
+		'payment-method'  => [
+			'script' => '',
+			'style'  => 'css/components/payment-method.css',
+			'deps'   => []
+		],
+		'price-breakdown' => [
+			'script' => '',
+			'style'  => 'css/components/price-breakdown.css',
+			'deps'   => []
+		],
+
+		// Form Components
+		'ajax-select'     => [
 			'script' => 'js/components/ajax-select.js',
 			'style'  => 'css/components/ajax-select.css',
 			'deps'   => []
 		],
-		'tags'          => [
+		'tags'            => [
 			'script' => 'js/components/tags.js',
 			'style'  => 'css/components/tags.css',
 			'deps'   => []
 		],
-		'accordion'          => [
+		'card-choice'     => [
+			'script' => '',
+			'style'  => 'css/components/card-choice.css',
+			'deps'   => []
+		],
+
+		// Layout Components
+		'accordion'       => [
 			'script' => 'js/components/accordion.js',
 			'style'  => 'css/components/accordion.css',
 			'deps'   => []
 		],
-		'simple-list'        => [
+		'separator'       => [
 			'script' => '',
-			'style'  => 'css/components/simple-list.css',
+			'style'  => 'css/components/separator.css',
 			'deps'   => []
 		],
-		'confirmation'       => [
+
+		// Core Components
+		'action-bar'      => [
 			'script' => '',
-			'style'  => 'css/components/confirmation.css',
+			'style'  => 'css/components/action-bar.css',
 			'deps'   => []
 		],
-		'card-choice'        => [
+		'section-header'  => [
 			'script' => '',
-			'style'  => 'css/components/card-choice.css',
+			'style'  => 'css/components/section-header.css',
 			'deps'   => []
 		]
 	];
@@ -169,7 +178,7 @@ class Assets {
 	 */
 	public static function register_assets(): void {
 		$base_file = __FILE__;
-		$version   = defined( 'WP_DEBUG' ) && WP_DEBUG ? time() : '1.0.0';
+		$version   = defined( 'WP_DEBUG' ) && WP_DEBUG ? time() : '2.0.0';
 
 		// Register core CSS files
 		$deps        = [ 'dashicons' ];
@@ -361,5 +370,4 @@ class Assets {
 
 		return $prefix . '-' . $name;
 	}
-
 }

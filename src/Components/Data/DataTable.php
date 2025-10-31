@@ -1,14 +1,13 @@
 <?php
 /**
- * Data Table Component
+ * DataTable Component
  *
- * Creates consistent tables for displaying key-value pairs and metadata.
+ * Renders structured data in a table format with optional features.
  *
- * @package     ArrayPress\WPFlyout\Components
+ * @package     ArrayPress\WPFlyout\Components\Data
  * @copyright   Copyright (c) 2025, ArrayPress Limited
  * @license     GPL2+
- * @version     1.0.0
- * @author      David Sherlock
+ * @version     2.0.0
  */
 
 declare( strict_types=1 );
@@ -18,189 +17,212 @@ namespace ArrayPress\WPFlyout\Components\Data;
 use ArrayPress\WPFlyout\Traits\Renderable;
 use ArrayPress\WPFlyout\Traits\EmptyValueFormatter;
 
-/**
- * Class DataTable
- *
- * Renders tables for key-value data display.
- */
 class DataTable {
     use Renderable;
     use EmptyValueFormatter;
 
     /**
-     * Table data
+     * Component configuration
      *
      * @var array
      */
-    private array $data = [];
+    private array $config;
 
     /**
-     * Table configuration
+     * Default configuration
      *
      * @var array
      */
-    private array $config = [
-            'headers'     => [ 'Key', 'Value' ],
-            'class'       => 'wp-flyout-data-table wp-list-table widefat fixed striped',
-            'show_code'   => true, // Wrap values in <code> tags
-            'empty_text'  => '—',
-            'format_json' => true,
-            'show_empty'  => true,
-            'empty_state' => null
+    private const DEFAULTS = [
+            'id'          => '',
+            'class'       => 'wp-list-table widefat fixed striped',
+            'columns'     => [],
+            'data'        => [],
+            'empty_text'  => 'No data found.',
+            'sortable'    => false,
+            'responsive'  => true,
+            'hover'       => true,
+            'striped'     => true,
+            'bordered'    => false,
+            'condensed'   => false,
+            'footer'      => false,
+            'caption'     => '',
+            'empty_value' => '—'
     ];
 
     /**
      * Constructor
      *
-     * @param array $data   Data array (key => value pairs)
-     * @param array $config Optional configuration
+     * @param array $config Configuration options
      */
-    public function __construct( array $data = [], array $config = [] ) {
-        $this->data   = $data;
-        $this->config = array_merge( $this->config, $config );
+    public function __construct( array $config = [] ) {
+        $this->config = wp_parse_args( $config, self::DEFAULTS );
+
+        // Auto-generate ID if not provided
+        if ( empty( $this->config['id'] ) ) {
+            $this->config['id'] = 'datatable-' . wp_generate_uuid4();
+        }
     }
 
     /**
-     * Create a metadata table
+     * Render the component
      *
-     * @param array $metadata Metadata array
-     *
-     * @return self
-     */
-    public static function metadata( array $metadata ): self {
-        return new self( $metadata, [
-                'headers'   => [ 'Key', 'Value' ],
-                'show_code' => true,
-                'class'     => 'metadata-table wp-list-table widefat fixed striped'
-        ] );
-    }
-
-    /**
-     * Create a properties table
-     *
-     * @param array $properties Properties array
-     *
-     * @return self
-     */
-    public static function properties( array $properties ): self {
-        return new self( $properties, [
-                'headers'   => [ 'Property', 'Value' ],
-                'show_code' => false,
-                'class'     => 'properties-table wp-list-table widefat fixed striped'
-        ] );
-    }
-
-    /**
-     * Add a row to the table
-     *
-     * @param string $key   Row key
-     * @param mixed  $value Row value
-     *
-     * @return self
-     */
-    public function add_row( string $key, $value ): self {
-        $this->data[ $key ] = $value;
-
-        return $this;
-    }
-
-    /**
-     * Set empty state
-     *
-     * @param EmptyState $empty_state Empty state component
-     *
-     * @return self
-     */
-    public function set_empty_state( EmptyState $empty_state ): self {
-        $this->config['empty_state'] = $empty_state;
-
-        return $this;
-    }
-
-    /**
-     * Render the table
-     *
-     * @return string Generated HTML
+     * @return string
      */
     public function render(): string {
-        if ( empty( $this->data ) ) {
-            if ( $this->config['empty_state'] ) {
-                return $this->config['empty_state']->render();
-            }
-            if ( ! $this->config['show_empty'] ) {
-                return '';
-            }
-
-            return '<p>' . esc_html( $this->config['empty_text'] ) . '</p>';
+        if ( empty( $this->config['columns'] ) ) {
+            return '';
         }
+
+        $classes = $this->get_classes();
 
         ob_start();
         ?>
-        <table class="<?php echo esc_attr( $this->config['class'] ); ?>">
-            <thead>
-            <tr>
-                <th><?php echo esc_html( $this->config['headers'][0] ); ?></th>
-                <th><?php echo esc_html( $this->config['headers'][1] ); ?></th>
-            </tr>
-            </thead>
-            <tbody>
-            <?php foreach ( $this->data as $key => $value ): ?>
+        <div class="datatable-wrapper<?php echo $this->config['responsive'] ? ' table-responsive' : ''; ?>">
+            <?php if ( ! empty( $this->config['caption'] ) ) : ?>
+                <caption class="screen-reader-text"><?php echo esc_html( $this->config['caption'] ); ?></caption>
+            <?php endif; ?>
+
+            <table id="<?php echo esc_attr( $this->config['id'] ); ?>"
+                   class="<?php echo esc_attr( $classes ); ?>"
+                    <?php echo $this->config['sortable'] ? 'data-sortable="true"' : ''; ?>>
+
+                <thead>
                 <tr>
-                    <td><strong><?php echo esc_html( $key ); ?></strong></td>
-                    <td>
-                        <?php if ( $this->config['show_code'] ): ?>
-                            <code><?php echo esc_html( $this->format_table_value( $value ) ); ?></code>
-                        <?php else: ?>
-                            <?php echo esc_html( $this->format_table_value( $value ) ); ?>
-                        <?php endif; ?>
-                    </td>
+                    <?php foreach ( $this->config['columns'] as $key => $column ) : ?>
+                        <?php $this->render_header_cell( $key, $column ); ?>
+                    <?php endforeach; ?>
                 </tr>
-            <?php endforeach; ?>
-            </tbody>
-        </table>
+                </thead>
+
+                <tbody>
+                <?php if ( ! empty( $this->config['data'] ) ) : ?>
+                    <?php foreach ( $this->config['data'] as $row ) : ?>
+                        <tr>
+                            <?php foreach ( $this->config['columns'] as $key => $column ) : ?>
+                                <?php $this->render_body_cell( $key, $column, $row ); ?>
+                            <?php endforeach; ?>
+                        </tr>
+                    <?php endforeach; ?>
+                <?php else : ?>
+                    <tr>
+                        <td colspan="<?php echo count( $this->config['columns'] ); ?>" class="text-center">
+                            <?php echo esc_html( $this->config['empty_text'] ); ?>
+                        </td>
+                    </tr>
+                <?php endif; ?>
+                </tbody>
+
+                <?php if ( $this->config['footer'] ) : ?>
+                    <tfoot>
+                    <tr>
+                        <?php foreach ( $this->config['columns'] as $key => $column ) : ?>
+                            <?php $this->render_footer_cell( $key, $column ); ?>
+                        <?php endforeach; ?>
+                    </tr>
+                    </tfoot>
+                <?php endif; ?>
+            </table>
+        </div>
         <?php
         return ob_get_clean();
     }
 
     /**
-     * Format a value for table display
+     * Get table classes
      *
-     * This extends the trait's format_value to handle JSON formatting
-     *
-     * @param mixed $value Value to format
-     *
-     * @return string Formatted value
+     * @return string
      */
-    private function format_table_value( $value ): string {
-        if ( is_null( $value ) ) {
-            return $this->config['empty_text'];
+    private function get_classes(): string {
+        $classes = [ $this->config['class'] ];
+
+        if ( $this->config['hover'] && ! str_contains( $this->config['class'], 'hover' ) ) {
+            $classes[] = 'hover';
         }
 
-        if ( is_bool( $value ) ) {
-            return $this->format_boolean( $value );
+        if ( $this->config['bordered'] && ! str_contains( $this->config['class'], 'bordered' ) ) {
+            $classes[] = 'bordered';
         }
 
-        if ( is_array( $value ) || is_object( $value ) ) {
-            if ( $this->config['format_json'] ) {
-                return json_encode( $value, JSON_PRETTY_PRINT );
-            }
-
-            return print_r( $value, true );
+        if ( $this->config['condensed'] ) {
+            $classes[] = 'condensed';
         }
 
-        return $this->format_value( $value, $this->config['empty_text'] );
+        return implode( ' ', array_filter( $classes ) );
     }
 
     /**
-     * Quick render of data table
+     * Render header cell
      *
-     * @param array $data Data array.
-     *
-     * @return string Rendered HTML.
-     * @since 1.0.0
+     * @param string $key    Column key
+     * @param mixed  $column Column config
      */
-    public static function quick( array $data ): string {
-        return ( new self( $data ) )->render();
+    private function render_header_cell( string $key, $column ): void {
+        $label    = is_array( $column ) ? ( $column['label'] ?? $key ) : $column;
+        $sortable = is_array( $column ) && ( $column['sortable'] ?? false );
+        $class    = is_array( $column ) ? ( $column['class'] ?? '' ) : '';
+        $width    = is_array( $column ) ? ( $column['width'] ?? '' ) : '';
+
+        $attrs = [];
+        if ( $class ) {
+            $attrs[] = 'class="' . esc_attr( $class ) . '"';
+        }
+        if ( $width ) {
+            $attrs[] = 'style="width: ' . esc_attr( $width ) . '"';
+        }
+        if ( $sortable && $this->config['sortable'] ) {
+            $attrs[] = 'data-sortable="true"';
+        }
+        ?>
+        <th <?php echo implode( ' ', $attrs ); ?>>
+            <?php echo esc_html( $label ); ?>
+            <?php if ( $sortable && $this->config['sortable'] ) : ?>
+                <span class="sorting-indicator" aria-hidden="true"></span>
+            <?php endif; ?>
+        </th>
+        <?php
+    }
+
+    /**
+     * Render body cell
+     *
+     * @param string $key    Column key
+     * @param mixed  $column Column config
+     * @param array  $row    Row data
+     */
+    private function render_body_cell( string $key, $column, array $row ): void {
+        $value    = $row[ $key ] ?? '';
+        $class    = is_array( $column ) ? ( $column['class'] ?? '' ) : '';
+        $callback = is_array( $column ) ? ( $column['callback'] ?? null ) : null;
+
+        if ( is_callable( $callback ) ) {
+            $value = call_user_func( $callback, $value, $row );
+        } elseif ( empty( $value ) ) {
+            $value = $this->format_value( $this->config['empty_value'] );
+        } else {
+            $value = esc_html( $value );
+        }
+        ?>
+        <td <?php echo $class ? 'class="' . esc_attr( $class ) . '"' : ''; ?>>
+            <?php echo $value; ?>
+        </td>
+        <?php
+    }
+
+    /**
+     * Render footer cell
+     *
+     * @param string $key    Column key
+     * @param mixed  $column Column config
+     */
+    private function render_footer_cell( string $key, $column ): void {
+        $footer_text = '';
+        if ( is_array( $column ) && isset( $column['footer'] ) ) {
+            $footer_text = $column['footer'];
+        }
+        ?>
+        <td><?php echo esc_html( $footer_text ); ?></td>
+        <?php
     }
 
 }

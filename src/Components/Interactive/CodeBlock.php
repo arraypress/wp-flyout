@@ -1,15 +1,13 @@
 <?php
 /**
- * Code Block Component
+ * CodeBlock Component
  *
  * Displays syntax-highlighted code with copy functionality.
- * Supports line numbers, custom max heights, and various programming languages.
  *
- * @package     ArrayPress\WPFlyout\Components
+ * @package     ArrayPress\WPFlyout\Components\Interactive
  * @copyright   Copyright (c) 2025, ArrayPress Limited
  * @license     GPL2+
- * @version     1.0.0
- * @author      David Sherlock
+ * @version     2.0.0
  */
 
 declare( strict_types=1 );
@@ -18,155 +16,73 @@ namespace ArrayPress\WPFlyout\Components\Interactive;
 
 use ArrayPress\WPFlyout\Traits\Renderable;
 
-/**
- * Class CodeBlock
- *
- * Creates code display blocks with optional line numbers and copy functionality.
- *
- * @since 1.0.0
- */
 class CodeBlock {
     use Renderable;
 
     /**
-     * Code content to display
-     *
-     * @since 1.0.0
-     * @var string
-     */
-    private string $code = '';
-
-    /**
      * Component configuration
      *
-     * @since 1.0.0
      * @var array
      */
-    private array $config = [
+    private array $config;
+
+    /**
+     * Default configuration
+     *
+     * @var array
+     */
+    private const DEFAULTS = [
+            'id'                => '',
+            'code'              => '',
             'language'          => 'php',
             'show_line_numbers' => true,
             'show_copy_button'  => true,
             'show_highlighting' => true,
             'max_height'        => '400px',
             'title'             => '',
-            'class'             => 'wp-flyout-code-block'
+            'class'             => ''
     ];
 
     /**
      * Constructor
      *
-     * @param string $code   Code to display
-     * @param array  $config Configuration options
-     *
-     * @since 1.0.0
-     *
+     * @param array $config Configuration options
      */
-    public function __construct( string $code, array $config = [] ) {
-        $this->code   = $code;
-        $this->config = array_merge( $this->config, $config );
+    public function __construct( array $config = [] ) {
+        $this->config = wp_parse_args( $config, self::DEFAULTS );
+
+        // Auto-generate ID if not provided
+        if ( empty( $this->config['id'] ) ) {
+            $this->config['id'] = 'code-block-' . wp_generate_uuid4();
+        }
     }
 
     /**
-     * Create a PHP code block
+     * Render the component
      *
-     * @param string $code  PHP code to display
-     * @param string $title Optional title for the block
-     *
-     * @return self
-     * @since 1.0.0
-     *
-     */
-    public static function php( string $code, string $title = '' ): self {
-        return new self( $code, [
-                'language' => 'php',
-                'title'    => $title
-        ] );
-    }
-
-    /**
-     * Create a JavaScript code block
-     *
-     * @param string $code  JavaScript code to display
-     * @param string $title Optional title for the block
-     *
-     * @return self
-     * @since 1.0.0
-     *
-     */
-    public static function javascript( string $code, string $title = '' ): self {
-        return new self( $code, [
-                'language' => 'javascript',
-                'title'    => $title
-        ] );
-    }
-
-    /**
-     * Create a CSS code block
-     *
-     * @param string $code  CSS code to display
-     * @param string $title Optional title for the block
-     *
-     * @return self
-     * @since 1.0.0
-     *
-     */
-    public static function css( string $code, string $title = '' ): self {
-        return new self( $code, [
-                'language' => 'css',
-                'title'    => $title
-        ] );
-    }
-
-    /**
-     * Create a SQL code block
-     *
-     * @param string $code  SQL code to display
-     * @param string $title Optional title for the block
-     *
-     * @return self
-     * @since 1.0.0
-     *
-     */
-    public static function sql( string $code, string $title = '' ): self {
-        return new self( $code, [
-                'language' => 'sql',
-                'title'    => $title
-        ] );
-    }
-
-    /**
-     * Create a plain text code block
-     *
-     * @param string $code  Plain text to display
-     * @param string $title Optional title for the block
-     *
-     * @return self
-     * @since 1.0.0
-     *
-     */
-    public static function plain( string $code, string $title = '' ): self {
-        return new self( $code, [
-                'language'          => 'plain',
-                'title'             => $title,
-                'show_highlighting' => false
-        ] );
-    }
-
-    /**
-     * Render the code block
-     *
-     * @return string Generated HTML
-     * @since 1.0.0
-     *
+     * @return string
      */
     public function render(): string {
-        $class = $this->config['class'] . ' language-' . $this->config['language'];
+        if ( empty( $this->config['code'] ) ) {
+            return '';
+        }
+
+        $classes = [
+                'wp-flyout-code-block',
+                'language-' . $this->config['language']
+        ];
+
+        if ( ! empty( $this->config['class'] ) ) {
+            $classes[] = $this->config['class'];
+        }
 
         ob_start();
         ?>
-        <div class="<?php echo esc_attr( $class ); ?>"
+        <div id="<?php echo esc_attr( $this->config['id'] ); ?>"
+             class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>"
              data-language="<?php echo esc_attr( $this->config['language'] ); ?>"
                 <?php echo $this->config['show_highlighting'] ? 'data-highlight="true"' : ''; ?>>
+
             <?php if ( $this->config['title'] ) : ?>
                 <div class="code-block-header">
                     <span class="code-block-title"><?php echo esc_html( $this->config['title'] ); ?></span>
@@ -188,7 +104,7 @@ class CodeBlock {
 
                 <pre class="code-block-pre"><code
                             class="code-block-code <?php echo $this->config['show_line_numbers'] ? 'line-numbers' : ''; ?>"
-                            data-language="<?php echo esc_attr( $this->config['language'] ); ?>"><?php echo esc_html( $this->code ); ?></code></pre>
+                            data-language="<?php echo esc_attr( $this->config['language'] ); ?>"><?php echo esc_html( $this->config['code'] ); ?></code></pre>
             </div>
         </div>
         <?php

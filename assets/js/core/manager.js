@@ -11,14 +11,14 @@
             e.preventDefault();
 
             const $btn = $(this);
-            const handler = $btn.data('flyout-handler');
+            const handler = $btn.data('flyout-handler') || $btn.data('flyout');
             const manager = $btn.data('flyout-manager');
             const nonce = $btn.data('flyout-nonce');
 
             // Collect data attributes
             const data = {};
             $.each(this.dataset, function (key, value) {
-                if (key !== 'flyoutHandler' && key !== 'flyoutManager' && key !== 'flyoutNonce') {
+                if (key !== 'flyoutHandler' && key !== 'flyout' && key !== 'flyoutManager' && key !== 'flyoutNonce') {
                     data[key] = value;
                 }
             });
@@ -26,8 +26,8 @@
             // Load flyout
             $.post(ajaxurl, {
                 action: 'wp_flyout_' + manager,
-                handler: handler,
-                handler_action: 'load',
+                flyout: handler,
+                flyout_action: 'load',
                 nonce: nonce,
                 ...data
             })

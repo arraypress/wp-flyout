@@ -1,15 +1,13 @@
 <?php
 /**
- * Price Breakdown Component
+ * PriceBreakdown Component
  *
- * Displays detailed price calculations with line items, taxes, and discounts.
- * Useful for invoices, quotes, and order summaries.
+ * Displays a detailed price breakdown with line items and totals.
  *
- * @package     ArrayPress\WPFlyout\Components
+ * @package     ArrayPress\WPFlyout\Components\Domain
  * @copyright   Copyright (c) 2025, ArrayPress Limited
  * @license     GPL2+
- * @version     1.0.0
- * @author      David Sherlock
+ * @version     2.0.0
  */
 
 declare( strict_types=1 );
@@ -19,155 +17,84 @@ namespace ArrayPress\WPFlyout\Components\Domain;
 use ArrayPress\WPFlyout\Traits\Renderable;
 use ArrayPress\WPFlyout\Traits\CurrencyFormatter;
 
-/**
- * Class PriceBreakdown
- *
- * Creates detailed price breakdowns with calculations.
- *
- * @since 1.0.0
- */
 class PriceBreakdown {
     use Renderable;
     use CurrencyFormatter;
 
     /**
-     * Line items
-     *
-     * @since 1.0.0
-     * @var array
-     */
-    private array $items = [];
-
-    /**
-     * Adjustments (discounts, fees, taxes)
-     *
-     * @since 1.0.0
-     * @var array
-     */
-    private array $adjustments = [];
-
-    /**
      * Component configuration
      *
-     * @since 1.0.0
      * @var array
      */
-    private array $config = [
-            'class'           => 'wp-flyout-price-breakdown',
-            'currency'        => 'USD', // Currency code for formatting
-            'show_quantities' => true,
-            'collapsible'     => false
+    private array $config;
+
+    /**
+     * Default configuration
+     *
+     * @var array
+     */
+    private const DEFAULTS = [
+            'id'              => '',
+            'items'           => [],
+            'subtotal'        => null,
+            'tax'             => null,
+            'discount'        => null,
+            'shipping'        => null,
+            'total'           => 0,
+            'currency'        => 'USD',
+            'show_zero'       => false,
+            'class'           => '',
+            'highlight_total' => true
     ];
 
     /**
      * Constructor
      *
      * @param array $config Configuration options
-     *
-     * @since 1.0.0
-     *
      */
     public function __construct( array $config = [] ) {
-        $this->config = array_merge( $this->config, $config );
-    }
+        $this->config = wp_parse_args( $config, self::DEFAULTS );
 
-    /**
-     * Add a line item
-     *
-     * @param string    $name     Item name
-     * @param int|float $price    Unit price in cents (int) or dollars (float)
-     * @param int       $quantity Quantity
-     * @param array     $meta     Additional metadata
-     *
-     * @return self
-     * @since 1.0.0
-     *
-     */
-    public function add_item( string $name, $price, int $quantity = 1, array $meta = [] ): self {
-        $this->items[] = array_merge( [
-                'name'        => $name,
-                'price'       => $price,
-                'quantity'    => $quantity,
-                'description' => ''
-        ], $meta );
-
-        return $this;
-    }
-
-    /**
-     * Add an adjustment
-     *
-     * @param string    $type   Type: 'discount', 'tax', 'fee', 'shipping'
-     * @param string    $label  Label
-     * @param int|float $amount Amount in cents (int) or dollars (float) (positive or negative)
-     * @param array     $meta   Additional metadata
-     *
-     * @return self
-     * @since 1.0.0
-     *
-     */
-    public function add_adjustment( string $type, string $label, $amount, array $meta = [] ): self {
-        $this->adjustments[] = array_merge( [
-                'type'       => $type,
-                'label'      => $label,
-                'amount'     => $amount,
-                'percentage' => null
-        ], $meta );
-
-        return $this;
+        // Auto-generate ID if not provided
+        if ( empty( $this->config['id'] ) ) {
+            $this->config['id'] = 'price-breakdown-' . wp_generate_uuid4();
+        }
     }
 
     /**
      * Render the component
      *
-     * @return string Generated HTML
-     * @since 1.0.0
-     *
+     * @return string
      */
     public function render(): string {
-        $subtotal = $this->calculate_subtotal();
-        $total    = $this->calculate_total( $subtotal );
+        $classes = [ 'price-breakdown' ];
+        if ( ! empty( $this->config['class'] ) ) {
+            $classes[] = $this->config['class'];
+        }
 
         ob_start();
         ?>
-        <div class="<?php echo esc_attr( $this->config['class'] ); ?>">
-            <?php if ( ! empty( $this->items ) ) : ?>
-                <div class="breakdown-items">
-                    <table class="breakdown-table">
-                        <thead>
-                        <tr>
-                            <th class="item-name"><?php esc_html_e( 'Item', 'arraypress' ); ?></th>
-                            <?php if ( $this->config['show_quantities'] ) : ?>
-                                <th class="item-quantity"><?php esc_html_e( 'Qty', 'arraypress' ); ?></th>
-                                <th class="item-price"><?php esc_html_e( 'Price', 'arraypress' ); ?></th>
-                            <?php endif; ?>
-                            <th class="item-total"><?php esc_html_e( 'Total', 'arraypress' ); ?></th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <?php foreach ( $this->items as $item ) : ?>
-                            <?php echo $this->render_item( $item ); ?>
-                        <?php endforeach; ?>
-                        </tbody>
-                    </table>
+        <div id="<?php echo esc_attr( $this->config['id'] ); ?>"
+             class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>">
+
+            <?php if ( ! empty( $this->config['items'] ) ) : ?>
+                <div class="price-breakdown-items">
+                    <?php foreach ( $this->config['items'] as $item ) : ?>
+                        <?php $this->render_line_item( $item ); ?>
+                    <?php endforeach; ?>
                 </div>
             <?php endif; ?>
 
-            <div class="breakdown-summary">
-                <div class="summary-row subtotal">
-                    <span class="summary-label"><?php esc_html_e( 'Subtotal', 'arraypress' ); ?></span>
-                    <span class="summary-value"><?php echo $this->format_currency( $subtotal ); ?></span>
-                </div>
-
-                <?php foreach ( $this->adjustments as $adjustment ) : ?>
-                    <?php echo $this->render_adjustment( $adjustment, $subtotal ); ?>
-                <?php endforeach; ?>
-
-                <div class="summary-row total">
-                    <span class="summary-label"><?php esc_html_e( 'Total', 'arraypress' ); ?></span>
-                    <span class="summary-value"><?php echo $this->format_currency( $total ); ?></span>
-                </div>
+            <div class="price-breakdown-summary">
+                <?php $this->render_summary_lines(); ?>
             </div>
+
+            <?php if ( $this->config['total'] !== null ) : ?>
+                <div class="price-breakdown-total <?php echo $this->config['highlight_total'] ? 'highlighted' : ''; ?>">
+                    <span class="label"><?php esc_html_e( 'Total', 'arraypress' ); ?></span>
+                    <span class="amount"><?php echo $this->format_currency( $this->config['total'], $this->config['currency'] ); ?></span>
+                </div>
+            <?php endif; ?>
         </div>
         <?php
         return ob_get_clean();
@@ -176,105 +103,67 @@ class PriceBreakdown {
     /**
      * Render a line item
      *
-     * @param array $item Item data
-     *
-     * @return string Generated HTML
-     * @since 1.0.0
-     *
+     * @param array $item Item configuration
      */
-    private function render_item( array $item ): string {
-        $line_total = $item['price'] * $item['quantity'];
+    private function render_line_item( array $item ): void {
+        $label       = $item['label'] ?? '';
+        $amount      = $item['amount'] ?? 0;
+        $quantity    = $item['quantity'] ?? null;
+        $description = $item['description'] ?? '';
 
-        ob_start();
+        if ( empty( $label ) || ( ! $this->config['show_zero'] && $amount == 0 ) ) {
+            return;
+        }
         ?>
-        <tr class="breakdown-item">
-            <td class="item-name">
-                <?php echo esc_html( $item['name'] ); ?>
-                <?php if ( ! empty( $item['description'] ) ) : ?>
-                    <small class="item-description"><?php echo esc_html( $item['description'] ); ?></small>
+        <div class="price-breakdown-item">
+            <div class="item-details">
+                <span class="item-label"><?php echo esc_html( $label ); ?></span>
+                <?php if ( $quantity !== null ) : ?>
+                    <span class="item-quantity">× <?php echo esc_html( $quantity ); ?></span>
                 <?php endif; ?>
-            </td>
-            <?php if ( $this->config['show_quantities'] ) : ?>
-                <td class="item-quantity"><?php echo esc_html( $item['quantity'] ); ?></td>
-                <td class="item-price"><?php echo $this->format_currency( $item['price'] ); ?></td>
-            <?php endif; ?>
-            <td class="item-total"><?php echo $this->format_currency( $line_total ); ?></td>
-        </tr>
-        <?php
-        return ob_get_clean();
-    }
-
-    /**
-     * Render an adjustment
-     *
-     * @param array     $adjustment Adjustment data
-     * @param int|float $subtotal   Subtotal for percentage calculations
-     *
-     * @return string Generated HTML
-     * @since 1.0.0
-     *
-     */
-    private function render_adjustment( array $adjustment, $subtotal ): string {
-        $class = 'summary-row adjustment-' . $adjustment['type'];
-
-        ob_start();
-        ?>
-        <div class="<?php echo esc_attr( $class ); ?>">
-			<span class="summary-label">
-				<?php echo esc_html( $adjustment['label'] ); ?>
-                <?php if ( ! empty( $adjustment['percentage'] ) ) : ?>
-                    <small>(<?php echo esc_html( $adjustment['percentage'] ); ?>%)</small>
+                <?php if ( $description ) : ?>
+                    <span class="item-description"><?php echo esc_html( $description ); ?></span>
                 <?php endif; ?>
-			</span>
-            <span class="summary-value">
-				<?php if ( $adjustment['type'] === 'discount' && $adjustment['amount'] > 0 ) : ?>
-                    -<?php echo $this->format_currency( abs( $adjustment['amount'] ) ); ?>
-                <?php else : ?>
-                    <?php echo $this->format_currency( $adjustment['amount'] ); ?>
-                <?php endif; ?>
-			</span>
+            </div>
+            <span class="item-amount"><?php echo $this->format_currency( $amount, $this->config['currency'] ); ?></span>
         </div>
         <?php
-        return ob_get_clean();
     }
 
     /**
-     * Calculate subtotal
-     *
-     * @return int|float Subtotal (accepts both int cents and float dollars)
-     * @since 1.0.0
-     *
+     * Render summary lines (subtotal, tax, discount, shipping)
      */
-    private function calculate_subtotal() {
-        $subtotal = 0;
-        foreach ( $this->items as $item ) {
-            $subtotal += $item['price'] * $item['quantity'];
-        }
+    private function render_summary_lines(): void {
+        $lines = [
+                'subtotal' => __( 'Subtotal', 'arraypress' ),
+                'discount' => __( 'Discount', 'arraypress' ),
+                'shipping' => __( 'Shipping', 'arraypress' ),
+                'tax'      => __( 'Tax', 'arraypress' )
+        ];
 
-        return $subtotal;
-    }
-
-    /**
-     * Calculate total
-     *
-     * @param int|float $subtotal Subtotal
-     *
-     * @return int|float Total (accepts both int cents and float dollars)
-     * @since 1.0.0
-     *
-     */
-    private function calculate_total( $subtotal ) {
-        $total = $subtotal;
-
-        foreach ( $this->adjustments as $adjustment ) {
-            if ( $adjustment['type'] === 'discount' ) {
-                $total -= abs( $adjustment['amount'] );
-            } else {
-                $total += $adjustment['amount'];
+        foreach ( $lines as $key => $label ) {
+            if ( $this->config[ $key ] === null ) {
+                continue;
             }
-        }
 
-        return max( 0, $total );
+            $amount = $this->config[ $key ];
+            if ( ! $this->config['show_zero'] && $amount == 0 ) {
+                continue;
+            }
+
+            $class = 'price-breakdown-' . $key;
+            if ( $key === 'discount' && $amount > 0 ) {
+                $amount = - $amount; // Show discounts as negative
+            }
+            ?>
+            <div class="<?php echo esc_attr( $class ); ?>">
+                <span class="label"><?php echo esc_html( $label ); ?></span>
+                <span class="amount <?php echo $amount < 0 ? 'negative' : ''; ?>">
+					<?php echo $this->format_currency( $amount, $this->config['currency'] ); ?>
+				</span>
+            </div>
+            <?php
+        }
     }
 
 }

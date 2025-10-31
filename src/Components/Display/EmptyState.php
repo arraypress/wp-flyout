@@ -1,15 +1,13 @@
 <?php
 /**
- * Empty State Component
+ * EmptyState Component
  *
- * Displays helpful empty state messages with optional actions for
- * empty tabs, missing data, or zero results.
+ * Displays helpful empty state messages with optional actions.
  *
- * @package     ArrayPress\WPFlyout\Components
+ * @package     ArrayPress\WPFlyout\Components\Display
  * @copyright   Copyright (c) 2025, ArrayPress Limited
  * @license     GPL2+
- * @version     1.0.0
- * @author      David Sherlock
+ * @version     2.0.0
  */
 
 declare( strict_types=1 );
@@ -17,115 +15,54 @@ declare( strict_types=1 );
 namespace ArrayPress\WPFlyout\Components\Display;
 
 use ArrayPress\WPFlyout\Traits\Renderable;
+use ArrayPress\WPFlyout\Traits\HtmlAttributes;
 
-/**
- * Class EmptyState
- *
- * Renders empty state messages with icons and optional actions.
- */
 class EmptyState {
     use Renderable;
+    use HtmlAttributes;
 
     /**
-     * Empty state configuration
+     * Component configuration
      *
      * @var array
      */
-    private array $config = [
+    private array $config;
+
+    /**
+     * Default configuration
+     *
+     * @var array
+     */
+    private const DEFAULTS = [
+            'id'           => '',
             'icon'         => 'admin-page',
             'title'        => '',
             'description'  => '',
             'action_text'  => '',
             'action_url'   => '',
             'action_class' => 'button',
+            'action_attrs' => [],
             'class'        => ''
     ];
 
     /**
      * Constructor
      *
-     * @param string $title  Title text
-     * @param array  $config Optional configuration
+     * @param array $config Configuration options
      */
-    public function __construct( string $title, array $config = [] ) {
-        $this->config          = array_merge( $this->config, $config );
-        $this->config['title'] = $title;
+    public function __construct( array $config = [] ) {
+        $this->config = wp_parse_args( $config, self::DEFAULTS );
+
+        // Auto-generate ID if not provided
+        if ( empty( $this->config['id'] ) ) {
+            $this->config['id'] = 'empty-state-' . wp_generate_uuid4();
+        }
     }
 
     /**
-     * Create a "no data" empty state
+     * Render the component
      *
-     * @param string $description Optional description
-     *
-     * @return self
-     */
-    public static function no_data( string $description = '' ): self {
-        return new self(
-                __( 'No Data Available', 'arraypress' ),
-                [
-                        'icon'        => 'chart-bar',
-                        'description' => $description ?: __( 'There is no data to display at this time.', 'arraypress' )
-                ]
-        );
-    }
-
-    /**
-     * Create a "no files" empty state
-     *
-     * @param string $action_text Text for add action
-     *
-     * @return self
-     */
-    public static function no_files( string $action_text = '' ): self {
-        return new self(
-                __( 'No Files', 'arraypress' ),
-                [
-                        'icon'         => 'media-document',
-                        'description'  => __( 'No files have been added yet.', 'arraypress' ),
-                        'action_text'  => $action_text ?: __( 'Add File', 'arraypress' ),
-                        'action_class' => 'button add-file-trigger'
-                ]
-        );
-    }
-
-    /**
-     * Create a "no results" empty state
-     *
-     * @param string $description Optional description
-     *
-     * @return self
-     */
-    public static function no_results( string $description = '' ): self {
-        return new self(
-                __( 'No Results Found', 'arraypress' ),
-                [
-                        'icon'        => 'search',
-                        'description' => $description ?: __( 'Try adjusting your search or filter criteria.', 'arraypress' )
-                ]
-        );
-    }
-
-    /**
-     * Create a "no items" empty state
-     *
-     * @param string $description Optional description
-     *
-     * @return self
-     */
-    public static function no_items( string $description = '' ): self {
-        return new self(
-                __( 'No Items Found', 'arraypress' ),
-                [
-                        'icon'        => 'admin-page',
-                        'description' => $description ?: __( 'No items to display.', 'arraypress' )
-                ]
-        );
-    }
-
-    /**
-     * Render the empty state
-     *
-     * @return string Generated HTML
+     * @return string
      */
     public function render(): string {
         $classes = [ 'wp-flyout-empty-state' ];
@@ -135,28 +72,23 @@ class EmptyState {
 
         ob_start();
         ?>
-        <div class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>">
-            <?php if ( $this->config['icon'] ): ?>
+        <div id="<?php echo esc_attr( $this->config['id'] ); ?>"
+             class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>">
+
+            <?php if ( $this->config['icon'] ) : ?>
                 <span class="empty-state-icon dashicons dashicons-<?php echo esc_attr( $this->config['icon'] ); ?>"></span>
             <?php endif; ?>
 
-            <h3 class="empty-state-title"><?php echo esc_html( $this->config['title'] ); ?></h3>
+            <?php if ( $this->config['title'] ) : ?>
+                <h3 class="empty-state-title"><?php echo esc_html( $this->config['title'] ); ?></h3>
+            <?php endif; ?>
 
-            <?php if ( $this->config['description'] ): ?>
+            <?php if ( $this->config['description'] ) : ?>
                 <p class="empty-state-description"><?php echo esc_html( $this->config['description'] ); ?></p>
             <?php endif; ?>
 
-            <?php if ( $this->config['action_text'] ): ?>
-                <?php if ( $this->config['action_url'] ): ?>
-                    <a href="<?php echo esc_url( $this->config['action_url'] ); ?>"
-                       class="<?php echo esc_attr( $this->config['action_class'] ); ?>">
-                        <?php echo esc_html( $this->config['action_text'] ); ?>
-                    </a>
-                <?php else: ?>
-                    <button type="button" class="<?php echo esc_attr( $this->config['action_class'] ); ?>">
-                        <?php echo esc_html( $this->config['action_text'] ); ?>
-                    </button>
-                <?php endif; ?>
+            <?php if ( $this->config['action_text'] ) : ?>
+                <?php $this->render_action(); ?>
             <?php endif; ?>
         </div>
         <?php
@@ -164,16 +96,28 @@ class EmptyState {
     }
 
     /**
-     * Quick render of empty state
-     *
-     * @param string $title       Title text
-     * @param string $description Optional description
-     *
-     * @return string Rendered HTML
-     * @since 1.0.0
+     * Render the action button/link
      */
-    public static function quick( string $title, string $description = '' ): string {
-        return ( new self( $title, [ 'description' => $description ] ) )->render();
+    private function render_action(): void {
+        $attrs = $this->config['action_attrs'];
+
+        if ( $this->config['action_url'] ) {
+            ?>
+            <a href="<?php echo esc_url( $this->config['action_url'] ); ?>"
+               class="<?php echo esc_attr( $this->config['action_class'] ); ?>"
+                    <?php echo $this->build_attributes( $attrs ); ?>>
+                <?php echo esc_html( $this->config['action_text'] ); ?>
+            </a>
+            <?php
+        } else {
+            ?>
+            <button type="button"
+                    class="<?php echo esc_attr( $this->config['action_class'] ); ?>"
+                    <?php echo $this->build_attributes( $attrs ); ?>>
+                <?php echo esc_html( $this->config['action_text'] ); ?>
+            </button>
+            <?php
+        }
     }
 
 }

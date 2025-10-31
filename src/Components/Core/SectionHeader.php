@@ -1,14 +1,13 @@
 <?php
 /**
- * Section Header Component
+ * SectionHeader Component
  *
- * Creates consistent section headers with titles and descriptions.
+ * Creates section headers with optional descriptions and actions.
  *
  * @package     ArrayPress\WPFlyout\Components\Core
  * @copyright   Copyright (c) 2025, ArrayPress Limited
  * @license     GPL2+
- * @version     1.0.0
- * @author      David Sherlock
+ * @version     2.0.0
  */
 
 declare( strict_types=1 );
@@ -17,125 +16,119 @@ namespace ArrayPress\WPFlyout\Components\Core;
 
 use ArrayPress\WPFlyout\Traits\Renderable;
 
-/**
- * Class SectionHeader
- *
- * Renders section headers with consistent styling.
- *
- * @since 1.0.0
- */
 class SectionHeader {
     use Renderable;
 
     /**
-     * Section title
+     * Component configuration
      *
-     * @since 1.0.0
-     * @var string
-     */
-    private string $title;
-
-    /**
-     * Section configuration
-     *
-     * @since 1.0.0
      * @var array
      */
-    private array $config = [
+    private array $config;
+
+    /**
+     * Default configuration
+     *
+     * @var array
+     */
+    private const DEFAULTS = [
+            'id'          => '',
+            'title'       => '',
             'description' => '',
-            'icon'        => null,
-            'tag'         => 'h3',
-            'class'       => 'wp-flyout-section-header',
+            'icon'        => '',
+            'tag'         => 'h2',
+            'border'      => true,
+            'actions'     => [],
+            'class'       => ''
     ];
 
     /**
      * Constructor
      *
-     * @param string $title  Section title.
-     * @param array  $config Optional configuration.
-     *
-     * @since 1.0.0
+     * @param array $config Configuration options
      */
-    public function __construct( string $title, array $config = [] ) {
-        $this->title  = $title;
-        $this->config = array_merge( $this->config, $config );
+    public function __construct( array $config = [] ) {
+        $this->config = wp_parse_args( $config, self::DEFAULTS );
+
+        // Auto-generate ID if not provided
+        if ( empty( $this->config['id'] ) ) {
+            $this->config['id'] = 'section-header-' . wp_generate_uuid4();
+        }
     }
 
     /**
-     * Create a standard section header
+     * Render the component
      *
-     * @param string      $title       Section title.
-     * @param string      $description Optional description.
-     * @param string|null $icon        Optional dashicon.
-     *
-     * @return self
-     * @since 1.0.0
-     */
-    public static function create( string $title, string $description = '', ?string $icon = null ): self {
-        return new self( $title, [
-                'description' => $description,
-                'icon'        => $icon,
-        ] );
-    }
-
-    /**
-     * Create a heading with emphasized value
-     *
-     * @param string $label Label text.
-     * @param string $value Value to emphasize.
-     * @param string $tag   HTML tag.
-     *
-     * @return string Generated HTML.
-     * @since 1.0.0
-     */
-    public static function with_value( string $label, string $value, string $tag = 'p' ): string {
-        return sprintf(
-                '<%1$s class="wp-flyout-label-value">%2$s: <strong>%3$s</strong></%1$s>',
-                esc_attr( $tag ),
-                esc_html( $label ),
-                esc_html( $value )
-        );
-    }
-
-    /**
-     * Quick render of section header
-     *
-     * @param string      $title       Section title.
-     * @param string      $description Optional description.
-     * @param string|null $icon        Optional icon.
-     *
-     * @return string Rendered HTML.
-     * @since 1.0.0
-     */
-    public static function quick( string $title, string $description = '', ?string $icon = null ): string {
-        return self::create( $title, $description, $icon )->render();
-    }
-
-    /**
-     * Render the section header
-     *
-     * @return string Generated HTML.
-     * @since 1.0.0
+     * @return string
      */
     public function render(): string {
-        $tag = $this->config['tag'];
+        if ( empty( $this->config['title'] ) ) {
+            return '';
+        }
+
+        $classes = [ 'wp-flyout-section-header' ];
+
+        if ( $this->config['border'] ) {
+            $classes[] = 'has-border';
+        }
+
+        if ( ! empty( $this->config['class'] ) ) {
+            $classes[] = $this->config['class'];
+        }
 
         ob_start();
         ?>
-    <div class="<?php echo esc_attr( $this->config['class'] ); ?>">
-        <<?php echo $tag; ?> class="section-title">
-        <?php if ( $this->config['icon'] ) : ?>
-            <span class="dashicons dashicons-<?php echo esc_attr( $this->config['icon'] ); ?>"></span>
-        <?php endif; ?>
-        <?php echo esc_html( $this->title ); ?>
-        </<?php echo $tag; ?>>
+        <div id="<?php echo esc_attr( $this->config['id'] ); ?>"
+             class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>">
+            <div class="section-header-main">
+                <<?php echo esc_html( $this->config['tag'] ); ?> class="section-header-title">
+                <?php if ( $this->config['icon'] ) : ?>
+                    <span class="dashicons dashicons-<?php echo esc_attr( $this->config['icon'] ); ?>"></span>
+                <?php endif; ?>
+                <?php echo esc_html( $this->config['title'] ); ?>
+            </<?php echo esc_html( $this->config['tag'] ); ?>>
+
+            <?php if ( ! empty( $this->config['actions'] ) ) : ?>
+                <div class="section-header-actions">
+                    <?php foreach ( $this->config['actions'] as $action ) : ?>
+                        <?php $this->render_action( $action ); ?>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+        </div>
 
         <?php if ( $this->config['description'] ) : ?>
-            <p class="description"><?php echo esc_html( $this->config['description'] ); ?></p>
+            <p class="section-header-description">
+                <?php echo esc_html( $this->config['description'] ); ?>
+            </p>
         <?php endif; ?>
         </div>
         <?php
         return ob_get_clean();
+    }
+
+    /**
+     * Render an action button/link
+     *
+     * @param array $action Action configuration
+     */
+    private function render_action( array $action ): void {
+        $label = $action['label'] ?? '';
+        $url   = $action['url'] ?? '#';
+        $class = $action['class'] ?? 'button-link';
+        $icon  = $action['icon'] ?? '';
+
+        if ( empty( $label ) ) {
+            return;
+        }
+        ?>
+        <a href="<?php echo esc_url( $url ); ?>" class="<?php echo esc_attr( $class ); ?>">
+            <?php if ( $icon ) : ?>
+                <span class="dashicons dashicons-<?php echo esc_attr( $icon ); ?>"></span>
+            <?php endif; ?>
+            <?php echo esc_html( $label ); ?>
+        </a>
+        <?php
     }
 
 }
