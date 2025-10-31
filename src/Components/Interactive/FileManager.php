@@ -82,7 +82,7 @@ class FileManager {
         <div id="<?php echo esc_attr( $this->config['id'] ); ?>"
              class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>"
              data-prefix="<?php echo esc_attr( $this->config['name'] ); ?>"
-             data-template="<?php echo esc_attr( $this->get_template() ); ?>">
+             data-template='<?php echo $this->get_template(); ?>'>
 
             <div class="file-manager-list"
                  data-sortable="<?php echo $this->config['reorderable'] ? 'true' : 'false'; ?>">
@@ -98,6 +98,7 @@ class FileManager {
             <?php if ( $this->config['max_files'] === 0 || count( $this->config['files'] ) < $this->config['max_files'] ) : ?>
                 <div class="file-manager-actions">
                     <button type="button" class="button" data-action="add">
+                        <span class="dashicons dashicons-plus-alt2"></span>
                         <?php echo esc_html( $this->config['add_text'] ); ?>
                     </button>
                 </div>
@@ -117,7 +118,7 @@ class FileManager {
         ?>
         <div class="file-manager-item" data-index="<?php echo $index; ?>">
             <?php if ( $this->config['reorderable'] ) : ?>
-                <span class="file-handle dashicons dashicons-move"></span>
+                <span class="file-handle dashicons dashicons-menu-alt2" title="Drag to reorder"></span>
             <?php endif; ?>
 
             <div class="file-fields">
@@ -143,13 +144,19 @@ class FileManager {
 
             <div class="file-actions">
                 <?php if ( $this->config['browseable'] ) : ?>
-                    <button type="button" class="button" data-action="browse">
-                        <?php echo esc_html( $this->config['browse_text'] ); ?>
+                    <button type="button"
+                            class="button-link file-browse"
+                            data-action="browse"
+                            title="Browse Media Library">
+                        <span class="dashicons dashicons-admin-media"></span>
                     </button>
                 <?php endif; ?>
 
                 <?php if ( $this->config['removable'] ) : ?>
-                    <button type="button" class="button-link" data-action="remove">
+                    <button type="button"
+                            class="button-link file-remove"
+                            data-action="remove"
+                            title="Remove File">
                         <span class="dashicons dashicons-trash"></span>
                     </button>
                 <?php endif; ?>
@@ -168,53 +175,46 @@ class FileManager {
     /**
      * Get item template for JavaScript
      *
+     * IMPORTANT: This returns raw HTML for JavaScript template usage
+     * Do not escape the output - it needs to be valid HTML
+     *
      * @return string
      */
     private function get_template(): string {
         ob_start();
         ?>
         <div class="file-manager-item" data-index="{{index}}">
-            <?php if ( $this->config['reorderable'] ) : ?>
-                <span class="file-handle dashicons dashicons-move"></span>
-            <?php endif; ?>
-
-            <div class="file-fields">
-                <input type="text"
-                       name="<?php echo esc_attr( $this->config['name'] ); ?>[{{index}}][name]"
-                       value=""
-                       placeholder="File name"
-                       data-field="name"
-                       class="regular-text">
-
-                <input type="url"
-                       name="<?php echo esc_attr( $this->config['name'] ); ?>[{{index}}][url]"
-                       value=""
-                       placeholder="File URL"
-                       data-field="url"
-                       class="regular-text">
-
-                <input type="hidden"
-                       name="<?php echo esc_attr( $this->config['name'] ); ?>[{{index}}][id]"
-                       value=""
-                       data-field="id">
-            </div>
-
-            <div class="file-actions">
-                <?php if ( $this->config['browseable'] ) : ?>
-                    <button type="button" class="button" data-action="browse">
-                        <?php echo esc_html( $this->config['browse_text'] ); ?>
-                    </button>
-                <?php endif; ?>
-
-                <?php if ( $this->config['removable'] ) : ?>
-                    <button type="button" class="button-link" data-action="remove">
-                        <span class="dashicons dashicons-trash"></span>
-                    </button>
-                <?php endif; ?>
-            </div>
+        <?php if ( $this->config['reorderable'] ) : ?>
+            <span class="file-handle dashicons dashicons-menu-alt2" title="Drag to reorder"></span>
+        <?php endif; ?>
+        <div class="file-fields">
+            <input type="text" name="<?php echo esc_attr( $this->config['name'] ); ?>[{{index}}][name]" value=""
+                   placeholder="File name" data-field="name" class="regular-text">
+            <input type="url" name="<?php echo esc_attr( $this->config['name'] ); ?>[{{index}}][url]" value=""
+                   placeholder="File URL" data-field="url" class="regular-text">
+            <input type="hidden" name="<?php echo esc_attr( $this->config['name'] ); ?>[{{index}}][id]" value=""
+                   data-field="id">
         </div>
-        <?php
-        return ob_get_clean();
+        <div class="file-actions">
+            <?php if ( $this->config['browseable'] ) : ?>
+                <button type="button" class="button-link file-browse" data-action="browse" title="Browse Media Library">
+                    <span class="dashicons dashicons-admin-media"></span>
+                </button>
+            <?php endif; ?>
+            <?php if ( $this->config['removable'] ) : ?>
+                <button type="button" class="button-link file-remove" data-action="remove" title="Remove File">
+                    <span class="dashicons dashicons-trash"></span>
+                </button>
+            <?php endif; ?>
+        </div>
+        </div><?php
+        $html = ob_get_clean();
+
+        // Remove newlines and excess whitespace but keep the HTML structure intact
+        $html = str_replace( array( "\r", "\n", "\t" ), '', $html );
+        $html = preg_replace( '/>\s+</', '><', $html );
+
+        return trim( $html );
     }
 
 }

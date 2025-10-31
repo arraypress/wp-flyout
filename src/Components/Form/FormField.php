@@ -512,28 +512,29 @@ class FormField {
                     data-autocomplete="<?php echo esc_attr( wp_json_encode( $this->config['autocomplete'] ) ); ?>"
                 <?php endif; ?>>
 
-            <div class="tag-input-container"> <!-- CHANGED: was tags-container -->
+            <div class="tag-input-container">
                 <?php foreach ( $value as $tag ) : ?>
-                    <span class="tag-item" data-tag="<?php echo esc_attr( $tag ); ?>"> <!-- ADDED: data-tag attribute -->
+                    <span class="tag-item" data-tag="<?php echo esc_attr( $tag ); ?>">
                     <span class="tag-text"><?php echo esc_html( $tag ); ?></span>
                     <?php if ( ! $this->config['readonly'] ) : ?>
-                        <button type="button" class="tag-remove">
+                        <button type="button" class="tag-remove" aria-label="Remove tag">
                             <span class="dashicons dashicons-no-alt"></span>
                         </button>
                     <?php endif; ?>
                 </span>
                 <?php endforeach; ?>
 
-                <input type="text" class="tag-input-field" <!-- CHANGED: was tag-input -->
-                placeholder="<?php echo esc_attr( $this->config['placeholder'] ); ?>"
-                <?php echo $this->config['readonly'] ? 'readonly' : ''; ?>>
+                <input type="text"
+                       class="tag-input-field"
+                       placeholder="<?php echo esc_attr( $this->config['placeholder'] ); ?>"
+                        <?php echo $this->config['readonly'] ? 'readonly' : ''; ?>>
             </div>
 
             <?php foreach ( $value as $tag ) : ?>
                 <input type="hidden"
                        name="<?php echo esc_attr( $this->config['name'] ); ?>[]"
                        value="<?php echo esc_attr( $tag ); ?>"
-                       data-tag-value> <!-- ADDED: data-tag-value attribute -->
+                       data-tag-value>
             <?php endforeach; ?>
         </div>
         <?php
