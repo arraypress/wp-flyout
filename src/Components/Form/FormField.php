@@ -461,7 +461,7 @@ class FormField {
         $nonce = wp_create_nonce( 'ajax_select_' . $this->config['endpoint'] );
 
         $data_attrs = [
-                'endpoint'    => $this->config['endpoint'],
+                'ajax'        => $this->config['endpoint'],  // CHANGED: 'endpoint' to 'ajax'
                 'placeholder' => $this->config['placeholder'],
                 'min-length'  => $this->config['min_length'],
                 'delay'       => $this->config['delay'],
@@ -500,10 +500,9 @@ class FormField {
      */
     private function render_tags(): string {
         $value = is_array( $this->config['value'] ) ? $this->config['value'] : [];
-
         ob_start();
         ?>
-        <div class="wp-flyout-tags-input"
+        <div class="wp-flyout-tag-input"
              data-name="<?php echo esc_attr( $this->config['name'] ); ?>"
              data-max-tags="<?php echo esc_attr( (string) $this->config['max_tags'] ); ?>"
              data-min-tags="<?php echo esc_attr( (string) $this->config['min_tags'] ); ?>"
@@ -513,27 +512,28 @@ class FormField {
                     data-autocomplete="<?php echo esc_attr( wp_json_encode( $this->config['autocomplete'] ) ); ?>"
                 <?php endif; ?>>
 
-            <div class="tags-container">
+            <div class="tag-input-container"> <!-- CHANGED: was tags-container -->
                 <?php foreach ( $value as $tag ) : ?>
-                    <span class="tag-item">
-                        <span class="tag-text"><?php echo esc_html( $tag ); ?></span>
-                        <?php if ( ! $this->config['readonly'] ) : ?>
-                            <button type="button" class="tag-remove">
-                                <span class="dashicons dashicons-no-alt"></span>
-                            </button>
-                        <?php endif; ?>
-                    </span>
+                    <span class="tag-item" data-tag="<?php echo esc_attr( $tag ); ?>"> <!-- ADDED: data-tag attribute -->
+                    <span class="tag-text"><?php echo esc_html( $tag ); ?></span>
+                    <?php if ( ! $this->config['readonly'] ) : ?>
+                        <button type="button" class="tag-remove">
+                            <span class="dashicons dashicons-no-alt"></span>
+                        </button>
+                    <?php endif; ?>
+                </span>
                 <?php endforeach; ?>
 
-                <input type="text" class="tag-input"
-                       placeholder="<?php echo esc_attr( $this->config['placeholder'] ); ?>"
-                        <?php echo $this->config['readonly'] ? 'readonly' : ''; ?>>
+                <input type="text" class="tag-input-field" <!-- CHANGED: was tag-input -->
+                placeholder="<?php echo esc_attr( $this->config['placeholder'] ); ?>"
+                <?php echo $this->config['readonly'] ? 'readonly' : ''; ?>>
             </div>
 
             <?php foreach ( $value as $tag ) : ?>
                 <input type="hidden"
                        name="<?php echo esc_attr( $this->config['name'] ); ?>[]"
-                       value="<?php echo esc_attr( $tag ); ?>">
+                       value="<?php echo esc_attr( $tag ); ?>"
+                       data-tag-value> <!-- ADDED: data-tag-value attribute -->
             <?php endforeach; ?>
         </div>
         <?php
@@ -633,13 +633,14 @@ class FormField {
      * @return string Generated HTML.
      */
     private function render_separator(): string {
-        $separator = new Separator([
+        $separator = new Separator( [
                 'text'   => $this->config['text'] ?? '',
                 'icon'   => $this->config['icon'] ?? '',
                 'margin' => $this->config['margin'] ?? '20px',
                 'style'  => $this->config['style'] ?? 'line',
                 'align'  => $this->config['align'] ?? 'center'
-        ]);
+        ] );
+
         return $separator->render();
     }
 
