@@ -928,4 +928,5 @@ class Manager {
 	public function get_prefix(): string {
 		return $this->prefix;
 	}
+
 }

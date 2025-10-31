@@ -216,11 +216,15 @@
     color: #1e1e1e;
 }
 
+.wp-flyout-toggle .toggle-label {
+    display: inline-flex;
+}
+
 /* Color input wrapper */
-.wp-flyout-color-input-wrapper {
+.wp-flyout-color-wrapper {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
 }
 
 /* Color input itself */
@@ -228,24 +232,24 @@
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
-    width: 50px;
-    height: 40px;
-    border: 1px solid #8c8f94;
-    border-radius: 4px;
-    padding: 2px;
+    width: 60px;
+    height: 42px;
+    border: 2px solid #dcdcde;
+    border-radius: 6px;
+    padding: 3px;
     cursor: pointer;
     background: #fff;
     transition: border-color 0.15s;
 }
 
 .wp-flyout-color-input:hover {
-    border-color: #646970;
+    border-color: #949494;
 }
 
 .wp-flyout-color-input:focus {
     border-color: var(--wp-flyout-primary);
     box-shadow: 0 0 0 1px var(--wp-flyout-primary);
-    outline: 2px solid transparent;
+    outline: none;
 }
 
 /* Remove the color swatch styling on webkit browsers */
@@ -255,26 +259,40 @@
 
 .wp-flyout-color-input::-webkit-color-swatch {
     border: none;
-    border-radius: 2px;
+    border-radius: 3px;
 }
 
 /* Firefox */
 .wp-flyout-color-input::-moz-color-swatch {
     border: none;
-    border-radius: 2px;
+    border-radius: 3px;
 }
 
 /* Color preview text input */
 .wp-flyout-color-preview {
-    font-family: Consolas, Monaco, 'Courier New', monospace;
-    font-size: 13px;
+    flex: 1;
+    max-width: 150px;
+    font-family: 'SF Mono', Consolas, Monaco, monospace;
+    font-size: 14px;
+    font-weight: 500;
     text-align: center;
     text-transform: uppercase;
-    padding: 8px;
-    border: 1px solid #8c8f94;
+    padding: 10px 12px;
+    border: 1px solid #dcdcde;
     border-radius: 4px;
     background: #fff;
     color: #1e1e1e;
+}
+
+/* Disabled state */
+.wp-flyout-color-input:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.wp-flyout-color-input:disabled + .wp-flyout-color-preview {
+    background: #f6f7f7;
+    color: #8c8f94;
 }
 
 /* Disabled state */
