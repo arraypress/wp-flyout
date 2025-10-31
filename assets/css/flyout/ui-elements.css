@@ -3,42 +3,6 @@
  * Badges, buttons, notices, and other UI components.
  */
 
-/* Badge Component */
-.wp-flyout-badge {
-    display: inline-block;
-    padding: 4px 10px;
-    border-radius: 3px;
-    font-size: 12px;
-    font-weight: 500;
-    line-height: 1;
-    white-space: nowrap;
-}
-
-.wp-flyout-badge-default {
-    background: #f0f0f1;
-    color: var(--wp-flyout-text);
-}
-
-.wp-flyout-badge-success {
-    background: #d4f4dd;
-    color: #007017;
-}
-
-.wp-flyout-badge-warning {
-    background: #fcf9e8;
-    color: #8a6116;
-}
-
-.wp-flyout-badge-error {
-    background: #facfd2;
-    color: #8a2424;
-}
-
-.wp-flyout-badge-info {
-    background: #e0f2ff;
-    color: #0a4b78;
-}
-
 /* Action Bar Component */
 .wp-flyout-actions {
     display: flex;

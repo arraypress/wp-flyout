@@ -25,8 +25,6 @@ class Assets {
 		'css/flyout/ui-elements.css',
 		'css/flyout/data-display.css',
 		'css/flyout/alert.css',
-		'css/flyout/separator.css',
-		'css/flyout/field-group.css'
 	];
 
 	/**
@@ -141,11 +139,6 @@ class Assets {
 		'accordion'       => [
 			'script' => 'js/components/accordion.js',
 			'style'  => 'css/components/accordion.css',
-			'deps'   => []
-		],
-		'separator'       => [
-			'script' => '',
-			'style'  => 'css/components/separator.css',
 			'deps'   => []
 		],
 

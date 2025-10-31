@@ -1,18 +1,16 @@
 /**
  * WP Flyout Form Components
- * Modern form fields with improved toggle design
+ * Form fields, validation states, and related form elements.
  */
 
+/* CSS Variables */
 :root {
     --wp-flyout-primary: #2271b1;
-    --wp-flyout-primary-hover: #1e5a8e;
-    --wp-flyout-success: #00a32a;
     --wp-flyout-error: #d63638;
     --wp-flyout-text: #1e1e1e;
     --wp-flyout-text-muted: #646970;
     --wp-flyout-text-secondary: #8c8f94;
     --wp-flyout-border: #dcdcde;
-    --wp-flyout-bg: #f6f7f7;
 }
 
 /* Form Field Component */
@@ -22,10 +20,10 @@
 
 .wp-flyout-field label {
     display: block;
-    margin-bottom: 8px;
+    margin-bottom: 5px;
     font-weight: 600;
     color: var(--wp-flyout-text);
-    font-size: 14px;
+    font-size: 13px;
 }
 
 .wp-flyout-field .required {
@@ -43,18 +41,12 @@
 .wp-flyout-field textarea,
 .wp-flyout-field select {
     width: 100%;
-    padding: 10px 12px;
-    border: 1px solid var(--wp-flyout-border);
+    padding: 8px;
+    border: 1px solid #8c8f94;
     border-radius: 4px;
     font-size: 14px;
     background: #fff;
-    transition: all 0.2s;
-}
-
-.wp-flyout-field input:hover,
-.wp-flyout-field textarea:hover,
-.wp-flyout-field select:hover {
-    border-color: #949494;
+    transition: border-color 0.15s;
 }
 
 .wp-flyout-field input:focus,
@@ -62,236 +54,67 @@
 .wp-flyout-field select:focus {
     border-color: var(--wp-flyout-primary);
     box-shadow: 0 0 0 1px var(--wp-flyout-primary);
-    outline: none;
+    outline: 2px solid transparent;
 }
 
 .wp-flyout-field textarea {
     resize: vertical;
-    min-height: 100px;
+    min-height: 80px;
+}
+
+.wp-flyout-field select {
+    max-width: none;
 }
 
 .wp-flyout-field .description {
-    margin-top: 6px;
+    margin-top: 5px;
     font-size: 13px;
     font-style: italic;
     color: var(--wp-flyout-text-muted);
 }
 
-/* Modern Toggle Switch */
-.wp-flyout-toggle-wrapper {
-    margin-bottom: 20px;
-}
-
-.wp-flyout-toggle {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    cursor: pointer;
-    user-select: none;
-    padding: 5px 0;
-}
-
-.wp-flyout-toggle input[type="checkbox"] {
-    position: absolute;
-    opacity: 0;
-    pointer-events: none;
-}
-
-/* Updated toggle slider design */
-.wp-flyout-toggle .toggle-slider {
-    position: relative;
-    width: 48px;
-    height: 26px;
-    background: #ccd0d4;
-    border-radius: 13px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    margin-right: 12px;
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.wp-flyout-toggle .toggle-slider::before {
-    content: "";
-    position: absolute;
-    width: 22px;
-    height: 22px;
-    left: 2px;
-    top: 2px;
-    background: #fff;
-    border-radius: 50%;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-/* Checked state */
-.wp-flyout-toggle input:checked + .toggle-slider {
-    background: var(--wp-flyout-primary);
-}
-
-.wp-flyout-toggle input:checked + .toggle-slider::before {
-    transform: translateX(22px);
-}
-
-/* Focus state */
-.wp-flyout-toggle input:focus + .toggle-slider {
-    box-shadow: 0 0 0 2px rgba(34, 113, 177, 0.25), inset 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-/* Hover state */
-.wp-flyout-toggle:hover .toggle-slider {
-    background: #b4b9be;
-}
-
-.wp-flyout-toggle:hover input:checked + .toggle-slider {
-    background: var(--wp-flyout-primary-hover);
-}
-
-/* Disabled state */
-.wp-flyout-toggle.disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-
-.wp-flyout-toggle.disabled .toggle-slider {
-    background: #e2e4e7;
-}
-
-.wp-flyout-toggle .toggle-label {
-    font-size: 14px;
-    color: var(--wp-flyout-text);
-    font-weight: 500;
-}
-
-.wp-flyout-toggle-wrapper .toggle-description {
-    font-size: 13px;
-    color: var(--wp-flyout-text-muted);
-    margin: 8px 0 0 60px;
-    font-style: italic;
-    line-height: 1.5;
-}
-
-/* Color picker improvements */
-.wp-flyout-color-input-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.wp-flyout-color-input {
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-    width: 60px;
-    height: 42px;
-    border: 2px solid var(--wp-flyout-border);
-    border-radius: 6px;
-    padding: 3px;
-    cursor: pointer;
-    background: #fff;
-    transition: all 0.2s;
-}
-
-.wp-flyout-color-input:hover {
-    border-color: #949494;
-}
-
-.wp-flyout-color-input:focus {
-    border-color: var(--wp-flyout-primary);
-    box-shadow: 0 0 0 1px var(--wp-flyout-primary);
-    outline: none;
-}
-
-.wp-flyout-color-input::-webkit-color-swatch-wrapper {
-    padding: 0;
-}
-
-.wp-flyout-color-input::-webkit-color-swatch {
-    border: none;
-    border-radius: 3px;
-}
-
-.wp-flyout-color-input::-moz-color-swatch {
-    border: none;
-    border-radius: 3px;
-}
-
-.wp-flyout-color-preview {
-    flex: 1;
-    max-width: 150px;
-    font-family: 'SF Mono', Consolas, Monaco, monospace;
-    font-size: 14px;
-    font-weight: 500;
-    text-align: center;
-    text-transform: uppercase;
-    padding: 10px 12px;
-    border: 1px solid var(--wp-flyout-border);
-    border-radius: 4px;
-    background: #fff;
-    color: var(--wp-flyout-text);
-}
-
-/* Field Groups and Flex Layout */
+/* Field Groups */
 .wp-flyout-field-group {
-    display: flex;
-    gap: 15px;
     margin-bottom: 20px;
 }
 
 .wp-flyout-field-group .field-group-item {
-    flex: 1;
-    min-width: 0;
+    display: flex;
+    flex-direction: column;
 }
 
 .wp-flyout-field-group .wp-flyout-field {
     margin-bottom: 0;
-}
-
-/* Flex row component */
-.wp-flyout-flex-row {
-    display: flex;
-    gap: 15px;
-    margin-bottom: 20px;
-}
-
-.wp-flyout-flex-row .flex-item {
-    min-width: 0;
-}
-
-.wp-flyout-flex-row .flex-spacer {
-    visibility: hidden;
+    width: 100%;
 }
 
 /* Separator Component */
 .wp-flyout-separator {
-    display: flex;
-    align-items: center;
-    margin: 25px 0;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--wp-flyout-text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    border: 0;
+    border-top: 1px solid #dcdcde;
+    margin: 20px 0;
 }
 
-.wp-flyout-separator::before,
-.wp-flyout-separator::after {
+.wp-flyout-separator.has-text {
+    display: flex;
+    align-items: center;
+    border: 0;
+    text-align: center;
+}
+
+.wp-flyout-separator.has-text::before,
+.wp-flyout-separator.has-text::after {
     content: '';
     flex: 1;
-    height: 1px;
-    background: var(--wp-flyout-border);
+    border-top: 1px solid #dcdcde;
 }
 
-.wp-flyout-separator.with-text::before {
-    margin-right: 15px;
-}
-
-.wp-flyout-separator.with-text::after {
-    margin-left: 15px;
-}
-
-.wp-flyout-separator .separator-text {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+.wp-flyout-separator.has-text .separator-text {
+    padding: 0 15px;
+    color: #646970;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .wp-flyout-separator .dashicons {
@@ -300,17 +123,264 @@
     height: 16px;
 }
 
-/* Radio buttons with modern style */
+/* Validation States */
+.wp-flyout-field.has-error label {
+    color: #d63638;
+}
+
+.wp-flyout-field.has-error input,
+.wp-flyout-field.has-error select,
+.wp-flyout-field.has-error textarea {
+    border-color: #d63638;
+}
+
+.wp-flyout-field.has-error input:focus,
+.wp-flyout-field.has-error select:focus,
+.wp-flyout-field.has-error textarea:focus {
+    border-color: #d63638;
+    box-shadow: 0 0 0 1px #d63638;
+}
+
+.wp-flyout-field-error {
+    display: block;
+    color: #d63638;
+    font-size: 13px;
+    margin-top: 5px;
+}
+
+/* Success state */
+.wp-flyout-field.has-success input,
+.wp-flyout-field.has-success select,
+.wp-flyout-field.has-success textarea {
+    border-color: #00a32a;
+}
+
+.wp-flyout-field.has-success input:focus,
+.wp-flyout-field.has-success select:focus,
+.wp-flyout-field.has-success textarea:focus {
+    border-color: #00a32a;
+    box-shadow: 0 0 0 1px #00a32a;
+}
+
+/* Toggle Component */
+.wp-flyout-toggle-wrapper {
+    margin-bottom: 15px;
+}
+
+.wp-flyout-toggle {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+}
+
+.wp-flyout-toggle input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.wp-flyout-toggle .toggle-slider {
+    position: relative;
+    width: 44px;
+    height: 24px;
+    background: #ccc;
+    border-radius: 12px;
+    transition: background-color 0.3s;
+    margin-right: 10px;
+}
+
+.wp-flyout-toggle .toggle-slider::before {
+    content: "";
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    left: 3px;
+    top: 3px;
+    background: white;
+    border-radius: 50%;
+    transition: transform 0.3s;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.wp-flyout-toggle input:checked ~ .toggle-slider {
+    background: var(--wp-flyout-primary);
+}
+
+.wp-flyout-toggle input:checked ~ .toggle-slider::before {
+    transform: translateX(20px);
+}
+
+.wp-flyout-toggle.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.wp-flyout-toggle .toggle-label {
+    font-size: 14px;
+    color: var(--wp-flyout-text);
+}
+
+.wp-flyout-toggle-wrapper .toggle-description {
+    font-size: 13px;
+    color: var(--wp-flyout-text-muted);
+    margin: 5px 0 0 54px;
+    font-style: italic;
+}
+
+/* Color input wrapper */
+.wp-flyout-color-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Color input itself */
+.wp-flyout-color-input {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    width: 50px;
+    height: 40px;
+    border: 1px solid #8c8f94;
+    border-radius: 4px;
+    padding: 2px;
+    cursor: pointer;
+    background: #fff;
+    transition: border-color 0.15s;
+}
+
+.wp-flyout-color-input:hover {
+    border-color: #646970;
+}
+
+.wp-flyout-color-input:focus {
+    border-color: var(--wp-flyout-primary);
+    box-shadow: 0 0 0 1px var(--wp-flyout-primary);
+    outline: 2px solid transparent;
+}
+
+/* Remove the color swatch styling on webkit browsers */
+.wp-flyout-color-input::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+
+.wp-flyout-color-input::-webkit-color-swatch {
+    border: none;
+    border-radius: 2px;
+}
+
+/* Firefox */
+.wp-flyout-color-input::-moz-color-swatch {
+    border: none;
+    border-radius: 2px;
+}
+
+/* Color preview text input */
+.wp-flyout-color-preview {
+    font-family: Consolas, Monaco, 'Courier New', monospace;
+    font-size: 13px;
+    text-align: center;
+    text-transform: uppercase;
+    padding: 8px;
+    border: 1px solid #8c8f94;
+    border-radius: 4px;
+    background: #fff;
+    color: #1e1e1e;
+}
+
+/* Disabled state */
+.wp-flyout-color-input:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.wp-flyout-color-input:disabled + .wp-flyout-color-preview {
+    background: #f6f7f7;
+    color: #8c8f94;
+}
+
+/* Checkbox Field */
+.wp-flyout-checkbox {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    user-select: none;
+    padding: 8px 0;
+}
+
+.wp-flyout-checkbox input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    cursor: pointer;
+    border: 2px solid #8c8f94;
+    border-radius: 4px;
+    background: #fff;
+    transition: all 0.2s ease;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.wp-flyout-checkbox input[type="checkbox"]:hover {
+    border-color: #646970;
+}
+
+.wp-flyout-checkbox input[type="checkbox"]:focus {
+    border-color: var(--wp-flyout-primary);
+    box-shadow: 0 0 0 1px var(--wp-flyout-primary);
+    outline: none;
+}
+
+.wp-flyout-checkbox input[type="checkbox"]:checked {
+    background: var(--wp-flyout-primary);
+    border-color: var(--wp-flyout-primary);
+}
+
+.wp-flyout-checkbox input[type="checkbox"]:checked::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 5px;
+    width: 4px;
+    height: 9px;
+    border: solid #fff;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+.wp-flyout-checkbox .checkbox-label {
+    font-size: 14px;
+    color: var(--wp-flyout-text);
+    line-height: 1.4;
+}
+
+.wp-flyout-checkbox input[type="checkbox"]:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #f6f7f7;
+}
+
+.wp-flyout-checkbox input[type="checkbox"]:disabled + .checkbox-label {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Radio Group */
 .wp-flyout-radio-group {
     display: flex;
     flex-direction: column;
-    gap: 12px;
 }
 
 .wp-flyout-radio {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
     cursor: pointer;
     user-select: none;
     padding: 8px 0;
@@ -320,25 +390,25 @@
     appearance: none;
     -webkit-appearance: none;
     -moz-appearance: none;
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
     margin: 0;
     cursor: pointer;
-    border: 2px solid var(--wp-flyout-border);
+    border: 2px solid #8c8f94;
     border-radius: 50%;
     background: #fff;
-    transition: all 0.2s;
+    transition: all 0.2s ease;
     position: relative;
     flex-shrink: 0;
 }
 
 .wp-flyout-radio input[type="radio"]:hover {
-    border-color: #949494;
+    border-color: #646970;
 }
 
 .wp-flyout-radio input[type="radio"]:focus {
     border-color: var(--wp-flyout-primary);
-    box-shadow: 0 0 0 2px rgba(34, 113, 177, 0.25);
+    box-shadow: 0 0 0 1px var(--wp-flyout-primary);
     outline: none;
 }
 
@@ -353,8 +423,8 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 10px;
-    height: 10px;
+    width: 8px;
+    height: 8px;
     background: var(--wp-flyout-primary);
     border-radius: 50%;
 }
@@ -363,173 +433,74 @@
     font-size: 14px;
     color: var(--wp-flyout-text);
     line-height: 1.4;
-    font-weight: 500;
 }
 
-/* Inline radio group */
+.wp-flyout-radio input[type="radio"]:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #f6f7f7;
+}
+
+.wp-flyout-radio input[type="radio"]:disabled + .radio-label {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Inline radio group variant */
 .wp-flyout-radio-group.inline {
     flex-direction: row;
     flex-wrap: wrap;
-    gap: 24px;
+    gap: 20px;
 }
 
-/* Checkbox modern style */
-.wp-flyout-checkbox {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    cursor: pointer;
-    user-select: none;
-    padding: 8px 0;
-}
-
-.wp-flyout-checkbox input[type="checkbox"] {
-    appearance: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    width: 20px;
-    height: 20px;
-    margin: 0;
-    cursor: pointer;
-    border: 2px solid var(--wp-flyout-border);
-    border-radius: 4px;
-    background: #fff;
-    transition: all 0.2s;
-    position: relative;
-    flex-shrink: 0;
-}
-
-.wp-flyout-checkbox input[type="checkbox"]:hover {
-    border-color: #949494;
-}
-
-.wp-flyout-checkbox input[type="checkbox"]:focus {
-    border-color: var(--wp-flyout-primary);
-    box-shadow: 0 0 0 2px rgba(34, 113, 177, 0.25);
-    outline: none;
-}
-
-.wp-flyout-checkbox input[type="checkbox"]:checked {
-    background: var(--wp-flyout-primary);
-    border-color: var(--wp-flyout-primary);
-}
-
-.wp-flyout-checkbox input[type="checkbox"]:checked::after {
-    content: '';
-    position: absolute;
-    top: 3px;
-    left: 6px;
-    width: 5px;
-    height: 10px;
-    border: solid #fff;
-    border-width: 0 2px 2px 0;
-    transform: rotate(45deg);
-}
-
-.wp-flyout-checkbox .checkbox-label {
-    font-size: 14px;
-    color: var(--wp-flyout-text);
-    line-height: 1.4;
-    font-weight: 500;
-}
-
-/* Select with improved arrow */
+/* Select dropdown arrow */
 .wp-flyout-field select {
     appearance: none;
     -webkit-appearance: none;
     -moz-appearance: none;
-    background-image: url('data:image/svg+xml;charset=UTF-8,%3csvg xmlns="http://www.w3.org/2000/svg" width="12" height="7" viewBox="0 0 12 7"%3e%3cpath fill="%23646970" d="M1 1l5 5 5-5" stroke="%23646970" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/%3e%3c/svg%3e');
+    background-image: url('data:image/svg+xml;charset=UTF-8,%3csvg xmlns="http://www.w3.org/2000/svg" width="14" height="8" viewBox="0 0 14 8"%3e%3cpath fill="%23646970" d="M7 8L0 0h14L7 8z"/%3e%3c/svg%3e');
     background-repeat: no-repeat;
-    background-position: right 12px center;
-    background-size: 12px 7px;
-    padding-right: 36px;
+    background-position: right 8px center;
+    background-size: 14px 8px;
+    padding-right: 32px;
 }
 
+/* Remove arrow in IE */
 .wp-flyout-field select::-ms-expand {
     display: none;
 }
 
-/* Validation states */
-.wp-flyout-field.has-error label {
-    color: var(--wp-flyout-error);
+/* Adjust for disabled state */
+.wp-flyout-field select:disabled {
+    background-image: url('data:image/svg+xml;charset=UTF-8,%3csvg xmlns="http://www.w3.org/2000/svg" width="14" height="8" viewBox="0 0 14 8"%3e%3cpath fill="%238c8f94" d="M7 8L0 0h14L7 8z"/%3e%3c/svg%3e');
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
-.wp-flyout-field.has-error input,
-.wp-flyout-field.has-error select,
-.wp-flyout-field.has-error textarea {
-    border-color: var(--wp-flyout-error);
-    background: #fcf0f1;
-}
-
-.wp-flyout-field.has-error input:focus,
-.wp-flyout-field.has-error select:focus,
-.wp-flyout-field.has-error textarea:focus {
-    border-color: var(--wp-flyout-error);
-    box-shadow: 0 0 0 1px var(--wp-flyout-error);
-}
-
-.wp-flyout-field-error {
-    display: block;
-    color: var(--wp-flyout-error);
-    font-size: 13px;
-    margin-top: 6px;
-    font-weight: 500;
-}
-
-/* Success state */
-.wp-flyout-field.has-success input,
-.wp-flyout-field.has-success select,
-.wp-flyout-field.has-success textarea {
-    border-color: var(--wp-flyout-success);
-    background: #f0f8f0;
-}
-
-.wp-flyout-field.has-success input:focus,
-.wp-flyout-field.has-success select:focus,
-.wp-flyout-field.has-success textarea:focus {
-    border-color: var(--wp-flyout-success);
-    box-shadow: 0 0 0 1px var(--wp-flyout-success);
-}
-
-/* Responsive adjustments */
+/* Responsive */
 @media screen and (max-width: 782px) {
+    .wp-flyout-checkbox,
+    .wp-flyout-radio {
+        gap: 8px;
+    }
+
+    .wp-flyout-separator.has-text .separator-text {
+        padding: 0 10px;
+        font-size: 12px;
+    }
+}
+
+@media screen and (max-width: 600px) {
     .wp-flyout-field-group {
-        flex-direction: column;
+        flex-direction: column !important;
     }
 
-    .wp-flyout-flex-row {
-        flex-direction: column;
+    .wp-flyout-field-group .field-group-item {
+        min-width: 100% !important;
+        margin-bottom: 15px;
     }
 
-    .wp-flyout-radio-group.inline {
-        flex-direction: column;
-        gap: 12px;
+    .wp-flyout-field-group .field-group-item:last-child {
+        margin-bottom: 0;
     }
-
-    .wp-flyout-toggle-wrapper .toggle-description {
-        margin-left: 0;
-        margin-top: 10px;
-    }
-}
-
-/* Disabled states */
-.wp-flyout-field input:disabled,
-.wp-flyout-field select:disabled,
-.wp-flyout-field textarea:disabled {
-    background: var(--wp-flyout-bg);
-    color: var(--wp-flyout-text-muted);
-    cursor: not-allowed;
-    opacity: 0.7;
-}
-
-.wp-flyout-checkbox input[type="checkbox"]:disabled,
-.wp-flyout-radio input[type="radio"]:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-
-.wp-flyout-checkbox input[type="checkbox"]:disabled + .checkbox-label,
-.wp-flyout-radio input[type="radio"]:disabled + .radio-label {
-    opacity: 0.6;
-    cursor: not-allowed;
 }
