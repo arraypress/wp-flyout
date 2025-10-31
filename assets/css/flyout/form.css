@@ -165,7 +165,7 @@
 /* Toggle Component */
 .wp-flyout-toggle {
     position: relative;
-    display: inline-flex;
+    display: inline-flex !important;
     align-items: center;
     cursor: pointer;
     user-select: none;
@@ -214,10 +214,6 @@
 .wp-flyout-toggle .toggle-label {
     font-size: 14px;
     color: #1e1e1e;
-}
-
-.wp-flyout-toggle .toggle-label {
-    display: inline-flex;
 }
 
 /* Color input wrapper */
