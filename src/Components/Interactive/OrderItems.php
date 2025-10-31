@@ -36,18 +36,19 @@ class OrderItems {
      * @var array
      */
     private const DEFAULTS = [
-            'id'            => '',
-            'name'          => 'order_items',
-            'items'         => [],
-            'mode'          => 'edit', // 'edit' or 'view'
-            'currency'      => 'USD',
-            'show_quantity' => true,
-            'show_totals'   => true,
-            'ajax_endpoint' => '',
-            'placeholder'   => 'Search for products...',
-            'empty_text'    => 'No products added yet.',
-            'add_text'      => 'Add Product',
-            'class'         => ''
+            'id'             => '',
+            'name'           => 'order_items',
+            'items'          => [],
+            'mode'           => 'edit', // 'edit' or 'view'
+            'currency'       => 'USD',
+            'show_quantity'  => true,
+            'show_totals'    => true,
+            'ajax_endpoint'  => '',
+            'details_action' => 'get_product_details',
+            'placeholder'    => 'Search for products...',
+            'empty_text'     => 'No products added yet.',
+            'add_text'       => 'Add Product',
+            'class'          => ''
     ];
 
     /**
@@ -97,9 +98,10 @@ class OrderItems {
         }
 
         $data = [
-                'mode'     => $this->config['mode'],
-                'name'     => $this->config['name'],
-                'currency' => $this->config['currency']
+                'mode'           => $this->config['mode'],
+                'name'           => $this->config['name'],
+                'currency'       => $this->config['currency'],
+                'details-action' => $this->config['details_action']
         ];
 
         $is_edit = $this->config['mode'] === 'edit';
@@ -138,9 +140,11 @@ class OrderItems {
             <select class="product-ajax-select"
                     data-ajax="<?php echo esc_attr( $this->config['ajax_endpoint'] ); ?>"
                     data-placeholder="<?php echo esc_attr( $this->config['placeholder'] ); ?>"
-                    data-nonce="<?php echo esc_attr( $nonce ); ?>">
+                    data-nonce="<?php echo esc_attr( $nonce ); ?>"
+                    data-details-action="<?php echo esc_attr( $this->config['details_action'] ); ?>">
             </select>
             <button type="button" class="button" data-action="add-product">
+                <span class="dashicons dashicons-plus-alt"></span>
                 <?php echo esc_html( $this->config['add_text'] ); ?>
             </button>
         </div>
@@ -154,6 +158,7 @@ class OrderItems {
         if ( empty( $this->config['items'] ) ) {
             ?>
             <div class="order-items-empty">
+                <span class="dashicons dashicons-cart"></span>
                 <p><?php echo esc_html( $this->config['empty_text'] ); ?></p>
             </div>
             <?php
@@ -198,7 +203,18 @@ class OrderItems {
         <tr class="order-item" data-index="<?php echo $index; ?>"
             data-product-id="<?php echo esc_attr( $item['id'] ?? '' ); ?>">
             <td class="column-product">
-                <?php echo esc_html( $item['name'] ?? '' ); ?>
+                <div>
+                    <?php if ( ! empty( $item['thumbnail'] ) ) : ?>
+                        <img src="<?php echo esc_url( $item['thumbnail'] ); ?>"
+                             alt="<?php echo esc_attr( $item['name'] ?? '' ); ?>"
+                             class="product-thumbnail">
+                    <?php else : ?>
+                        <div class="product-thumbnail-placeholder">
+                            <span class="dashicons dashicons-format-image"></span>
+                        </div>
+                    <?php endif; ?>
+                    <span><?php echo esc_html( $item['name'] ?? '' ); ?></span>
+                </div>
                 <?php if ( $is_edit ) : ?>
                     <input type="hidden"
                            name="<?php echo esc_attr( $this->config['name'] ); ?>[<?php echo $index; ?>][product_id]"
@@ -274,8 +290,10 @@ class OrderItems {
         <script type="text/template" class="order-item-template">
             <tr class="order-item" data-product-id="{{product_id}}">
                 <td class="column-product">
-                    {{thumbnail_html}}
-                    {{name}}
+                    <div>
+                        {{thumbnail_html}}
+                        <span>{{name}}</span>
+                    </div>
                     <input type="hidden" name="<?php echo esc_attr( $this->config['name'] ); ?>[{{index}}][product_id]"
                            value="{{product_id}}">
                     <input type="hidden" name="<?php echo esc_attr( $this->config['name'] ); ?>[{{index}}][name]"

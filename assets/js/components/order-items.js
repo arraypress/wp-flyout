@@ -70,12 +70,30 @@
 
             $container.find('.wp-flyout-order-items').each(function () {
                 const $component = $(this);
+
+                // Skip if already initialized
+                if ($component.data('orderItemsInitialized')) {
+                    return;
+                }
+
+                $component.data('orderItemsInitialized', true);
+
                 const $select = $component.find('.product-ajax-select');
 
                 // Initialize AJAX select if present and not already initialized
                 if ($select.length && !$select.data('wpAjaxSelectInitialized')) {
-                    const ajaxSelect = new WPAjaxSelect($select[0]);
-                    $select.data('wpAjaxSelect', ajaxSelect);
+                    // Initialize with WPAjaxSelect if available
+                    if (typeof WPAjaxSelect !== 'undefined') {
+                        const ajaxSelect = new WPAjaxSelect($select[0]);
+                        $select.data('wpAjaxSelect', ajaxSelect);
+                    } else {
+                        // Fallback to jQuery plugin if class not available
+                        if ($.fn.wpAjaxSelect) {
+                            $select.wpAjaxSelect();
+                        } else {
+                            console.warn('WPAjaxSelect not available for Order Items');
+                        }
+                    }
                 }
 
                 // Calculate totals for edit mode
@@ -190,9 +208,16 @@
             // Show loading state
             $button.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> Loading...');
 
-            // Get configuration
+            // Get configuration from data attributes
             const ajaxUrl = window.ajaxurl || '/wp-admin/admin-ajax.php';
-            const config = window.wpFlyoutConfig?.components?.orderItems || {};
+            const $select = $component.find('.product-ajax-select');
+
+            // Get the details action from the component's config or use default
+            const detailsAction = $component.data('details-action') ||
+                $component.find('[data-details-action]').data('details-action') ||
+                'get_product_details';
+
+            const nonce = $select.data('nonce') || '';
 
             // Trigger fetch start event
             $component.trigger('orderitems:fetchstart', {
@@ -204,9 +229,9 @@
                 type: 'POST',
                 dataType: 'json',
                 data: {
-                    action: config.action || 'get_product_details',
+                    action: detailsAction,
                     product_id: String(productId),
-                    _wpnonce: config.nonce || ''
+                    _wpnonce: nonce
                 },
                 success: function (response) {
                     if (response.success && response.data) {
@@ -524,7 +549,9 @@
          * @return {void}
          */
         reindexItems: function ($component) {
-            const namePrefix = $component.data('name-prefix') || 'order_items';
+            const namePrefix = $component.data('name-prefix') ||
+                $component.data('name') ||
+                'order_items';
 
             $component.find('.order-item').each(function (index) {
                 const $item = $(this);
