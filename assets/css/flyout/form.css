@@ -163,10 +163,6 @@
 }
 
 /* Toggle Component */
-.wp-flyout-toggle-wrapper {
-    margin-bottom: 15px;
-}
-
 .wp-flyout-toggle {
     position: relative;
     display: inline-flex;
@@ -178,11 +174,13 @@
 .wp-flyout-toggle input[type="checkbox"] {
     position: absolute;
     opacity: 0;
-    pointer-events: none;
+    width: 0;
+    height: 0;
 }
 
 .wp-flyout-toggle .toggle-slider {
     position: relative;
+    display: inline-block;
     width: 44px;
     height: 24px;
     background: #ccc;
@@ -204,29 +202,18 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-.wp-flyout-toggle input:checked ~ .toggle-slider {
-    background: var(--wp-flyout-primary);
+/* THIS IS THE KEY FIX - using ~ general sibling selector */
+.wp-flyout-toggle input[type="checkbox"]:checked ~ .toggle-slider {
+    background: #2271b1;
 }
 
-.wp-flyout-toggle input:checked ~ .toggle-slider::before {
+.wp-flyout-toggle input[type="checkbox"]:checked ~ .toggle-slider::before {
     transform: translateX(20px);
-}
-
-.wp-flyout-toggle.disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
 }
 
 .wp-flyout-toggle .toggle-label {
     font-size: 14px;
-    color: var(--wp-flyout-text);
-}
-
-.wp-flyout-toggle-wrapper .toggle-description {
-    font-size: 13px;
-    color: var(--wp-flyout-text-muted);
-    margin: 5px 0 0 54px;
-    font-style: italic;
+    color: #1e1e1e;
 }
 
 /* Color input wrapper */

@@ -254,6 +254,11 @@ class Manager {
 		$flyout = new Flyout( $flyout_instance_id );
 		$flyout->set_title( $config['title'] );
 
+		// FIX: Actually set the width!
+		if ( ! empty( $config['width'] ) ) {
+			$flyout->set_width( $config['width'] );
+		}
+
 		// Build interface with tabs or single view
 		if ( ! empty( $config['tabs'] ) ) {
 			$this->build_tabbed_interface( $flyout, $config['tabs'], $data );
