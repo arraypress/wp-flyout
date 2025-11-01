@@ -69,11 +69,11 @@
                                 formData = $form.serialize();
                             }
 
-                            // Save via AJAX
+                            // Save via AJAX - FIX: Use correct parameter names
                             $.post(ajaxurl, {
                                 action: 'wp_flyout_' + manager,
-                                handler: handler,
-                                handler_action: 'save',
+                                flyout: handler,  // CHANGED from 'handler'
+                                flyout_action: 'save',  // CHANGED from 'handler_action'
                                 nonce: nonce,
                                 form_data: formData,
                                 ...data
@@ -152,10 +152,11 @@
                             // Get hidden ID field
                             const deleteId = $flyout.find('input[name="id"]').val() || data.id;
 
+                            // FIX: Use correct parameter names
                             $.post(ajaxurl, {
                                 action: 'wp_flyout_' + manager,
-                                handler: handler,
-                                handler_action: 'delete',
+                                flyout: handler,  // CHANGED from 'handler'
+                                flyout_action: 'delete',  // CHANGED from 'handler_action'
                                 nonce: nonce,
                                 ...data,
                                 id: deleteId
