@@ -95,6 +95,10 @@
     color: #8c8f94;
 }
 
+.tag-input-field {
+    border: none !important;
+}
+
 /* Autocomplete dropdown */
 .tag-autocomplete {
     position: absolute;
