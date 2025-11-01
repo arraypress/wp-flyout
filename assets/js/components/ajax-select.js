@@ -48,17 +48,23 @@
 
             this.$select.hide();
 
-            // Build UI
+            // Build UI with wrapper for input and chevron
             this.$container = $('<div class="wp-ajax-select">');
+            this.$wrapper = $('<div class="wp-ajax-select-wrapper">');
             this.$input = $('<input type="text" class="regular-text">');
+            this.$chevron = $('<span class="dashicons dashicons-arrow-down-alt2"></span>');
             this.$clear = $('<button type="button" class="button-link wp-ajax-select-clear" style="display:none">×</button>');
             this.$results = $('<div class="wp-ajax-select-results" style="display:none">');
 
             this.$input.attr('placeholder', this.options.placeholder);
 
-            this.$container
+            this.$wrapper
                 .append(this.$input)
                 .append(this.$clear)
+                .append(this.$chevron);
+
+            this.$container
+                .append(this.$wrapper)
                 .append(this.$results);
 
             this.$select.after(this.$container);
@@ -94,9 +100,22 @@
             });
 
             // Clear button
-            this.$clear.on('click', () => {
+            this.$clear.on('click', (e) => {
+                e.stopPropagation();
                 this.clear();
                 this.$input.focus();
+            });
+
+            // Chevron click - toggle dropdown or focus input
+            this.$chevron.on('click', (e) => {
+                e.stopPropagation();
+                if (this.$input.prop('readonly')) {
+                    // Has value - just focus
+                    this.$input.focus();
+                } else {
+                    // No value - focus to trigger search
+                    this.$input.focus();
+                }
             });
 
             // Select item
@@ -221,6 +240,7 @@
         setSelected(value, text) {
             this.$input.val(text).prop('readonly', true);
             this.$clear.show();
+            this.$container.addClass('has-value');
         }
 
         clear() {
@@ -228,6 +248,7 @@
             this.$input.val('').prop('readonly', false);
             this.$clear.hide();
             this.$results.hide();
+            this.$container.removeClass('has-value');
         }
 
         // Public method to set value programmatically
@@ -240,7 +261,7 @@
                 // We have both - no need for AJAX
                 this.select(value, text);
             } else {
-                // Only have value - would need AJAX
+                // Only have value - check for existing option
                 const $option = this.$select.find(`option[value="${value}"]`);
                 if ($option.length) {
                     this.select(value, $option.text());
