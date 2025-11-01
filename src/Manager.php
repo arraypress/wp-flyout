@@ -419,7 +419,7 @@ class Manager {
 			'message' => 'Invalid response from handler'
 		];
 	}
-
+	
 	/**
 	 * Render fields from configuration
 	 *
@@ -428,7 +428,6 @@ class Manager {
 	 *
 	 * @return string Generated HTML
 	 * @since 6.0.0
-	 *
 	 */
 	private function render_fields( array $fields, $data ): string {
 		$output = '';
@@ -439,9 +438,15 @@ class Manager {
 				$field['value'] = $this->extract_value( $data, $field['name'] );
 			}
 
+			// Check for options (for selects, ajax_select, etc.)
+			$options_key = $field['name'] . '_options';
+			if ( is_array( $data ) && isset( $data[ $options_key ] ) ) {
+				$field['options'] = $data[ $options_key ];
+			}
+
 			// Check if field type requires special component handling
 			if ( in_array( $field['type'], self::COMPONENT_FIELD_TYPES, true ) ) {
-				$output .= $this->render_component_field( $field, $data ); // Pass $data here!
+				$output .= $this->render_component_field( $field, $data );
 			} else {
 				// Standard form field
 				$form_field = new FormField( $field );

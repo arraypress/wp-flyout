@@ -135,7 +135,6 @@ class FormField {
      *
      * @return array Type-specific defaults.
      * @since 5.0.0
-     *
      */
     private function get_type_defaults( string $type ): array {
         $defaults = [
@@ -148,10 +147,9 @@ class FormField {
                         'multiple' => false,
                 ],
                 'ajax_select' => [
-                        'endpoint'    => '',
-                        'min_length'  => 2,
-                        'delay'       => 300,
-                        'placeholder' => __( 'Type to search...', 'arraypress' ),
+                        'ajax'        => '',  // The AJAX action to call
+                        'options'     => [],  // Pre-loaded options if available
+                        'placeholder' => __( 'Type to search...', 'wp-flyout' ),
                 ],
                 'number'      => [
                         'min'  => null,
@@ -448,43 +446,42 @@ class FormField {
     /**
      * Render AJAX select field
      *
-     * @return string Generated HTML.
+     * @return string Generated HTML
      * @since 5.0.0
-     *
      */
     private function render_ajax_select(): string {
-        // Auto-generate nonce if not provided
-        $nonce = wp_create_nonce( 'ajax_select_' . $this->config['endpoint'] );
+        ob_start();
+        ?>
+        <select id="<?php echo esc_attr( $this->config['id'] ); ?>"
+                name="<?php echo esc_attr( $this->config['name'] ); ?>"
+                class="<?php echo esc_attr( $this->config['class'] ); ?>"
+                data-ajax="<?php echo esc_attr( $this->config['ajax'] ?? '' ); ?>"
+                data-nonce="<?php echo esc_attr( $this->config['nonce'] ?? wp_create_nonce( 'ajax_select' ) ); ?>"
+                data-placeholder="<?php echo esc_attr( $this->config['placeholder'] ); ?>"
+                <?php echo $this->config['required'] ? 'required' : ''; ?>
+                <?php echo $this->config['disabled'] ? 'disabled' : ''; ?>>
 
-        $data_attrs = [
-                'ajax'        => $this->config['endpoint'],  // CHANGED: 'endpoint' to 'ajax'
-                'placeholder' => $this->config['placeholder'],
-                'min-length'  => $this->config['min_length'],
-                'delay'       => $this->config['delay'],
-                'nonce'       => $nonce,
-        ];
-
-        $html = sprintf(
-                '<select id="%s" name="%s" class="wp-flyout-ajax-select %s"',
-                esc_attr( $this->config['id'] ),
-                esc_attr( $this->config['name'] ),
-                esc_attr( $this->config['class'] )
-        );
-
-        foreach ( $data_attrs as $key => $value ) {
-            $html .= sprintf( ' data-%s="%s"', esc_attr( $key ), esc_attr( (string) $value ) );
-        }
-
-        if ( $this->config['required'] ) {
-            $html .= ' required';
-        }
-        if ( $this->config['disabled'] ) {
-            $html .= ' disabled';
-        }
-
-        $html .= '></select>';
-
-        return $html;
+            <?php
+            // If we have options provided (value => label pairs), add them
+            if ( ! empty( $this->config['options'] ) && is_array( $this->config['options'] ) ) :
+                foreach ( $this->config['options'] as $value => $label ) :
+                    $selected = ( $value == $this->config['value'] ) ? 'selected' : '';
+                    ?>
+                    <option value="<?php echo esc_attr( $value ); ?>" <?php echo $selected; ?>>
+                        <?php echo esc_html( $label ); ?>
+                    </option>
+                <?php
+                endforeach;
+            // Otherwise, if we just have a value, create empty option
+            elseif ( ! empty( $this->config['value'] ) ) :
+                ?>
+                <option value="<?php echo esc_attr( $this->config['value'] ); ?>" selected>
+                    Loading...
+                </option>
+            <?php endif; ?>
+        </select>
+        <?php
+        return ob_get_clean();
     }
 
     /**

@@ -61,11 +61,6 @@ class Assets {
 			'style'  => 'css/components/order-items.css',
 			'deps'   => [ 'wp-flyout-ajax-select' ]
 		],
-		'code-block'      => [
-			'script' => 'js/components/code-block.js',
-			'style'  => 'css/components/code-block.css',
-			'deps'   => []
-		],
 
 		// Data Components
 		'data-table'      => [
