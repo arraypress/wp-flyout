@@ -1,286 +1,94 @@
 /**
  * WP Flyout - File Manager Component
- * Modern, clean styling with proper visual hierarchy
+ * Minimal styling leveraging WordPress native styles
  */
 
 .wp-flyout-file-manager {
-    margin: 20px 0;
+    margin: 15px 0;
 }
 
-/* List container */
+/* List container - minimal styling */
 .file-manager-list {
-    margin-bottom: 15px;
-    min-height: 50px;
-    border: 1px solid #dcdcde;
-    border-radius: 4px;
+    border: 1px solid #c3c4c7;
     background: #fff;
-    padding: 0;
+    margin-bottom: 10px;
 }
 
-/* Empty state */
-.file-manager-list:empty {
-    padding: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #646970;
-    font-style: italic;
-    background: #f6f7f7;
-    min-height: 100px;
-}
-
-.file-manager-list:empty::after {
-    content: "No files added yet. Click 'Add File' to get started.";
-    text-align: center;
-}
-
-/* File item */
+/* File item - simple flex layout */
 .file-manager-item {
     display: flex;
     align-items: center;
-    gap: 15px;
-    padding: 15px;
+    gap: 10px;
+    padding: 8px 12px;
     border-bottom: 1px solid #f0f0f1;
-    transition: background-color 0.2s;
-    background: #fff;
 }
 
 .file-manager-item:last-child {
     border-bottom: none;
 }
 
-.file-manager-item:hover {
-    background: #f6f7f7;
-}
-
-/* Sortable states */
-.file-manager-item.ui-sortable-helper {
-    background: #fff;
-    border: 1px solid #2271b1;
-    border-radius: 4px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    opacity: 0.95;
-}
-
-.file-manager-item-placeholder {
-    border: 2px dashed #2271b1;
-    background: #f0f6fc;
-    border-radius: 4px;
-    visibility: visible !important;
-}
-
-/* Drag handle */
+/* Drag handle - subtle */
 .file-handle {
     cursor: move;
-    color: #dcdcde;
-    transition: color 0.2s;
-    padding: 5px;
-    margin: -5px;
-    flex-shrink: 0;
+    color: #a7aaad;
 }
 
 .file-handle:hover {
     color: #2271b1;
 }
 
-.file-handle .dashicons {
-    font-size: 20px;
-    width: 20px;
-    height: 20px;
-    display: block;
-}
-
-/* File fields container */
+/* File fields - use native input styles */
 .file-fields {
     flex: 1;
     display: flex;
-    gap: 12px;
-    align-items: center;
-    min-width: 0;
+    gap: 8px;
 }
 
-.file-fields input[type="text"] {
-    flex: 1 1 200px;
-    min-width: 150px;
-    padding: 8px 12px;
-    border: 1px solid #dcdcde;
-    border-radius: 4px;
-    font-size: 14px;
-    transition: all 0.2s;
-}
+/*.file-fields input[type="text"],*/
+/*.file-fields input[type="url"] {*/
+/*    !* Let WordPress handle the styling *!*/
+/*}*/
 
-.file-fields input[type="url"] {
-    flex: 2 1 300px;
-    min-width: 200px;
-    padding: 8px 12px;
-    border: 1px solid #dcdcde;
-    border-radius: 4px;
-    font-size: 14px;
-    transition: all 0.2s;
-}
-
-.file-fields input:hover {
-    border-color: #949494;
-}
-
-.file-fields input:focus {
-    border-color: #2271b1;
-    box-shadow: 0 0 0 1px #2271b1;
-    outline: none;
-}
-
-/* File actions */
+/* File actions - minimal */
 .file-actions {
     display: flex;
-    gap: 8px;
-    align-items: center;
-    flex-shrink: 0;
-}
-
-/* Browse button */
-.file-actions button[data-action="browse"] {
-    padding: 6px 14px;
-    background: #2271b1;
-    color: #fff;
-    border: 1px solid #2271b1;
-    border-radius: 4px;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: inline-flex;
-    align-items: center;
     gap: 5px;
 }
 
-.file-actions button[data-action="browse"]:hover {
-    background: #1e5a8e;
-    border-color: #1e5a8e;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-/* Remove button */
-.file-actions button[data-action="remove"] {
-    padding: 6px;
-    background: #fff;
-    border: 1px solid #dcdcde;
-    border-radius: 4px;
+/* Empty state - simple */
+.file-manager-list:empty {
+    padding: 20px;
+    text-align: center;
     color: #646970;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 
-.file-actions button[data-action="remove"]:hover {
-    border-color: #d63638;
-    color: #d63638;
-    background: #fcf0f1;
+.file-manager-list:empty::after {
+    content: "No files added yet.";
 }
 
-.file-actions button[data-action="remove"] .dashicons {
-    font-size: 18px;
-    width: 18px;
-    height: 18px;
-}
-
-/* Add button */
+/* Add button container - use native WP card style */
 .file-manager-actions {
-    padding: 15px;
-    background: #f6f7f7;
-    border: 1px solid #dcdcde;
-    border-radius: 4px;
-    border-style: dashed;
-    transition: all 0.2s;
+    /* Just use default button styling */
 }
 
-.file-manager-actions:hover {
-    background: #f0f6fc;
-    border-color: #2271b1;
-}
-
-.file-manager-actions button[data-action="add"] {
-    width: 100%;
-    padding: 10px 20px;
-    background: transparent;
-    border: none;
-    color: #2271b1;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    display: flex;
+.file-manager-list .button {
+    display: inline-flex;
     align-items: center;
-    justify-content: center;
-    gap: 8px;
-    transition: all 0.2s;
-}
-
-.file-manager-actions button[data-action="add"]:hover {
-    transform: scale(1.02);
-}
-
-.file-manager-actions button[data-action="add"]::before {
-    content: "+";
-    font-size: 20px;
-    font-weight: 400;
-    margin-right: 3px;
-}
-
-/* Loading state */
-.wp-flyout-file-manager.loading {
-    position: relative;
-    pointer-events: none;
-}
-
-.wp-flyout-file-manager.loading::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(255, 255, 255, 0.8);
-    z-index: 10;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-/* Error state */
-.file-manager-item.has-error {
-    background: #fcf0f1;
-}
-
-.file-manager-item.has-error input {
-    border-color: #d63638;
 }
 
 /* Responsive */
 @media screen and (max-width: 782px) {
     .file-manager-item {
         flex-wrap: wrap;
-        padding: 12px;
     }
 
     .file-fields {
         flex: 1 1 100%;
         flex-direction: column;
-        align-items: stretch;
-        gap: 8px;
-    }
-
-    .file-fields input {
-        width: 100%;
     }
 
     .file-actions {
-        flex: 1 1 100%;
-        margin-top: 10px;
-    }
-
-    .file-actions button[data-action="browse"] {
-        flex: 1;
+        width: 100%;
+        margin-top: 8px;
     }
 }

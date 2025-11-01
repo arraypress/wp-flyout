@@ -1,13 +1,11 @@
 <?php
 /**
- * Notes Component
+ * Notes Component - Simplified
  *
- * Displays notes/comments with optional add/edit functionality.
+ * Displays notes with optional add/delete functionality via AJAX.
  *
  * @package     ArrayPress\WPFlyout\Components\Interactive
- * @copyright   Copyright (c) 2025, ArrayPress Limited
- * @license     GPL2+
- * @version     3.0.0
+ * @version     4.0.0
  */
 
 declare( strict_types=1 );
@@ -32,23 +30,17 @@ class Notes {
      * @var array
      */
     private const DEFAULTS = [
-            'id'          => '',
-            'name'        => 'notes',
-            'items'       => [],
-            'editable'    => false,
-            'show_author' => true,
-            'show_date'   => true,
-            'date_format' => 'M j, Y g:i A',
-            'empty_text'  => 'No notes yet.',
-            'placeholder' => 'Add a note...',
-            'button_text' => 'Add Note',
-            'class'       => '',
-        // AJAX-related attributes
-            'object_type' => '',
-            'object_id'   => '',
-            'author_name' => '',
-            'ajax_action' => '',
-            'nonce'       => ''
+            'id'            => '',
+            'name'          => 'notes',
+            'items'         => [],
+            'editable'      => true,
+            'placeholder'   => 'Add a note...',
+            'empty_text'    => 'No notes yet.',
+            'object_type'   => '',
+            'object_id'     => '',
+            'add_action'    => '',      // AJAX action for adding notes
+            'delete_action' => '',      // AJAX action for deleting notes
+            'class'         => ''
     ];
 
     /**
@@ -68,36 +60,6 @@ class Notes {
         if ( ! is_array( $this->config['items'] ) ) {
             $this->config['items'] = [];
         }
-
-        // Normalize notes
-        $this->config['items'] = $this->normalize_notes( $this->config['items'] );
-    }
-
-    /**
-     * Normalize note data
-     *
-     * @param array $notes Raw notes array
-     *
-     * @return array
-     */
-    private function normalize_notes( array $notes ): array {
-        $normalized = [];
-
-        foreach ( $notes as $note ) {
-            if ( is_string( $note ) ) {
-                $note = [ 'content' => $note ];
-            }
-
-            $normalized[] = wp_parse_args( $note, [
-                    'id'        => uniqid(),
-                    'content'   => '',
-                    'author'    => '',
-                    'date'      => current_time( 'mysql' ),
-                    'deletable' => false
-            ] );
-        }
-
-        return $normalized;
     }
 
     /**
@@ -106,9 +68,15 @@ class Notes {
      * @return string
      */
     public function render(): string {
-        $classes = [ 'wp-flyout-notes-panel' ];
+        $classes = [ 'wp-flyout-notes' ];
         if ( ! empty( $this->config['class'] ) ) {
             $classes[] = $this->config['class'];
+        }
+
+        // Generate nonce for AJAX actions
+        $nonce = '';
+        if ( $this->config['add_action'] || $this->config['delete_action'] ) {
+            $nonce = wp_create_nonce( 'notes_' . $this->config['object_type'] . '_' . $this->config['object_id'] );
         }
 
         ob_start();
@@ -118,10 +86,9 @@ class Notes {
              data-name="<?php echo esc_attr( $this->config['name'] ); ?>"
              data-object-type="<?php echo esc_attr( $this->config['object_type'] ); ?>"
              data-object-id="<?php echo esc_attr( $this->config['object_id'] ); ?>"
-             data-author-name="<?php echo esc_attr( $this->config['author_name'] ); ?>"
-             data-action="<?php echo esc_attr( $this->config['ajax_action'] ); ?>"
-             data-nonce="<?php echo esc_attr( $this->config['nonce'] ); ?>"
-             data-note-count="<?php echo count( $this->config['items'] ); ?>">
+             data-add-action="<?php echo esc_attr( $this->config['add_action'] ); ?>"
+             data-delete-action="<?php echo esc_attr( $this->config['delete_action'] ); ?>"
+             data-nonce="<?php echo esc_attr( $nonce ); ?>">
 
             <div class="notes-list">
                 <?php if ( empty( $this->config['items'] ) ) : ?>
@@ -133,15 +100,15 @@ class Notes {
                 <?php endif; ?>
             </div>
 
-            <?php if ( $this->config['editable'] ) : ?>
+            <?php if ( $this->config['editable'] && $this->config['add_action'] ) : ?>
                 <div class="note-add-form">
-					<textarea class="note-input"
-                              name="<?php echo esc_attr( $this->config['name'] ); ?>_new"
-                              placeholder="<?php echo esc_attr( $this->config['placeholder'] ); ?>"
+                    <textarea placeholder="<?php echo esc_attr( $this->config['placeholder'] ); ?>"
                               rows="3"></textarea>
-                    <button type="button" class="button button-primary" data-action="add-note">
-                        <?php echo esc_html( $this->config['button_text'] ); ?>
-                    </button>
+                    <p>
+                        <button type="button" class="button button-primary" data-action="add-note">
+                            Add Note
+                        </button>
+                    </p>
                 </div>
             <?php endif; ?>
         </div>
@@ -156,26 +123,24 @@ class Notes {
      */
     private function render_note( array $note ): void {
         ?>
-        <div class="note-item" data-note-id="<?php echo esc_attr( $note['id'] ); ?>">
+        <div class="note-item" data-note-id="<?php echo esc_attr( $note['id'] ?? '' ); ?>">
             <div class="note-header">
-                <?php if ( $this->config['show_author'] && $note['author'] ) : ?>
+                <?php if ( ! empty( $note['author'] ) ) : ?>
                     <span class="note-author"><?php echo esc_html( $note['author'] ); ?></span>
                 <?php endif; ?>
 
-                <?php if ( $this->config['show_date'] && $note['date'] ) : ?>
-                    <span class="note-date">
-						<?php echo esc_html( date( $this->config['date_format'], strtotime( $note['date'] ) ) ); ?>
-					</span>
+                <?php if ( ! empty( $note['formatted_date'] ) ) : ?>
+                    <span class="note-date"><?php echo esc_html( $note['formatted_date'] ); ?></span>
                 <?php endif; ?>
 
-                <?php if ( $this->config['editable'] && $note['deletable'] ) : ?>
-                    <button type="button" class="button-link" data-action="delete-note" data-confirm="Are you sure?">
+                <?php if ( $this->config['editable'] && $this->config['delete_action'] && ! empty( $note['can_delete'] ) ) : ?>
+                    <button type="button" class="button-link" data-action="delete-note">
                         <span class="dashicons dashicons-trash"></span>
                     </button>
                 <?php endif; ?>
             </div>
             <div class="note-content">
-                <?php echo wp_kses_post( nl2br( $note['content'] ) ); ?>
+                <?php echo nl2br( esc_html( $note['content'] ?? '' ) ); ?>
             </div>
         </div>
         <?php

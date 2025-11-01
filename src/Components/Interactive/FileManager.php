@@ -1,13 +1,11 @@
 <?php
 /**
- * File Manager Component
+ * File Manager Component - Ultra Simplified
  *
- * Manages file uploads and attachments with drag-and-drop sorting.
+ * Minimal file management with drag-and-drop sorting
  *
  * @package     ArrayPress\WPFlyout\Components\Interactive
- * @copyright   Copyright (c) 2025, ArrayPress Limited
- * @license     GPL2+
- * @version     2.0.0
+ * @version     4.0.0
  */
 
 declare( strict_types=1 );
@@ -32,19 +30,12 @@ class FileManager {
      * @var array
      */
     private const DEFAULTS = [
-            'id'          => '',
-            'name'        => 'files',
-            'files'       => [],
-            'max_files'   => 0,
-            'file_types'  => [],
-            'reorderable' => true,
-            'removable'   => true,
-            'browseable'  => true,
-            'empty_text'  => 'No files attached.',
-            'add_text'    => 'Add File',
-            'browse_text' => 'Browse',
-            'remove_text' => 'Remove',
-            'class'       => ''
+            'id'         => '',
+            'name'       => 'files',
+            'items'      => [],
+            'browseable' => true,
+            'add_text'   => 'Add File',
+            'class'      => ''
     ];
 
     /**
@@ -60,9 +51,9 @@ class FileManager {
             $this->config['id'] = 'file-manager-' . wp_generate_uuid4();
         }
 
-        // Ensure files is array
-        if ( ! is_array( $this->config['files'] ) ) {
-            $this->config['files'] = [];
+        // Ensure items is array
+        if ( ! is_array( $this->config['items'] ) ) {
+            $this->config['items'] = [];
         }
     }
 
@@ -84,25 +75,21 @@ class FileManager {
              data-prefix="<?php echo esc_attr( $this->config['name'] ); ?>"
              data-template='<?php echo $this->get_template(); ?>'>
 
-            <div class="file-manager-list"
-                 data-sortable="<?php echo $this->config['reorderable'] ? 'true' : 'false'; ?>">
-                <?php if ( empty( $this->config['files'] ) ) : ?>
-                    <?php $this->render_empty_item(); ?>
+            <div class="file-manager-list">
+                <?php if ( empty( $this->config['items'] ) ) : ?>
+                    <?php $this->render_file_item( [], 0 ); ?>
                 <?php else : ?>
-                    <?php foreach ( $this->config['files'] as $index => $file ) : ?>
+                    <?php foreach ( $this->config['items'] as $index => $file ) : ?>
                         <?php $this->render_file_item( $file, $index ); ?>
                     <?php endforeach; ?>
                 <?php endif; ?>
             </div>
 
-            <?php if ( $this->config['max_files'] === 0 || count( $this->config['files'] ) < $this->config['max_files'] ) : ?>
-                <div class="file-manager-actions">
-                    <button type="button" class="button" data-action="add">
-                        <span class="dashicons dashicons-plus-alt2"></span>
-                        <?php echo esc_html( $this->config['add_text'] ); ?>
-                    </button>
-                </div>
-            <?php endif; ?>
+            <p>
+                <button type="button" class="button" data-action="add">
+                    <?php echo esc_html( $this->config['add_text'] ); ?>
+                </button>
+            </p>
         </div>
         <?php
         return ob_get_clean();
@@ -117,66 +104,48 @@ class FileManager {
     private function render_file_item( array $file, int $index ): void {
         ?>
         <div class="file-manager-item" data-index="<?php echo $index; ?>">
-            <?php if ( $this->config['reorderable'] ) : ?>
-                <span class="file-handle dashicons dashicons-menu-alt2" title="Drag to reorder"></span>
+            <span class="file-handle dashicons dashicons-menu" title="Drag to reorder"></span>
+
+            <input type="text"
+                   name="<?php echo esc_attr( $this->config['name'] ); ?>[<?php echo $index; ?>][name]"
+                   value="<?php echo esc_attr( $file['name'] ?? '' ); ?>"
+                   placeholder="File name"
+                   data-field="name"
+                   class="regular-text">
+
+            <input type="url"
+                   name="<?php echo esc_attr( $this->config['name'] ); ?>[<?php echo $index; ?>][url]"
+                   value="<?php echo esc_attr( $file['url'] ?? '' ); ?>"
+                   placeholder="File URL"
+                   data-field="url"
+                   class="widefat">
+
+            <input type="hidden"
+                   name="<?php echo esc_attr( $this->config['name'] ); ?>[<?php echo $index; ?>][id]"
+                   value="<?php echo esc_attr( $file['id'] ?? '' ); ?>"
+                   data-field="id">
+
+            <?php if ( $this->config['browseable'] ) : ?>
+                <button type="button"
+                        class="button"
+                        data-action="browse"
+                        title="Browse">
+                    <span class="dashicons dashicons-admin-media"></span>
+                </button>
             <?php endif; ?>
 
-            <div class="file-fields">
-                <input type="text"
-                       name="<?php echo esc_attr( $this->config['name'] ); ?>[<?php echo $index; ?>][name]"
-                       value="<?php echo esc_attr( $file['name'] ?? '' ); ?>"
-                       placeholder="File name"
-                       data-field="name"
-                       class="regular-text">
-
-                <input type="url"
-                       name="<?php echo esc_attr( $this->config['name'] ); ?>[<?php echo $index; ?>][url]"
-                       value="<?php echo esc_attr( $file['url'] ?? '' ); ?>"
-                       placeholder="File URL"
-                       data-field="url"
-                       class="regular-text">
-
-                <input type="hidden"
-                       name="<?php echo esc_attr( $this->config['name'] ); ?>[<?php echo $index; ?>][id]"
-                       value="<?php echo esc_attr( $file['id'] ?? '' ); ?>"
-                       data-field="id">
-            </div>
-
-            <div class="file-actions">
-                <?php if ( $this->config['browseable'] ) : ?>
-                    <button type="button"
-                            class="button-link file-browse"
-                            data-action="browse"
-                            title="Browse Media Library">
-                        <span class="dashicons dashicons-admin-media"></span>
-                    </button>
-                <?php endif; ?>
-
-                <?php if ( $this->config['removable'] ) : ?>
-                    <button type="button"
-                            class="button-link file-remove"
-                            data-action="remove"
-                            title="Remove File">
-                        <span class="dashicons dashicons-trash"></span>
-                    </button>
-                <?php endif; ?>
-            </div>
+            <button type="button"
+                    class="button"
+                    data-action="remove"
+                    title="Remove">
+                <span class="dashicons dashicons-no"></span>
+            </button>
         </div>
         <?php
     }
 
     /**
-     * Render empty file item
-     */
-    private function render_empty_item(): void {
-        $this->render_file_item( [], 0 );
-    }
-
-    /**
      * Get item template for JavaScript
-     *
-     * IMPORTANT: This returns raw HTML for JavaScript template usage
-     * Do not escape the output - it needs to be valid HTML
      *
      * @return string
      */
@@ -184,37 +153,23 @@ class FileManager {
         ob_start();
         ?>
         <div class="file-manager-item" data-index="{{index}}">
-        <?php if ( $this->config['reorderable'] ) : ?>
-            <span class="file-handle dashicons dashicons-menu-alt2" title="Drag to reorder"></span>
+        <span class="file-handle dashicons dashicons-menu" title="Drag to reorder"></span>
+        <input type="text" name="<?php echo esc_attr( $this->config['name'] ); ?>[{{index}}][name]" value=""
+               placeholder="File name" data-field="name" class="regular-text">
+        <input type="url" name="<?php echo esc_attr( $this->config['name'] ); ?>[{{index}}][url]" value=""
+               placeholder="File URL" data-field="url" class="widefat">
+        <input type="hidden" name="<?php echo esc_attr( $this->config['name'] ); ?>[{{index}}][id]" value=""
+               data-field="id">
+        <?php if ( $this->config['browseable'] ) : ?>
+            <button type="button" class="button" data-action="browse" title="Browse"><span
+                        class="dashicons dashicons-admin-media"></span></button>
         <?php endif; ?>
-        <div class="file-fields">
-            <input type="text" name="<?php echo esc_attr( $this->config['name'] ); ?>[{{index}}][name]" value=""
-                   placeholder="File name" data-field="name" class="regular-text">
-            <input type="url" name="<?php echo esc_attr( $this->config['name'] ); ?>[{{index}}][url]" value=""
-                   placeholder="File URL" data-field="url" class="regular-text">
-            <input type="hidden" name="<?php echo esc_attr( $this->config['name'] ); ?>[{{index}}][id]" value=""
-                   data-field="id">
-        </div>
-        <div class="file-actions">
-            <?php if ( $this->config['browseable'] ) : ?>
-                <button type="button" class="button-link file-browse" data-action="browse" title="Browse Media Library">
-                    <span class="dashicons dashicons-admin-media"></span>
-                </button>
-            <?php endif; ?>
-            <?php if ( $this->config['removable'] ) : ?>
-                <button type="button" class="button-link file-remove" data-action="remove" title="Remove File">
-                    <span class="dashicons dashicons-trash"></span>
-                </button>
-            <?php endif; ?>
-        </div>
+        <button type="button" class="button" data-action="remove" title="Remove"><span
+                    class="dashicons dashicons-no"></span></button>
         </div><?php
         $html = ob_get_clean();
 
-        // Remove newlines and excess whitespace but keep the HTML structure intact
-        $html = str_replace( array( "\r", "\n", "\t" ), '', $html );
-        $html = preg_replace( '/>\s+</', '><', $html );
-
-        return trim( $html );
+        return str_replace( array( "\r", "\n", "\t" ), '', trim( $html ) );
     }
 
 }
