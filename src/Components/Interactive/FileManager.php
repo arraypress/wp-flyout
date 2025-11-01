@@ -1,11 +1,11 @@
 <?php
 /**
- * File Manager Component - Ultra Simplified
+ * File Manager Component - Modern Design
  *
- * Minimal file management with drag-and-drop sorting
+ * Enhanced file management with drag-and-drop sorting and media library integration
  *
  * @package     ArrayPress\WPFlyout\Components\Interactive
- * @version     4.0.0
+ * @version     5.0.0
  */
 
 declare( strict_types=1 );
@@ -30,12 +30,16 @@ class FileManager {
      * @var array
      */
     private const DEFAULTS = [
-            'id'         => '',
-            'name'       => 'files',
-            'items'      => [],
-            'browseable' => true,
-            'add_text'   => 'Add File',
-            'class'      => ''
+            'id'          => '',
+            'name'        => 'files',
+            'items'       => [],
+            'max_files'   => 0,  // 0 = unlimited
+            'reorderable' => true,
+            'browseable'  => true,
+            'add_text'    => 'Add File',
+            'empty_text'  => 'No files attached yet',
+            'file_types'  => [], // Empty = all types allowed
+            'class'       => ''
     ];
 
     /**
@@ -64,6 +68,11 @@ class FileManager {
      */
     public function render(): string {
         $classes = [ 'wp-flyout-file-manager' ];
+
+        if ( $this->config['reorderable'] ) {
+            $classes[] = 'is-sortable';
+        }
+
         if ( ! empty( $this->config['class'] ) ) {
             $classes[] = $this->config['class'];
         }
@@ -73,23 +82,45 @@ class FileManager {
         <div id="<?php echo esc_attr( $this->config['id'] ); ?>"
              class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>"
              data-prefix="<?php echo esc_attr( $this->config['name'] ); ?>"
+             data-max-files="<?php echo esc_attr( $this->config['max_files'] ); ?>"
              data-template='<?php echo $this->get_template(); ?>'>
+
+            <div class="file-manager-header">
+                <span class="file-manager-title">
+                    <span class="dashicons dashicons-paperclip"></span>
+                    <?php esc_html_e( 'Attachments', 'wp-flyout' ); ?>
+                    <?php if ( $this->config['max_files'] > 0 ) : ?>
+                        <span class="file-count">
+                            (<span class="current-count"><?php echo count( $this->config['items'] ); ?></span>/<?php echo $this->config['max_files']; ?>)
+                        </span>
+                    <?php endif; ?>
+                </span>
+
+                <?php if ( $this->config['browseable'] ) : ?>
+                    <button type="button"
+                            class="button button-small file-manager-add"
+                            data-action="add"
+                            <?php if ( $this->config['max_files'] > 0 && count( $this->config['items'] ) >= $this->config['max_files'] ) : ?>
+                                disabled
+                            <?php endif; ?>>
+                        <span class="dashicons dashicons-plus-alt2"></span>
+                        <?php echo esc_html( $this->config['add_text'] ); ?>
+                    </button>
+                <?php endif; ?>
+            </div>
 
             <div class="file-manager-list">
                 <?php if ( empty( $this->config['items'] ) ) : ?>
-                    <?php $this->render_file_item( [], 0 ); ?>
+                    <div class="file-manager-empty">
+                        <span class="dashicons dashicons-media-document"></span>
+                        <p><?php echo esc_html( $this->config['empty_text'] ); ?></p>
+                    </div>
                 <?php else : ?>
                     <?php foreach ( $this->config['items'] as $index => $file ) : ?>
                         <?php $this->render_file_item( $file, $index ); ?>
                     <?php endforeach; ?>
                 <?php endif; ?>
             </div>
-
-            <p>
-                <button type="button" class="button" data-action="add">
-                    <?php echo esc_html( $this->config['add_text'] ); ?>
-                </button>
-            </p>
         </div>
         <?php
         return ob_get_clean();
@@ -102,46 +133,141 @@ class FileManager {
      * @param int   $index Item index
      */
     private function render_file_item( array $file, int $index ): void {
+        $file_extension = $this->get_file_extension( $file['url'] ?? '' );
+        $file_icon      = $this->get_file_icon( $file_extension );
         ?>
         <div class="file-manager-item" data-index="<?php echo $index; ?>">
-            <span class="file-handle dashicons dashicons-menu" title="Drag to reorder"></span>
-
-            <input type="text"
-                   name="<?php echo esc_attr( $this->config['name'] ); ?>[<?php echo $index; ?>][name]"
-                   value="<?php echo esc_attr( $file['name'] ?? '' ); ?>"
-                   placeholder="File name"
-                   data-field="name"
-                   class="regular-text">
-
-            <input type="url"
-                   name="<?php echo esc_attr( $this->config['name'] ); ?>[<?php echo $index; ?>][url]"
-                   value="<?php echo esc_attr( $file['url'] ?? '' ); ?>"
-                   placeholder="File URL"
-                   data-field="url"
-                   class="widefat">
-
-            <input type="hidden"
-                   name="<?php echo esc_attr( $this->config['name'] ); ?>[<?php echo $index; ?>][id]"
-                   value="<?php echo esc_attr( $file['id'] ?? '' ); ?>"
-                   data-field="id">
-
-            <?php if ( $this->config['browseable'] ) : ?>
-                <button type="button"
-                        class="button"
-                        data-action="browse"
-                        title="Browse">
-                    <span class="dashicons dashicons-admin-media"></span>
-                </button>
+            <?php if ( $this->config['reorderable'] ) : ?>
+                <span class="file-handle" title="<?php esc_attr_e( 'Drag to reorder', 'wp-flyout' ); ?>">
+                    <span class="dashicons dashicons-menu"></span>
+                </span>
             <?php endif; ?>
 
-            <button type="button"
-                    class="button"
-                    data-action="remove"
-                    title="Remove">
-                <span class="dashicons dashicons-no"></span>
-            </button>
+            <div class="file-icon">
+                <span class="dashicons dashicons-<?php echo esc_attr( $file_icon ); ?>"></span>
+                <?php if ( $file_extension ) : ?>
+                    <span class="file-extension"><?php echo esc_html( strtoupper( $file_extension ) ); ?></span>
+                <?php endif; ?>
+            </div>
+
+            <div class="file-details">
+                <input type="text"
+                       name="<?php echo esc_attr( $this->config['name'] ); ?>[<?php echo $index; ?>][name]"
+                       value="<?php echo esc_attr( $file['name'] ?? '' ); ?>"
+                       placeholder="<?php esc_attr_e( 'File name', 'wp-flyout' ); ?>"
+                       data-field="name"
+                       class="file-name-input">
+
+                <input type="url"
+                       name="<?php echo esc_attr( $this->config['name'] ); ?>[<?php echo $index; ?>][url]"
+                       value="<?php echo esc_attr( $file['url'] ?? '' ); ?>"
+                       placeholder="<?php esc_attr_e( 'File URL', 'wp-flyout' ); ?>"
+                       data-field="url"
+                       class="file-url-input"
+                        <?php echo $this->config['browseable'] ? 'readonly' : ''; ?>>
+
+                <input type="hidden"
+                       name="<?php echo esc_attr( $this->config['name'] ); ?>[<?php echo $index; ?>][id]"
+                       value="<?php echo esc_attr( $file['id'] ?? '' ); ?>"
+                       data-field="id">
+            </div>
+
+            <div class="file-actions">
+                <?php if ( $this->config['browseable'] ) : ?>
+                    <button type="button"
+                            class="file-action-btn"
+                            data-action="browse"
+                            title="<?php esc_attr_e( 'Change file', 'wp-flyout' ); ?>">
+                        <span class="dashicons dashicons-upload"></span>
+                    </button>
+                <?php endif; ?>
+
+                <?php if ( ! empty( $file['url'] ) ) : ?>
+                    <a href="<?php echo esc_url( $file['url'] ); ?>"
+                       target="_blank"
+                       class="file-action-btn"
+                       title="<?php esc_attr_e( 'View file', 'wp-flyout' ); ?>">
+                        <span class="dashicons dashicons-external"></span>
+                    </a>
+                <?php endif; ?>
+
+                <button type="button"
+                        class="file-action-btn file-remove"
+                        data-action="remove"
+                        title="<?php esc_attr_e( 'Remove file', 'wp-flyout' ); ?>">
+                    <span class="dashicons dashicons-trash"></span>
+                </button>
+            </div>
         </div>
         <?php
+    }
+
+    /**
+     * Get file extension from URL
+     *
+     * @param string $url File URL
+     *
+     * @return string File extension
+     */
+    private function get_file_extension( string $url ): string {
+        if ( empty( $url ) ) {
+            return '';
+        }
+
+        $path = parse_url( $url, PHP_URL_PATH );
+        if ( ! $path ) {
+            return '';
+        }
+
+        $extension = pathinfo( $path, PATHINFO_EXTENSION );
+
+        return strtolower( $extension );
+    }
+
+    /**
+     * Get appropriate icon for file type
+     *
+     * @param string $extension File extension
+     *
+     * @return string Dashicon name
+     */
+    private function get_file_icon( string $extension ): string {
+        $icons = [
+            // Documents
+                'pdf'  => 'pdf',
+                'doc'  => 'media-document',
+                'docx' => 'media-document',
+                'txt'  => 'media-text',
+
+            // Images
+                'jpg'  => 'format-image',
+                'jpeg' => 'format-image',
+                'png'  => 'format-image',
+                'gif'  => 'format-image',
+                'svg'  => 'format-image',
+
+            // Media
+                'mp3'  => 'format-audio',
+                'wav'  => 'format-audio',
+                'mp4'  => 'format-video',
+                'mov'  => 'format-video',
+
+            // Archives
+                'zip'  => 'media-archive',
+                'rar'  => 'media-archive',
+
+            // Code
+                'js'   => 'media-code',
+                'css'  => 'media-code',
+                'php'  => 'media-code',
+
+            // Spreadsheets
+                'xls'  => 'media-spreadsheet',
+                'xlsx' => 'media-spreadsheet',
+                'csv'  => 'media-spreadsheet',
+        ];
+
+        return $icons[ $extension ] ?? 'media-default';
     }
 
     /**
@@ -153,19 +279,27 @@ class FileManager {
         ob_start();
         ?>
         <div class="file-manager-item" data-index="{{index}}">
-        <span class="file-handle dashicons dashicons-menu" title="Drag to reorder"></span>
-        <input type="text" name="<?php echo esc_attr( $this->config['name'] ); ?>[{{index}}][name]" value=""
-               placeholder="File name" data-field="name" class="regular-text">
-        <input type="url" name="<?php echo esc_attr( $this->config['name'] ); ?>[{{index}}][url]" value=""
-               placeholder="File URL" data-field="url" class="widefat">
-        <input type="hidden" name="<?php echo esc_attr( $this->config['name'] ); ?>[{{index}}][id]" value=""
-               data-field="id">
-        <?php if ( $this->config['browseable'] ) : ?>
-            <button type="button" class="button" data-action="browse" title="Browse"><span
-                        class="dashicons dashicons-admin-media"></span></button>
+        <?php if ( $this->config['reorderable'] ) : ?>
+            <span class="file-handle" title="Drag to reorder"><span class="dashicons dashicons-menu"></span></span>
         <?php endif; ?>
-        <button type="button" class="button" data-action="remove" title="Remove"><span
-                    class="dashicons dashicons-no"></span></button>
+        <div class="file-icon"><span class="dashicons dashicons-media-default"></span></div>
+        <div class="file-details">
+            <input type="text" name="<?php echo esc_attr( $this->config['name'] ); ?>[{{index}}][name]" value=""
+                   placeholder="File name" data-field="name" class="file-name-input">
+            <input type="url" name="<?php echo esc_attr( $this->config['name'] ); ?>[{{index}}][url]" value=""
+                   placeholder="File URL" data-field="url"
+                   class="file-url-input" <?php echo $this->config['browseable'] ? 'readonly' : ''; ?>>
+            <input type="hidden" name="<?php echo esc_attr( $this->config['name'] ); ?>[{{index}}][id]" value=""
+                   data-field="id">
+        </div>
+        <div class="file-actions">
+            <?php if ( $this->config['browseable'] ) : ?>
+                <button type="button" class="file-action-btn" data-action="browse" title="Change file"><span
+                            class="dashicons dashicons-upload"></span></button>
+            <?php endif; ?>
+            <button type="button" class="file-action-btn file-remove" data-action="remove" title="Remove file"><span
+                        class="dashicons dashicons-trash"></span></button>
+        </div>
         </div><?php
         $html = ob_get_clean();
 

@@ -1,94 +1,407 @@
 /**
  * WP Flyout - File Manager Component
- * Minimal styling leveraging WordPress native styles
+ * Modern card-based design with smooth interactions
  */
 
 .wp-flyout-file-manager {
-    margin: 15px 0;
+    margin: 20px 0;
 }
 
-/* List container - minimal styling */
+/* Header */
+.file-manager-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding: 0 4px;
+}
+
+.file-manager-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e1e1e;
+}
+
+.file-manager-title .dashicons {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: #646970;
+}
+
+.file-count {
+    font-weight: normal;
+    color: #646970;
+    font-size: 13px;
+}
+
+/* Add button */
+.file-manager-add {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px !important;
+    height: 32px !important;
+    min-height: 32px !important;
+    font-size: 13px !important;
+}
+
+.file-manager-add .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    margin: 0 !important;
+}
+
+/* List container */
 .file-manager-list {
-    border: 1px solid #c3c4c7;
-    background: #fff;
-    margin-bottom: 10px;
+    background: #f6f7f7;
+    border: 1px solid #dcdcde;
+    border-radius: 8px;
+    min-height: 120px;
+    position: relative;
 }
 
-/* File item - simple flex layout */
+/* Empty state */
+.file-manager-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    text-align: center;
+    color: #646970;
+}
+
+.file-manager-empty .dashicons {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    color: #c3c4c7;
+    margin-bottom: 12px;
+}
+
+.file-manager-empty p {
+    margin: 0;
+    font-size: 14px;
+}
+
+/* File item card */
 .file-manager-item {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 8px 12px;
+    gap: 12px;
+    padding: 16px;
+    background: #fff;
     border-bottom: 1px solid #f0f0f1;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.file-manager-item:first-child {
+    border-top-left-radius: 7px;
+    border-top-right-radius: 7px;
 }
 
 .file-manager-item:last-child {
     border-bottom: none;
+    border-bottom-left-radius: 7px;
+    border-bottom-right-radius: 7px;
 }
 
-/* Drag handle - subtle */
+.file-manager-item:hover {
+    background: #f9fafb;
+}
+
+/* Sortable states */
+.file-manager-item.ui-sortable-helper {
+    background: #fff;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    border-radius: 8px !important;
+    opacity: 0.95;
+}
+
+.file-manager-item.ui-sortable-placeholder {
+    background: #e5f3ff;
+    border: 2px dashed #2271b1;
+    border-radius: 8px;
+    visibility: visible !important;
+}
+
+/* Drag handle */
 .file-handle {
     cursor: move;
+    padding: 4px;
     color: #a7aaad;
+    transition: all 0.2s;
 }
 
 .file-handle:hover {
     color: #2271b1;
 }
 
-/* File fields - use native input styles */
-.file-fields {
-    flex: 1;
+.file-handle .dashicons {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+}
+
+/* File icon */
+.file-icon {
+    position: relative;
+    width: 48px;
+    height: 48px;
+    background: #f0f6fc;
+    border-radius: 8px;
     display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.file-icon .dashicons {
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+    color: #2271b1;
+}
+
+.file-extension {
+    position: absolute;
+    bottom: -4px;
+    right: -4px;
+    background: #2271b1;
+    color: white;
+    font-size: 9px;
+    font-weight: 600;
+    padding: 2px 4px;
+    border-radius: 4px;
+    line-height: 1;
+}
+
+/* File details */
+.file-details {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
     gap: 8px;
 }
 
-/*.file-fields input[type="text"],*/
-/*.file-fields input[type="url"] {*/
-/*    !* Let WordPress handle the styling *!*/
-/*}*/
+.file-name-input,
+.file-url-input {
+    border: 1px solid #dcdcde;
+    border-radius: 4px;
+    padding: 6px 10px;
+    font-size: 13px;
+    transition: all 0.15s;
+    background: #fff;
+}
 
-/* File actions - minimal */
+.file-name-input {
+    font-weight: 500;
+    color: #1e1e1e;
+}
+
+.file-url-input {
+    font-size: 12px;
+    color: #646970;
+    background: #f6f7f7;
+}
+
+.file-url-input[readonly] {
+    cursor: default;
+    background: #f6f7f7;
+}
+
+.file-name-input:focus,
+.file-url-input:focus:not([readonly]) {
+    border-color: #2271b1;
+    box-shadow: 0 0 0 1px #2271b1;
+    outline: none;
+}
+
+/* File actions */
 .file-actions {
     display: flex;
-    gap: 5px;
+    gap: 4px;
+    align-items: center;
 }
 
-/* Empty state - simple */
-.file-manager-list:empty {
-    padding: 20px;
-    text-align: center;
+.file-action-btn {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid #dcdcde;
+    border-radius: 4px;
+    background: #fff;
     color: #646970;
-}
-
-.file-manager-list:empty::after {
-    content: "No files added yet.";
-}
-
-/* Add button container - use native WP card style */
-.file-manager-actions {
-    /* Just use default button styling */
-}
-
-.file-manager-list .button {
+    cursor: pointer;
+    transition: all 0.15s;
     display: inline-flex;
     align-items: center;
+    justify-content: center;
+    text-decoration: none;
+}
+
+.file-action-btn:hover {
+    background: #f0f0f1;
+    border-color: #949494;
+    color: #1e1e1e;
+}
+
+.file-action-btn .dashicons {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+}
+
+/* Remove button - special styling */
+.file-remove:hover {
+    background: #fcf0f1;
+    border-color: #d63638;
+    color: #d63638;
+}
+
+/* Different file type colors */
+.file-icon:has(.dashicons-pdf) {
+    background: #ffe5e5;
+}
+
+.file-icon:has(.dashicons-pdf) .dashicons {
+    color: #d63638;
+}
+
+.file-icon:has(.dashicons-format-image) {
+    background: #e7f7ed;
+}
+
+.file-icon:has(.dashicons-format-image) .dashicons {
+    color: #00a32a;
+}
+
+.file-icon:has(.dashicons-format-audio),
+.file-icon:has(.dashicons-format-video) {
+    background: #fcf0ff;
+}
+
+.file-icon:has(.dashicons-format-audio) .dashicons,
+.file-icon:has(.dashicons-format-video) .dashicons {
+    color: #8c35b1;
+}
+
+.file-icon:has(.dashicons-media-spreadsheet) {
+    background: #e5f5e7;
+}
+
+.file-icon:has(.dashicons-media-spreadsheet) .dashicons {
+    color: #007017;
+}
+
+.file-icon:has(.dashicons-media-archive) {
+    background: #fcf9e8;
+}
+
+.file-icon:has(.dashicons-media-archive) .dashicons {
+    color: #8a6116;
+}
+
+/* Loading state */
+.file-manager-item.is-uploading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.file-manager-item.is-uploading::after {
+    content: '';
+    position: absolute;
+    left: 16px;
+    right: 16px;
+    bottom: 0;
+    height: 3px;
+    background: #2271b1;
+    animation: upload-progress 1s ease-in-out infinite;
+}
+
+@keyframes upload-progress {
+    0% {
+        transform: translateX(-100%);
+    }
+    50% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+/* Disabled state */
+.file-manager-add:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Max files reached */
+.file-manager-list.max-reached {
+    opacity: 0.9;
 }
 
 /* Responsive */
 @media screen and (max-width: 782px) {
     .file-manager-item {
         flex-wrap: wrap;
+        padding: 12px;
     }
 
-    .file-fields {
-        flex: 1 1 100%;
-        flex-direction: column;
+    .file-handle {
+        order: -1;
+    }
+
+    .file-icon {
+        width: 40px;
+        height: 40px;
+    }
+
+    .file-icon .dashicons {
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+    }
+
+    .file-details {
+        flex: 1 1 calc(100% - 120px);
     }
 
     .file-actions {
-        width: 100%;
-        margin-top: 8px;
+        margin-left: auto;
+    }
+
+    @media screen and (max-width: 480px) {
+        .file-details {
+            flex: 1 1 100%;
+            margin-top: 12px;
+        }
+
+        .file-actions {
+            width: 100%;
+            margin-top: 12px;
+            justify-content: flex-end;
+        }
+    }
+}
+
+/* Print styles */
+@media print {
+    .file-handle,
+    .file-actions {
+        display: none !important;
+    }
+
+    .file-url-input {
+        border: none;
+        background: none;
     }
 }
