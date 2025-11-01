@@ -1,297 +1,278 @@
 /**
- * WP Flyout Manager - Complete working version with validation
+ * WP Flyout Manager - Simplified version
  */
 (function ($) {
     'use strict';
 
-    $(document).ready(function () {
+    const WPFlyoutManager = {
 
-        // Handle trigger clicks
-        $(document).on('click', '.wp-flyout-trigger', function (e) {
+        /**
+         * Initialize manager
+         */
+        init: function () {
+            $(document).on('click', '.wp-flyout-trigger', this.handleTrigger.bind(this));
+        },
+
+        /**
+         * Handle trigger click
+         */
+        handleTrigger: function (e) {
             e.preventDefault();
 
-            const $btn = $(this);
-            const handler = $btn.data('flyout-handler') || $btn.data('flyout');
-            const manager = $btn.data('flyout-manager');
-            const nonce = $btn.data('flyout-nonce');
+            const $btn = $(e.currentTarget);
+            const config = this.extractConfig($btn);
 
-            // Collect data attributes
-            const data = {};
-            $.each(this.dataset, function (key, value) {
-                if (key !== 'flyoutHandler' && key !== 'flyout' && key !== 'flyoutManager' && key !== 'flyoutNonce') {
-                    data[key] = value;
+            this.loadFlyout(config);
+        },
+
+        /**
+         * Extract configuration from trigger button
+         */
+        extractConfig: function ($btn) {
+            const config = {
+                flyout: $btn.data('flyout'),
+                manager: $btn.data('flyout-manager'),
+                nonce: $btn.data('flyout-nonce'),
+                data: {}
+            };
+
+            // Collect additional data attributes
+            $.each($btn[0].dataset, (key, value) => {
+                if (!['flyout', 'flyoutManager', 'flyoutNonce'].includes(key)) {
+                    config.data[key] = value;
                 }
             });
 
-            // Load flyout
+            return config;
+        },
+
+        /**
+         * Load flyout via AJAX
+         */
+        loadFlyout: function (config) {
             $.post(ajaxurl, {
-                action: 'wp_flyout_' + manager,
-                flyout: handler,
+                action: 'wp_flyout_' + config.manager,
+                flyout: config.flyout,
                 flyout_action: 'load',
-                nonce: nonce,
-                ...data
+                nonce: config.nonce,
+                ...config.data
             })
-                .done(function (response) {
+                .done(response => {
                     if (response.success) {
-                        // Remove existing flyouts
-                        $('.wp-flyout').remove();
-
-                        // Add new flyout
-                        $('body').append(response.data.html);
-
-                        // Get flyout element
-                        const $flyout = $('.wp-flyout').last();
-                        const flyoutId = $flyout.attr('id');
-
-                        // Open it
-                        WPFlyout.open(flyoutId);
-
-                        // Store handler info
-                        $flyout.data('handler', handler);
-                        $flyout.data('manager', manager);
-                        $flyout.data('nonce', nonce);
-                        $flyout.data('request-data', data);
-
-                        // Create form wrapper if it doesn't exist
-                        if (!$flyout.find('form').length) {
-                            const $body = $flyout.find('.wp-flyout-body');
-                            const $form = $('<form class="wp-flyout-form" novalidate></form>');
-                            $form.append($body.children());
-                            $body.append($form);
-                        }
-
-                        // Bind save button
-                        $flyout.on('click', '.wp-flyout-save', function (e) {
-                            e.preventDefault();
-
-                            const $saveBtn = $(this);
-                            const originalText = $saveBtn.text();
-                            const $form = $flyout.find('form').first();
-
-                            // Validate required fields
-                            let isValid = true;
-                            let firstInvalid = null;
-
-                            $form.find('[required]').each(function () {
-                                const $field = $(this);
-                                const value = $field.val();
-
-                                // Skip hidden or disabled fields
-                                if ($field.is(':hidden') || $field.is(':disabled')) {
-                                    return;
-                                }
-
-                                // Check for empty values
-                                if (!value || (Array.isArray(value) && value.length === 0)) {
-                                    isValid = false;
-                                    $field.addClass('error');
-
-                                    if (!firstInvalid) {
-                                        firstInvalid = $field;
-                                    }
-                                } else {
-                                    $field.removeClass('error');
-                                }
-                            });
-
-                            if (!isValid) {
-                                // Show error message
-                                if (window.WPFlyoutAlert) {
-                                    WPFlyoutAlert.show(
-                                        'Please fill in all required fields.',
-                                        'error',
-                                        {
-                                            target: $flyout.find('.wp-flyout-body'),
-                                            prepend: true,
-                                            timeout: 3000,
-                                            dismissible: true
-                                        }
-                                    );
-                                }
-
-                                // Focus first invalid field
-                                if (firstInvalid) {
-                                    firstInvalid.focus();
-                                }
-
-                                return;
-                            }
-
-                            // Show saving state
-                            $saveBtn.prop('disabled', true).text('Saving...');
-
-                            // Get form data
-                            let formData = '';
-                            if ($form.length) {
-                                formData = $form.serialize();
-                            }
-
-                            // Save via AJAX
-                            $.post(ajaxurl, {
-                                action: 'wp_flyout_' + manager,
-                                flyout: handler,
-                                flyout_action: 'save',
-                                nonce: nonce,
-                                form_data: formData,
-                                ...data
-                            })
-                                .done(function (saveResponse) {
-                                    $saveBtn.prop('disabled', false).text(originalText);
-
-                                    if (saveResponse.success) {
-                                        const responseData = saveResponse.data || {};
-
-                                        // Use WPFlyoutAlert component
-                                        if (window.WPFlyoutAlert) {
-                                            WPFlyoutAlert.show(
-                                                responseData.message || 'Saved successfully!',
-                                                'success',
-                                                {
-                                                    target: $flyout.find('.wp-flyout-body'),
-                                                    prepend: true,
-                                                    timeout: 3000,
-                                                    dismissible: true
-                                                }
-                                            );
-                                        }
-
-                                        // Auto close and reload if specified
-                                        if (responseData.reload) {
-                                            setTimeout(function () {
-                                                WPFlyout.close(flyoutId);
-                                                location.reload();
-                                            }, 1500);
-                                        }
-                                    } else {
-                                        // Show error alert
-                                        if (window.WPFlyoutAlert) {
-                                            WPFlyoutAlert.show(
-                                                saveResponse.data || 'An error occurred. Please try again.',
-                                                'error',
-                                                {
-                                                    target: $flyout.find('.wp-flyout-body'),
-                                                    prepend: true,
-                                                    dismissible: true
-                                                }
-                                            );
-                                        }
-                                    }
-                                })
-                                .fail(function () {
-                                    $saveBtn.prop('disabled', false).text(originalText);
-
-                                    if (window.WPFlyoutAlert) {
-                                        WPFlyoutAlert.show(
-                                            'Connection error. Please check your internet connection and try again.',
-                                            'error',
-                                            {
-                                                target: $flyout.find('.wp-flyout-body'),
-                                                prepend: true,
-                                                dismissible: true
-                                            }
-                                        );
-                                    }
-                                });
-                        });
-
-                        // Bind delete button
-                        $flyout.on('click', '.wp-flyout-delete', function (e) {
-                            e.preventDefault();
-
-                            if (!confirm('Are you sure you want to delete this item?')) {
-                                return;
-                            }
-
-                            const $deleteBtn = $(this);
-                            const originalText = $deleteBtn.text();
-
-                            $deleteBtn.prop('disabled', true).text('Deleting...');
-
-                            // Get hidden ID field
-                            const deleteId = $flyout.find('input[name="id"]').val() || data.id;
-
-                            $.post(ajaxurl, {
-                                action: 'wp_flyout_' + manager,
-                                flyout: handler,
-                                flyout_action: 'delete',
-                                nonce: nonce,
-                                ...data,
-                                id: deleteId
-                            })
-                                .done(function (response) {
-                                    if (response.success) {
-                                        if (window.WPFlyoutAlert) {
-                                            WPFlyoutAlert.show(
-                                                response.data.message || 'Item deleted successfully!',
-                                                'success',
-                                                {
-                                                    target: $flyout.find('.wp-flyout-body'),
-                                                    prepend: true,
-                                                    timeout: 2000
-                                                }
-                                            );
-                                        }
-
-                                        setTimeout(function () {
-                                            WPFlyout.close(flyoutId);
-                                            if (response.data.reload) {
-                                                location.reload();
-                                            }
-                                        }, 1000);
-                                    } else {
-                                        $deleteBtn.prop('disabled', false).text(originalText);
-
-                                        if (window.WPFlyoutAlert) {
-                                            WPFlyoutAlert.show(
-                                                response.data || 'Failed to delete item',
-                                                'error',
-                                                {
-                                                    target: $flyout.find('.wp-flyout-body'),
-                                                    prepend: true,
-                                                    dismissible: true
-                                                }
-                                            );
-                                        }
-                                    }
-                                })
-                                .fail(function () {
-                                    $deleteBtn.prop('disabled', false).text(originalText);
-
-                                    if (window.WPFlyoutAlert) {
-                                        WPFlyoutAlert.show(
-                                            'Connection error. Could not delete item.',
-                                            'error',
-                                            {
-                                                target: $flyout.find('.wp-flyout-body'),
-                                                prepend: true,
-                                                dismissible: true
-                                            }
-                                        );
-                                    }
-                                });
-                        });
-
-                        // Bind close button
-                        $flyout.on('click', '.wp-flyout-close', function (e) {
-                            e.preventDefault();
-                            WPFlyout.close(flyoutId);
-                        });
-
-                        // Remove error class on input change
-                        $flyout.on('input change', '.error', function () {
-                            $(this).removeClass('error');
-                        });
-
+                        this.displayFlyout(response.data.html, config);
                     } else {
-                        // Show error in a basic alert if flyout fails to load
                         alert(response.data || 'Failed to load flyout');
                     }
                 })
-                .fail(function () {
-                    alert('Failed to connect to server');
-                });
-        });
+                .fail(() => alert('Connection failed'));
+        },
 
-    });
+        /**
+         * Display flyout and setup handlers
+         */
+        displayFlyout: function (html, config) {
+            // Remove existing flyouts and add new one
+            $('.wp-flyout').remove();
+            $('body').append(html);
+
+            const $flyout = $('.wp-flyout').last();
+            const flyoutId = $flyout.attr('id');
+
+            // Open it
+            WPFlyout.open(flyoutId);
+
+            // Store config
+            $flyout.data(config);
+
+            // Ensure form wrapper exists
+            this.ensureForm($flyout);
+
+            // Bind handlers
+            this.bindHandlers($flyout, flyoutId, config);
+        },
+
+        /**
+         * Ensure form wrapper exists
+         */
+        ensureForm: function ($flyout) {
+            if (!$flyout.find('form').length) {
+                const $body = $flyout.find('.wp-flyout-body');
+                const $form = $('<form class="wp-flyout-form" novalidate></form>');
+                $form.append($body.children());
+                $body.append($form);
+            }
+        },
+
+        /**
+         * Bind event handlers
+         */
+        bindHandlers: function ($flyout, flyoutId, config) {
+            // Save button
+            $flyout.on('click', '.wp-flyout-save', e => {
+                e.preventDefault();
+                this.handleSave($flyout, flyoutId, config);
+            });
+
+            // Delete button
+            $flyout.on('click', '.wp-flyout-delete', e => {
+                e.preventDefault();
+                if (confirm('Are you sure you want to delete this item?')) {
+                    this.handleDelete($flyout, flyoutId, config);
+                }
+            });
+
+            // Close button (redundant since flyout.js handles this, but kept for safety)
+            $flyout.on('click', '.wp-flyout-close', e => {
+                e.preventDefault();
+                WPFlyout.close(flyoutId);
+            });
+
+            // Clear error class on change
+            $flyout.on('input change', '.error', function () {
+                $(this).removeClass('error');
+            });
+        },
+
+        /**
+         * Validate form
+         */
+        validateForm: function ($form) {
+            let isValid = true;
+            let firstInvalid = null;
+
+            $form.find('[required]:visible:enabled').each(function () {
+                const $field = $(this);
+                const value = $field.val();
+
+                if (!value || (Array.isArray(value) && !value.length)) {
+                    isValid = false;
+                    $field.addClass('error');
+                    firstInvalid = firstInvalid || $field;
+                } else {
+                    $field.removeClass('error');
+                }
+            });
+
+            return {isValid, firstInvalid};
+        },
+
+        /**
+         * Handle save
+         */
+        handleSave: function ($flyout, flyoutId, config) {
+            const $form = $flyout.find('form').first();
+            const $saveBtn = $flyout.find('.wp-flyout-save');
+
+            // Validate
+            const validation = this.validateForm($form);
+            if (!validation.isValid) {
+                this.showAlert($flyout, 'Please fill in all required fields.', 'error');
+                if (validation.firstInvalid) {
+                    validation.firstInvalid.focus();
+                }
+                return;
+            }
+
+            // Save
+            this.setButtonState($saveBtn, true, 'Saving...');
+
+            $.post(ajaxurl, {
+                action: 'wp_flyout_' + config.manager,
+                flyout: config.flyout,
+                flyout_action: 'save',
+                nonce: config.nonce,
+                form_data: $form.serialize(),
+                ...config.data
+            })
+                .done(response => {
+                    this.setButtonState($saveBtn, false);
+
+                    if (response.success) {
+                        const data = response.data || {};
+                        this.showAlert($flyout, data.message || 'Saved successfully!', 'success');
+
+                        // Close after delay
+                        setTimeout(() => {
+                            WPFlyout.close(flyoutId);
+                            if (data.reload) location.reload();
+                        }, 1500);
+                    } else {
+                        this.showAlert($flyout, response.data || 'An error occurred', 'error');
+                    }
+                })
+                .fail(() => {
+                    this.setButtonState($saveBtn, false);
+                    this.showAlert($flyout, 'Connection error', 'error');
+                });
+        },
+
+        /**
+         * Handle delete
+         */
+        handleDelete: function ($flyout, flyoutId, config) {
+            const $deleteBtn = $flyout.find('.wp-flyout-delete');
+            const deleteId = $flyout.find('input[name="id"]').val() || config.data.id;
+
+            this.setButtonState($deleteBtn, true, 'Deleting...');
+
+            $.post(ajaxurl, {
+                action: 'wp_flyout_' + config.manager,
+                flyout: config.flyout,
+                flyout_action: 'delete',
+                nonce: config.nonce,
+                id: deleteId,
+                ...config.data
+            })
+                .done(response => {
+                    if (response.success) {
+                        const data = response.data || {};
+                        this.showAlert($flyout, data.message || 'Deleted successfully!', 'success');
+
+                        setTimeout(() => {
+                            WPFlyout.close(flyoutId);
+                            if (data.reload) location.reload();
+                        }, 1000);
+                    } else {
+                        this.setButtonState($deleteBtn, false);
+                        this.showAlert($flyout, response.data || 'Failed to delete', 'error');
+                    }
+                })
+                .fail(() => {
+                    this.setButtonState($deleteBtn, false);
+                    this.showAlert($flyout, 'Connection error', 'error');
+                });
+        },
+
+        /**
+         * Show alert message
+         */
+        showAlert: function ($flyout, message, type) {
+            if (window.WPFlyoutAlert) {
+                WPFlyoutAlert.show(message, type, {
+                    target: $flyout.find('.wp-flyout-body'),
+                    prepend: true,
+                    timeout: type === 'success' ? 3000 : 0,
+                    dismissible: true
+                });
+            }
+        },
+
+        /**
+         * Set button loading state
+         */
+        setButtonState: function ($btn, disabled, text) {
+            if (!$btn.length) return;
+
+            if (disabled) {
+                $btn.data('original-text', $btn.text());
+                $btn.prop('disabled', true).text(text);
+            } else {
+                $btn.prop('disabled', false).text($btn.data('original-text') || 'Save');
+            }
+        }
+    };
+
+    // Initialize
+    $(document).ready(() => WPFlyoutManager.init());
 
 })(jQuery);
