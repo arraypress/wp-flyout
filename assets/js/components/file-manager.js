@@ -1,6 +1,6 @@
 /**
  * WP Flyout File Manager Component JavaScript
- * Handles media library integration, drag-drop sorting, and file operations
+ * Handles manual entry, media library integration, and drag-drop sorting
  */
 (function ($) {
     'use strict';
@@ -21,12 +21,16 @@
             'png': 'format-image',
             'gif': 'format-image',
             'svg': 'format-image',
+            'webp': 'format-image',
 
             // Media
             'mp3': 'format-audio',
             'wav': 'format-audio',
+            'ogg': 'format-audio',
             'mp4': 'format-video',
             'mov': 'format-video',
+            'avi': 'format-video',
+            'webm': 'format-video',
 
             // Archives
             'zip': 'media-archive',
@@ -41,6 +45,7 @@
             'php': 'media-code',
             'html': 'media-code',
             'json': 'media-code',
+            'xml': 'media-code',
 
             // Spreadsheets
             'xls': 'media-spreadsheet',
@@ -54,14 +59,17 @@
         },
 
         bindEvents: function () {
-            // Add file button
+            // Add file button - adds empty row
             $(document).on('click', '.file-manager-add', this.handleAdd.bind(this));
 
-            // Browse button
+            // Browse button - opens media library
             $(document).on('click', '.file-manager-item [data-action="browse"]', this.handleBrowse.bind(this));
 
             // Remove button
             $(document).on('click', '.file-manager-item [data-action="remove"]', this.handleRemove.bind(this));
+
+            // URL change - update icon
+            $(document).on('blur change', '.file-url-input', this.handleUrlChange.bind(this));
 
             // Update file count when items change
             $(document).on('file-manager:update', '.wp-flyout-file-manager', this.updateUI.bind(this));
@@ -92,7 +100,7 @@
         handleAdd: function (e) {
             e.preventDefault();
             const $manager = $(e.currentTarget).closest('.wp-flyout-file-manager');
-            this.openMediaLibrary($manager, null);
+            this.addEmptyItem($manager);
         },
 
         handleBrowse: function (e) {
@@ -113,75 +121,82 @@
             });
         },
 
-        openMediaLibrary: function ($manager, $existingItem) {
+        handleUrlChange: function (e) {
+            const $input = $(e.currentTarget);
+            const $item = $input.closest('.file-manager-item');
+            const url = $input.val();
+
+            // Update icon based on URL
+            this.updateItemIcon($item, url);
+        },
+
+        addEmptyItem: function ($manager) {
+            const template = $manager.data('template');
+            const $items = $manager.find('.file-manager-items');
+            const index = $items.find('.file-manager-item').length;
+
+            // Replace template variables with empty values
+            let html = template
+                .replace(/{{index}}/g, index)
+                .replace(/{{name}}/g, '')
+                .replace(/{{url}}/g, '')
+                .replace(/{{id}}/g, '')
+                .replace(/{{extension}}/g, '')
+                .replace(/{{extension_upper}}/g, '')
+                .replace(/{{extension_display}}/g, 'display:none')
+                .replace(/{{icon}}/g, 'media-default');
+
+            const $newItem = $(html);
+            $items.append($newItem);
+
+            // Animate in and focus on name field
+            $newItem.hide().fadeIn(200, function () {
+                $newItem.find('.file-name-input').focus();
+            });
+
+            // Re-initialize sortable
+            if ($manager.hasClass('is-sortable')) {
+                this.initSortable();
+            }
+
+            $manager.trigger('file-manager:update');
+        },
+
+        openMediaLibrary: function ($manager, $item) {
             const self = this;
 
             // Create media frame
             const frame = wp.media({
-                title: $existingItem ? 'Replace File' : 'Select File',
+                title: 'Select File',
                 button: {
-                    text: $existingItem ? 'Replace' : 'Select'
+                    text: 'Select'
                 },
-                multiple: !$existingItem
+                multiple: false
             });
 
             // Handle selection
             frame.on('select', function () {
-                const attachments = frame.state().get('selection').toJSON();
-
-                if ($existingItem) {
-                    // Replace existing item
-                    self.updateFileItem($existingItem, attachments[0]);
-                } else {
-                    // Add new items
-                    attachments.forEach(attachment => {
-                        self.addFileItem($manager, attachment);
-                    });
-                }
-
+                const attachment = frame.state().get('selection').first().toJSON();
+                self.updateFileItem($item, attachment);
                 $manager.trigger('file-manager:update');
             });
 
             frame.open();
         },
 
-        addFileItem: function ($manager, attachment) {
-            const template = $manager.data('template');
-            const $items = $manager.find('.file-manager-items');
-            const index = $items.find('.file-manager-item').length;
-            const extension = this.getFileExtension(attachment.url);
-            const icon = this.getFileIcon(extension);
-
-            // Replace template variables
-            let html = template
-                .replace(/{{index}}/g, index)
-                .replace(/{{name}}/g, attachment.title || attachment.filename || '')
-                .replace(/{{url}}/g, attachment.url || '')
-                .replace(/{{id}}/g, attachment.id || '')
-                .replace(/{{extension}}/g, extension)
-                .replace(/{{extension_upper}}/g, extension.toUpperCase())
-                .replace(/{{icon}}/g, icon);
-
-            const $newItem = $(html);
-            $items.append($newItem);
-
-            // Animate in
-            $newItem.hide().fadeIn(200);
-
-            // Re-initialize sortable
-            if ($manager.hasClass('is-sortable')) {
-                this.initSortable();
-            }
-        },
-
         updateFileItem: function ($item, attachment) {
-            const extension = this.getFileExtension(attachment.url);
-            const icon = this.getFileIcon(extension);
-
             // Update inputs
             $item.find('[data-field="name"]').val(attachment.title || attachment.filename || '');
             $item.find('[data-field="url"]').val(attachment.url || '');
             $item.find('[data-field="id"]').val(attachment.id || '');
+
+            // Update icon based on URL
+            this.updateItemIcon($item, attachment.url || '');
+        },
+
+        updateItemIcon: function ($item, url) {
+            const extension = this.getFileExtension(url);
+            const icon = this.getFileIcon(extension);
 
             // Update icon
             const $icon = $item.find('.file-icon');
@@ -197,29 +212,9 @@
                     $extension = $('<span class="file-extension"></span>');
                     $icon.append($extension);
                 }
-                $extension.text(extension.toUpperCase());
+                $extension.text(extension.toUpperCase()).show();
             } else {
-                $extension.remove();
-            }
-
-            // Update view link
-            const url = attachment.url || '';
-            let $viewLink = $item.find('a[title="View file"]');
-            if (url) {
-                if (!$viewLink.length) {
-                    // Add view link if it doesn't exist
-                    const $browseBtn = $item.find('[data-action="browse"]');
-                    $viewLink = $('<a href="' + url + '" target="_blank" class="file-action-btn" title="View file"><span class="dashicons dashicons-external"></span></a>');
-                    if ($browseBtn.length) {
-                        $viewLink.insertAfter($browseBtn);
-                    } else {
-                        $item.find('.file-actions').prepend($viewLink);
-                    }
-                } else {
-                    $viewLink.attr('href', url);
-                }
-            } else {
-                $viewLink.remove();
+                $extension.hide();
             }
         },
 
