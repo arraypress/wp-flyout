@@ -1,202 +1,272 @@
 /**
- * WP Flyout File Manager Component - Simplified
- *
- * Handles file management with drag-and-drop sorting and Media Library integration.
- *
- * @package WPFlyout
- * @version 2.0.0
+ * WP Flyout File Manager Component JavaScript
+ * Handles media library integration, drag-drop sorting, and file operations
  */
 (function ($) {
     'use strict';
 
-    const FileManager = {
+    window.WPFlyoutFileManager = {
 
-        /**
-         * Initialize the File Manager component
-         */
+        // File icon mapping
+        fileIcons: {
+            // Documents
+            'pdf': 'pdf',
+            'doc': 'media-document',
+            'docx': 'media-document',
+            'txt': 'media-text',
+
+            // Images
+            'jpg': 'format-image',
+            'jpeg': 'format-image',
+            'png': 'format-image',
+            'gif': 'format-image',
+            'svg': 'format-image',
+
+            // Media
+            'mp3': 'format-audio',
+            'wav': 'format-audio',
+            'mp4': 'format-video',
+            'mov': 'format-video',
+
+            // Archives
+            'zip': 'media-archive',
+            'rar': 'media-archive',
+            '7z': 'media-archive',
+            'tar': 'media-archive',
+            'gz': 'media-archive',
+
+            // Code
+            'js': 'media-code',
+            'css': 'media-code',
+            'php': 'media-code',
+            'html': 'media-code',
+            'json': 'media-code',
+
+            // Spreadsheets
+            'xls': 'media-spreadsheet',
+            'xlsx': 'media-spreadsheet',
+            'csv': 'media-spreadsheet',
+        },
+
         init: function () {
-            const self = this;
-
-            // Bind action events using delegation
-            $(document)
-                .on('click', '.wp-flyout-file-manager [data-action="add"]', function (e) {
-                    self.handleAdd(e);
-                })
-                .on('click', '.wp-flyout-file-manager [data-action="remove"]', function (e) {
-                    self.handleRemove(e);
-                })
-                .on('click', '.wp-flyout-file-manager [data-action="browse"]', function (e) {
-                    self.handleBrowse(e);
-                });
-
-            // Initialize sortable when flyouts open
-            $(document).on('wpflyout:opened', function (e, data) {
-                self.initSortable(data.element);
-            });
+            this.bindEvents();
+            this.initSortable();
         },
 
-        /**
-         * Initialize jQuery UI Sortable on file lists
-         */
-        initSortable: function (container) {
-            const self = this;
+        bindEvents: function () {
+            // Add file button
+            $(document).on('click', '.file-manager-add', this.handleAdd.bind(this));
 
-            if (!$.fn.sortable) {
-                return; // jQuery UI not available
-            }
+            // Browse button
+            $(document).on('click', '.file-manager-item [data-action="browse"]', this.handleBrowse.bind(this));
 
-            $(container).find('.file-manager-list').each(function () {
-                const $list = $(this);
+            // Remove button
+            $(document).on('click', '.file-manager-item [data-action="remove"]', this.handleRemove.bind(this));
 
-                // Skip if already initialized
-                if ($list.hasClass('ui-sortable')) {
-                    return;
+            // Update file count when items change
+            $(document).on('file-manager:update', '.wp-flyout-file-manager', this.updateUI.bind(this));
+        },
+
+        initSortable: function () {
+            $('.wp-flyout-file-manager.is-sortable .file-manager-items').sortable({
+                handle: '.file-handle',
+                items: '.file-manager-item',
+                placeholder: 'file-manager-item ui-sortable-placeholder',
+                tolerance: 'pointer',
+                forcePlaceholderSize: true,
+                update: function (event, ui) {
+                    // Re-index items after sorting
+                    $(this).find('.file-manager-item').each(function (index) {
+                        $(this).attr('data-index', index);
+                        $(this).find('input, select, textarea').each(function () {
+                            const name = $(this).attr('name');
+                            if (name) {
+                                $(this).attr('name', name.replace(/\[\d+\]/, '[' + index + ']'));
+                            }
+                        });
+                    });
                 }
-
-                $list.sortable({
-                    handle: '.file-handle',
-                    items: '> .file-manager-item',
-                    placeholder: 'file-manager-item-placeholder',
-                    update: function () {
-                        self.reindex($list);
-                    }
-                });
             });
         },
 
-        /**
-         * Handle add file button click
-         */
         handleAdd: function (e) {
             e.preventDefault();
-
-            const $button = $(e.currentTarget);
-            const $manager = $button.closest('.wp-flyout-file-manager');
-            const $list = $manager.find('.file-manager-list');
-            const currentCount = $list.find('.file-manager-item').length;
-
-            // Get template
-            const template = $manager.data('template');
-            if (!template) {
-                console.error('File Manager: No template defined');
-                return;
-            }
-
-            // Add new item from template
-            const html = template.replace(/{{index}}/g, currentCount);
-            const $newItem = $(html);
-            $list.append($newItem);
-
-            // Refresh sortable
-            if ($list.hasClass('ui-sortable')) {
-                $list.sortable('refresh');
-            }
-
-            // Focus first input
-            $newItem.find('input[type="text"]:first').focus();
+            const $manager = $(e.currentTarget).closest('.wp-flyout-file-manager');
+            this.openMediaLibrary($manager, null);
         },
 
-        /**
-         * Handle remove file button click
-         */
+        handleBrowse: function (e) {
+            e.preventDefault();
+            const $item = $(e.currentTarget).closest('.file-manager-item');
+            const $manager = $item.closest('.wp-flyout-file-manager');
+            this.openMediaLibrary($manager, $item);
+        },
+
         handleRemove: function (e) {
             e.preventDefault();
+            const $item = $(e.currentTarget).closest('.file-manager-item');
+            const $manager = $item.closest('.wp-flyout-file-manager');
 
-            const self = this;
-            const $button = $(e.currentTarget);
-            const $item = $button.closest('.file-manager-item');
-            const $list = $item.closest('.file-manager-list');
-            const currentCount = $list.find('.file-manager-item').length;
-
-            // If only one item, just clear the fields
-            if (currentCount === 1) {
-                $item.find('input').val('');
-                $item.find('input[type="text"]:first').focus();
-                return;
-            }
-
-            // Remove the item
             $item.fadeOut(200, function () {
-                $item.remove();
-                self.reindex($list);
-
-                if ($list.hasClass('ui-sortable')) {
-                    $list.sortable('refresh');
-                }
+                $(this).remove();
+                $manager.trigger('file-manager:update');
             });
         },
 
-        /**
-         * Handle browse button click for Media Library
-         */
-        handleBrowse: function (e) {
-            e.preventDefault();
-
-            // Check if Media Library is available
-            if (!window.wp || !window.wp.media) {
-                console.error('WordPress Media Library not available');
-                return;
-            }
-
-            const $button = $(e.currentTarget);
-            const $item = $button.closest('.file-manager-item');
+        openMediaLibrary: function ($manager, $existingItem) {
+            const self = this;
 
             // Create media frame
             const frame = wp.media({
-                title: 'Select File',
+                title: $existingItem ? 'Replace File' : 'Select File',
                 button: {
-                    text: 'Use this file'
+                    text: $existingItem ? 'Replace' : 'Select'
                 },
-                multiple: false
+                multiple: !$existingItem
             });
 
-            // Handle file selection
+            // Handle selection
             frame.on('select', function () {
-                const attachment = frame.state().get('selection').first().toJSON();
+                const attachments = frame.state().get('selection').toJSON();
 
-                // Update item fields
-                $item.find('[data-field="name"]').val(attachment.title || attachment.filename);
-                $item.find('[data-field="url"]').val(attachment.url);
-                $item.find('[data-field="id"]').val(attachment.id);
+                if ($existingItem) {
+                    // Replace existing item
+                    self.updateFileItem($existingItem, attachments[0]);
+                } else {
+                    // Add new items
+                    attachments.forEach(attachment => {
+                        self.addFileItem($manager, attachment);
+                    });
+                }
+
+                $manager.trigger('file-manager:update');
             });
 
             frame.open();
         },
 
-        /**
-         * Reindex form field names after add/remove/sort
-         */
-        reindex: function ($list) {
-            const $manager = $list.closest('.wp-flyout-file-manager');
-            const prefix = $manager.data('prefix');
+        addFileItem: function ($manager, attachment) {
+            const template = $manager.data('template');
+            const $items = $manager.find('.file-manager-items');
+            const index = $items.find('.file-manager-item').length;
+            const extension = this.getFileExtension(attachment.url);
+            const icon = this.getFileIcon(extension);
 
-            if (!prefix) {
-                return;
+            // Replace template variables
+            let html = template
+                .replace(/{{index}}/g, index)
+                .replace(/{{name}}/g, attachment.title || attachment.filename || '')
+                .replace(/{{url}}/g, attachment.url || '')
+                .replace(/{{id}}/g, attachment.id || '')
+                .replace(/{{extension}}/g, extension)
+                .replace(/{{extension_upper}}/g, extension.toUpperCase())
+                .replace(/{{icon}}/g, icon);
+
+            const $newItem = $(html);
+            $items.append($newItem);
+
+            // Animate in
+            $newItem.hide().fadeIn(200);
+
+            // Re-initialize sortable
+            if ($manager.hasClass('is-sortable')) {
+                this.initSortable();
+            }
+        },
+
+        updateFileItem: function ($item, attachment) {
+            const extension = this.getFileExtension(attachment.url);
+            const icon = this.getFileIcon(extension);
+
+            // Update inputs
+            $item.find('[data-field="name"]').val(attachment.title || attachment.filename || '');
+            $item.find('[data-field="url"]').val(attachment.url || '');
+            $item.find('[data-field="id"]').val(attachment.id || '');
+
+            // Update icon
+            const $icon = $item.find('.file-icon');
+            $icon.attr('data-extension', extension);
+            $icon.find('.dashicons')
+                .removeClass()
+                .addClass('dashicons dashicons-' + icon);
+
+            // Update extension badge
+            let $extension = $icon.find('.file-extension');
+            if (extension) {
+                if (!$extension.length) {
+                    $extension = $('<span class="file-extension"></span>');
+                    $icon.append($extension);
+                }
+                $extension.text(extension.toUpperCase());
+            } else {
+                $extension.remove();
             }
 
-            $list.find('.file-manager-item').each(function (index) {
-                const $item = $(this);
-
-                // Update all input names with new index
-                $item.find('input').each(function () {
-                    const $field = $(this);
-                    const name = $field.attr('name');
-
-                    if (name && name.includes(prefix)) {
-                        const newName = name.replace(/\[\d+\]/, '[' + index + ']');
-                        $field.attr('name', newName);
+            // Update view link
+            const url = attachment.url || '';
+            let $viewLink = $item.find('a[title="View file"]');
+            if (url) {
+                if (!$viewLink.length) {
+                    // Add view link if it doesn't exist
+                    const $browseBtn = $item.find('[data-action="browse"]');
+                    $viewLink = $('<a href="' + url + '" target="_blank" class="file-action-btn" title="View file"><span class="dashicons dashicons-external"></span></a>');
+                    if ($browseBtn.length) {
+                        $viewLink.insertAfter($browseBtn);
+                    } else {
+                        $item.find('.file-actions').prepend($viewLink);
                     }
-                });
-            });
+                } else {
+                    $viewLink.attr('href', url);
+                }
+            } else {
+                $viewLink.remove();
+            }
+        },
+
+        updateUI: function (e) {
+            const $manager = $(e.currentTarget);
+            const $list = $manager.find('.file-manager-list');
+            const $items = $manager.find('.file-manager-item');
+            const count = $items.length;
+            const maxFiles = parseInt($manager.data('max-files')) || 0;
+
+            // Update empty state
+            if (count === 0) {
+                $list.addClass('is-empty');
+            } else {
+                $list.removeClass('is-empty');
+            }
+
+            // Update count display
+            $manager.find('.current-count').text(count);
+
+            // Update add button state
+            const $addBtn = $manager.find('.file-manager-add');
+            if (maxFiles > 0 && count >= maxFiles) {
+                $addBtn.prop('disabled', true);
+                $list.addClass('max-reached');
+            } else {
+                $addBtn.prop('disabled', false);
+                $list.removeClass('max-reached');
+            }
+        },
+
+        getFileExtension: function (url) {
+            if (!url) return '';
+            const path = url.split('?')[0]; // Remove query string
+            const filename = path.split('/').pop();
+            const parts = filename.split('.');
+            return parts.length > 1 ? parts.pop().toLowerCase() : '';
+        },
+
+        getFileIcon: function (extension) {
+            return this.fileIcons[extension] || 'media-default';
         }
     };
 
-    // Initialize on document ready
-    $(function () {
-        FileManager.init();
+    // Initialize on ready
+    $(document).ready(function () {
+        WPFlyoutFileManager.init();
     });
-
-    // Export for external use
-    window.WPFlyoutFileManager = FileManager;
 
 })(jQuery);

@@ -109,17 +109,17 @@ class FileManager {
                 <?php endif; ?>
             </div>
 
-            <div class="file-manager-list">
-                <?php if ( empty( $this->config['items'] ) ) : ?>
-                    <div class="file-manager-empty">
-                        <span class="dashicons dashicons-media-document"></span>
-                        <p><?php echo esc_html( $this->config['empty_text'] ); ?></p>
-                    </div>
-                <?php else : ?>
+            <div class="file-manager-list <?php echo empty( $this->config['items'] ) ? 'is-empty' : ''; ?>">
+                <div class="file-manager-empty">
+                    <span class="dashicons dashicons-media-document"></span>
+                    <p><?php echo esc_html( $this->config['empty_text'] ); ?></p>
+                </div>
+
+                <div class="file-manager-items">
                     <?php foreach ( $this->config['items'] as $index => $file ) : ?>
                         <?php $this->render_file_item( $file, $index ); ?>
                     <?php endforeach; ?>
-                <?php endif; ?>
+                </div>
             </div>
         </div>
         <?php
@@ -143,7 +143,7 @@ class FileManager {
                 </span>
             <?php endif; ?>
 
-            <div class="file-icon">
+            <div class="file-icon" data-extension="<?php echo esc_attr( $file_extension ); ?>">
                 <span class="dashicons dashicons-<?php echo esc_attr( $file_icon ); ?>"></span>
                 <?php if ( $file_extension ) : ?>
                     <span class="file-extension"><?php echo esc_html( strtoupper( $file_extension ) ); ?></span>
@@ -233,35 +233,35 @@ class FileManager {
      */
     private function get_file_icon( string $extension ): string {
         $icons = [
-            // Documents
+                // Documents
                 'pdf'  => 'pdf',
                 'doc'  => 'media-document',
                 'docx' => 'media-document',
                 'txt'  => 'media-text',
 
-            // Images
+                // Images
                 'jpg'  => 'format-image',
                 'jpeg' => 'format-image',
                 'png'  => 'format-image',
                 'gif'  => 'format-image',
                 'svg'  => 'format-image',
 
-            // Media
+                // Media
                 'mp3'  => 'format-audio',
                 'wav'  => 'format-audio',
                 'mp4'  => 'format-video',
                 'mov'  => 'format-video',
 
-            // Archives
+                // Archives
                 'zip'  => 'media-archive',
                 'rar'  => 'media-archive',
 
-            // Code
+                // Code
                 'js'   => 'media-code',
                 'css'  => 'media-code',
                 'php'  => 'media-code',
 
-            // Spreadsheets
+                // Spreadsheets
                 'xls'  => 'media-spreadsheet',
                 'xlsx' => 'media-spreadsheet',
                 'csv'  => 'media-spreadsheet',
@@ -282,14 +282,15 @@ class FileManager {
         <?php if ( $this->config['reorderable'] ) : ?>
             <span class="file-handle" title="Drag to reorder"><span class="dashicons dashicons-menu"></span></span>
         <?php endif; ?>
-        <div class="file-icon"><span class="dashicons dashicons-media-default"></span></div>
+        <div class="file-icon" data-extension="{{extension}}"><span class="dashicons dashicons-{{icon}}"></span><span
+                    class="file-extension">{{extension_upper}}</span></div>
         <div class="file-details">
-            <input type="text" name="<?php echo esc_attr( $this->config['name'] ); ?>[{{index}}][name]" value=""
+            <input type="text" name="<?php echo esc_attr( $this->config['name'] ); ?>[{{index}}][name]" value="{{name}}"
                    placeholder="File name" data-field="name" class="file-name-input">
-            <input type="url" name="<?php echo esc_attr( $this->config['name'] ); ?>[{{index}}][url]" value=""
+            <input type="url" name="<?php echo esc_attr( $this->config['name'] ); ?>[{{index}}][url]" value="{{url}}"
                    placeholder="File URL" data-field="url"
                    class="file-url-input" <?php echo $this->config['browseable'] ? 'readonly' : ''; ?>>
-            <input type="hidden" name="<?php echo esc_attr( $this->config['name'] ); ?>[{{index}}][id]" value=""
+            <input type="hidden" name="<?php echo esc_attr( $this->config['name'] ); ?>[{{index}}][id]" value="{{id}}"
                    data-field="id">
         </div>
         <div class="file-actions">
@@ -297,6 +298,8 @@ class FileManager {
                 <button type="button" class="file-action-btn" data-action="browse" title="Change file"><span
                             class="dashicons dashicons-upload"></span></button>
             <?php endif; ?>
+            <a href="{{url}}" target="_blank" class="file-action-btn" title="View file"><span
+                        class="dashicons dashicons-external"></span></a>
             <button type="button" class="file-action-btn file-remove" data-action="remove" title="Remove file"><span
                         class="dashicons dashicons-trash"></span></button>
         </div>
@@ -305,5 +308,4 @@ class FileManager {
 
         return str_replace( array( "\r", "\n", "\t" ), '', trim( $html ) );
     }
-
 }

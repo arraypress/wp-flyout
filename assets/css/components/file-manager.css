@@ -65,15 +65,28 @@
     position: relative;
 }
 
-/* Empty state */
+/* Items container */
+.file-manager-items {
+    display: block;
+}
+
+/* Empty state - shown when is-empty class is present */
 .file-manager-empty {
-    display: flex;
+    display: none;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     padding: 40px 20px;
     text-align: center;
     color: #646970;
+}
+
+.file-manager-list.is-empty .file-manager-empty {
+    display: flex;
+}
+
+.file-manager-list.is-empty .file-manager-items {
+    display: none;
 }
 
 .file-manager-empty .dashicons {
@@ -266,87 +279,65 @@
     color: #d63638;
 }
 
-/* Different file type colors */
-.file-icon:has(.dashicons-pdf) {
+/* Different file type colors based on data-extension */
+.file-icon[data-extension="pdf"] {
     background: #ffe5e5;
 }
 
-.file-icon:has(.dashicons-pdf) .dashicons {
+.file-icon[data-extension="pdf"] .dashicons {
     color: #d63638;
 }
 
-.file-icon:has(.dashicons-format-image) {
+.file-icon[data-extension="jpg"],
+.file-icon[data-extension="jpeg"],
+.file-icon[data-extension="png"],
+.file-icon[data-extension="gif"],
+.file-icon[data-extension="svg"] {
     background: #e7f7ed;
 }
 
-.file-icon:has(.dashicons-format-image) .dashicons {
+.file-icon[data-extension="jpg"] .dashicons,
+.file-icon[data-extension="jpeg"] .dashicons,
+.file-icon[data-extension="png"] .dashicons,
+.file-icon[data-extension="gif"] .dashicons,
+.file-icon[data-extension="svg"] .dashicons {
     color: #00a32a;
 }
 
-.file-icon:has(.dashicons-format-audio),
-.file-icon:has(.dashicons-format-video) {
+.file-icon[data-extension="mp3"],
+.file-icon[data-extension="wav"],
+.file-icon[data-extension="mp4"],
+.file-icon[data-extension="mov"] {
     background: #fcf0ff;
 }
 
-.file-icon:has(.dashicons-format-audio) .dashicons,
-.file-icon:has(.dashicons-format-video) .dashicons {
+.file-icon[data-extension="mp3"] .dashicons,
+.file-icon[data-extension="wav"] .dashicons,
+.file-icon[data-extension="mp4"] .dashicons,
+.file-icon[data-extension="mov"] .dashicons {
     color: #8c35b1;
 }
 
-.file-icon:has(.dashicons-media-spreadsheet) {
+.file-icon[data-extension="xls"],
+.file-icon[data-extension="xlsx"],
+.file-icon[data-extension="csv"] {
     background: #e5f5e7;
 }
 
-.file-icon:has(.dashicons-media-spreadsheet) .dashicons {
+.file-icon[data-extension="xls"] .dashicons,
+.file-icon[data-extension="xlsx"] .dashicons,
+.file-icon[data-extension="csv"] .dashicons {
     color: #007017;
 }
 
-.file-icon:has(.dashicons-media-archive) {
+.file-icon[data-extension="zip"],
+.file-icon[data-extension="rar"] {
     background: #fcf9e8;
 }
 
-.file-icon:has(.dashicons-media-archive) .dashicons {
+.file-icon[data-extension="zip"] .dashicons,
+.file-icon[data-extension="rar"] .dashicons {
     color: #8a6116;
-}
-
-/* Loading state */
-.file-manager-item.is-uploading {
-    opacity: 0.6;
-    pointer-events: none;
-}
-
-.file-manager-item.is-uploading::after {
-    content: '';
-    position: absolute;
-    left: 16px;
-    right: 16px;
-    bottom: 0;
-    height: 3px;
-    background: #2271b1;
-    animation: upload-progress 1s ease-in-out infinite;
-}
-
-@keyframes upload-progress {
-    0% {
-        transform: translateX(-100%);
-    }
-    50% {
-        transform: translateX(0);
-    }
-    100% {
-        transform: translateX(100%);
-    }
-}
-
-/* Disabled state */
-.file-manager-add:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-/* Max files reached */
-.file-manager-list.max-reached {
-    opacity: 0.9;
 }
 
 /* Responsive */
@@ -377,31 +368,5 @@
 
     .file-actions {
         margin-left: auto;
-    }
-
-    @media screen and (max-width: 480px) {
-        .file-details {
-            flex: 1 1 100%;
-            margin-top: 12px;
-        }
-
-        .file-actions {
-            width: 100%;
-            margin-top: 12px;
-            justify-content: flex-end;
-        }
-    }
-}
-
-/* Print styles */
-@media print {
-    .file-handle,
-    .file-actions {
-        display: none !important;
-    }
-
-    .file-url-input {
-        border: none;
-        background: none;
     }
 }
