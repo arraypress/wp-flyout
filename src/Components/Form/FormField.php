@@ -450,13 +450,20 @@ class FormField {
      * @since 5.0.0
      */
     private function render_ajax_select(): string {
+        // Create nonce based on the ajax action name
+        $ajax_action = $this->config['ajax'] ?? '';
+        $nonce       = '';
+        if ( $ajax_action ) {
+            $nonce = wp_create_nonce( 'ajax_select_' . $ajax_action );
+        }
+
         ob_start();
         ?>
         <select id="<?php echo esc_attr( $this->config['id'] ); ?>"
                 name="<?php echo esc_attr( $this->config['name'] ); ?>"
                 class="<?php echo esc_attr( $this->config['class'] ); ?>"
-                data-ajax="<?php echo esc_attr( $this->config['ajax'] ?? '' ); ?>"
-                data-nonce="<?php echo esc_attr( $this->config['nonce'] ?? wp_create_nonce( 'ajax_select' ) ); ?>"
+                data-ajax="<?php echo esc_attr( $ajax_action ); ?>"
+                data-nonce="<?php echo esc_attr( $nonce ); ?>"
                 data-placeholder="<?php echo esc_attr( $this->config['placeholder'] ); ?>"
                 <?php echo $this->config['required'] ? 'required' : ''; ?>
                 <?php echo $this->config['disabled'] ? 'disabled' : ''; ?>>
