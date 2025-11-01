@@ -163,11 +163,7 @@ class FormField {
                         'value'   => '1',
                 ],
                 'tags'        => [
-                        'max_tags'         => 0,
-                        'min_tags'         => 0,
-                        'autocomplete'     => [],
-                        'allow_duplicates' => false,
-                        'delimiter'        => ',',
+                        'placeholder' => 'Add tags...'
                 ],
                 'radio'       => [
                         'options' => [],
@@ -492,49 +488,38 @@ class FormField {
     }
 
     /**
-     * Render tags input field
+     * Render tags input field - Simplified
      *
      * @return string Generated HTML.
      * @since 5.0.0
-     *
      */
     private function render_tags(): string {
         $value = is_array( $this->config['value'] ) ? $this->config['value'] : [];
         ob_start();
         ?>
         <div class="wp-flyout-tag-input"
-             data-name="<?php echo esc_attr( $this->config['name'] ); ?>"
-             data-max-tags="<?php echo esc_attr( (string) $this->config['max_tags'] ); ?>"
-             data-min-tags="<?php echo esc_attr( (string) $this->config['min_tags'] ); ?>"
-             data-allow-duplicates="<?php echo esc_attr( $this->config['allow_duplicates'] ? 'true' : 'false' ); ?>"
-             data-delimiter="<?php echo esc_attr( $this->config['delimiter'] ); ?>"
-                <?php if ( ! empty( $this->config['autocomplete'] ) ) : ?>
-                    data-autocomplete="<?php echo esc_attr( wp_json_encode( $this->config['autocomplete'] ) ); ?>"
-                <?php endif; ?>>
-
+             data-name="<?php echo esc_attr( $this->config['name'] ); ?>">
             <div class="tag-input-container">
                 <?php foreach ( $value as $tag ) : ?>
                     <span class="tag-item" data-tag="<?php echo esc_attr( $tag ); ?>">
                     <span class="tag-text"><?php echo esc_html( $tag ); ?></span>
                     <?php if ( ! $this->config['readonly'] ) : ?>
-                        <button type="button" class="tag-remove" aria-label="Remove tag">
+                        <button type="button" class="tag-remove" aria-label="Remove">
                             <span class="dashicons dashicons-no-alt"></span>
                         </button>
                     <?php endif; ?>
                 </span>
                 <?php endforeach; ?>
-
-                <input type="text"
-                       class="tag-input-field"
-                       placeholder="<?php echo esc_attr( $this->config['placeholder'] ); ?>"
-                        <?php echo $this->config['readonly'] ? 'readonly' : ''; ?>>
+                <?php if ( ! $this->config['readonly'] ) : ?>
+                    <input type="text"
+                           class="tag-input-field"
+                           placeholder="<?php echo esc_attr( $this->config['placeholder'] ); ?>">
+                <?php endif; ?>
             </div>
-
             <?php foreach ( $value as $tag ) : ?>
                 <input type="hidden"
                        name="<?php echo esc_attr( $this->config['name'] ); ?>[]"
-                       value="<?php echo esc_attr( $tag ); ?>"
-                       data-tag-value>
+                       value="<?php echo esc_attr( $tag ); ?>">
             <?php endforeach; ?>
         </div>
         <?php

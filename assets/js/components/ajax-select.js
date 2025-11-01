@@ -53,7 +53,7 @@
             this.$wrapper = $('<div class="wp-ajax-select-wrapper">');
             this.$input = $('<input type="text" class="regular-text">');
             this.$chevron = $('<span class="dashicons dashicons-arrow-down-alt2"></span>');
-            this.$clear = $('<button type="button" class="button-link wp-ajax-select-clear" style="display:none">×</button>');
+            this.$clear = $('<span class="wp-ajax-select-clear" style="display:none">×</span>');
             this.$results = $('<div class="wp-ajax-select-results" style="display:none">');
 
             this.$input.attr('placeholder', this.options.placeholder);

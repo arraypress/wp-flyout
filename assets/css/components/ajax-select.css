@@ -1,6 +1,6 @@
 /**
  * WP Flyout - AJAX Select Component
- * Minimal styling matching WordPress admin
+ * Complete styling matching WordPress admin
  */
 
 .wp-ajax-select {
@@ -14,41 +14,59 @@
     align-items: center;
 }
 
-/* Input field */
+/* Input field - uses WordPress regular-text class */
 .wp-ajax-select input[type="text"] {
     flex: 1;
-    padding-right: 50px; /* Room for clear + chevron */
+    padding-right: 55px; /* Room for clear button + chevron */
 }
 
-/* Clear button */
+/* Clear button (× symbol) */
 .wp-ajax-select-clear {
     position: absolute;
     right: 30px;
-    padding: 0 5px;
-    font-size: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
+    font-size: 20px;
     line-height: 1;
     color: #646970;
+    cursor: pointer;
+    user-select: none;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .wp-ajax-select-clear:hover {
     color: #d63638;
 }
 
-/* Chevron */
+/* Chevron arrow */
 .wp-ajax-select .dashicons-arrow-down-alt2 {
     position: absolute;
     right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
     color: #646970;
     cursor: pointer;
+    transition: transform 0.2s;
 }
 
 .wp-ajax-select .dashicons-arrow-down-alt2:hover {
     color: #2271b1;
 }
 
-/* Rotate when dropdown is open */
+/* Rotate chevron when dropdown is open */
 .wp-ajax-select.dropdown-open .dashicons-arrow-down-alt2 {
-    transform: rotate(180deg);
+    transform: translateY(-50%) rotate(180deg);
+}
+
+/* When has value - make input look readonly */
+.wp-ajax-select.has-value input[type="text"] {
+    background-color: #f6f7f7;
+    cursor: default;
 }
 
 /* Results dropdown */
@@ -64,7 +82,7 @@
     border: 1px solid #8c8f94;
     border-radius: 4px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    z-index: 100001;
+    z-index: 100001; /* Above flyout */
 }
 
 /* Result items */
@@ -72,6 +90,7 @@
     padding: 8px 12px;
     cursor: pointer;
     border-bottom: 1px solid #f0f0f1;
+    font-size: 14px;
 }
 
 .wp-ajax-select-item:last-child {
@@ -84,18 +103,45 @@
     color: #fff;
 }
 
-/* Empty/Loading states */
-.wp-ajax-select-empty,
-.wp-ajax-select-loading {
+/* Empty state */
+.wp-ajax-select-empty {
     padding: 12px;
     color: #646970;
     text-align: center;
     font-style: italic;
 }
 
+/* Loading state */
+.wp-ajax-select-loading {
+    padding: 12px;
+    color: #646970;
+    text-align: center;
+}
+
+/* Loading spinner */
+.wp-ajax-select-loading:before {
+    content: '';
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    margin-right: 8px;
+    border: 2px solid #dcdcde;
+    border-radius: 50%;
+    border-top-color: #2271b1;
+    animation: wp-ajax-select-spin 0.8s linear infinite;
+    vertical-align: middle;
+}
+
+@keyframes wp-ajax-select-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
 /* Responsive */
 @media screen and (max-width: 782px) {
     .wp-ajax-select-item {
         padding: 10px 12px;
+        font-size: 16px;
     }
 }
