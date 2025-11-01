@@ -3,11 +3,12 @@
  * PriceBreakdown Component
  *
  * Displays a detailed price breakdown with line items and totals.
+ * Supports interactive refund actions on individual items.
  *
  * @package     ArrayPress\WPFlyout\Components\Domain
  * @copyright   Copyright (c) 2025, ArrayPress Limited
  * @license     GPL2+
- * @version     2.0.0
+ * @version     3.0.0
  */
 
 declare( strict_types=1 );
@@ -44,7 +45,12 @@ class PriceBreakdown {
             'currency'        => 'USD',
             'show_zero'       => false,
             'class'           => '',
-            'highlight_total' => true
+            'highlight_total' => true,
+            // Refund functionality
+            'refundable'      => false,
+            'refund_ajax'     => '',
+            'refund_nonce'    => '',
+            'order_id'        => '',
     ];
 
     /**
@@ -59,6 +65,11 @@ class PriceBreakdown {
         if ( empty( $this->config['id'] ) ) {
             $this->config['id'] = 'price-breakdown-' . wp_generate_uuid4();
         }
+
+        // Generate nonce for refunds if needed
+        if ( $this->config['refundable'] && empty( $this->config['refund_nonce'] ) ) {
+            $this->config['refund_nonce'] = wp_create_nonce( 'price_breakdown_refund' );
+        }
     }
 
     /**
@@ -68,6 +79,9 @@ class PriceBreakdown {
      */
     public function render(): string {
         $classes = [ 'price-breakdown' ];
+        if ( $this->config['refundable'] ) {
+            $classes[] = 'refundable';
+        }
         if ( ! empty( $this->config['class'] ) ) {
             $classes[] = $this->config['class'];
         }
@@ -75,7 +89,12 @@ class PriceBreakdown {
         ob_start();
         ?>
         <div id="<?php echo esc_attr( $this->config['id'] ); ?>"
-             class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>">
+             class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>"
+                <?php if ( $this->config['refundable'] ) : ?>
+                    data-refund-ajax="<?php echo esc_attr( $this->config['refund_ajax'] ); ?>"
+                    data-refund-nonce="<?php echo esc_attr( $this->config['refund_nonce'] ); ?>"
+                    data-order-id="<?php echo esc_attr( $this->config['order_id'] ); ?>"
+                <?php endif; ?>>
 
             <?php if ( ! empty( $this->config['items'] ) ) : ?>
                 <div class="price-breakdown-items">
@@ -91,8 +110,10 @@ class PriceBreakdown {
 
             <?php if ( $this->config['total'] !== null ) : ?>
                 <div class="price-breakdown-total <?php echo $this->config['highlight_total'] ? 'highlighted' : ''; ?>">
-                    <span class="label"><?php esc_html_e( 'Total', 'arraypress' ); ?></span>
-                    <span class="amount"><?php echo $this->format_currency( $this->config['total'], $this->config['currency'] ); ?></span>
+                    <span class="label"><?php esc_html_e( 'Total', 'wp-flyout' ); ?></span>
+                    <span class="amount" data-original-total="<?php echo esc_attr( $this->config['total'] ); ?>">
+                        <?php echo $this->format_currency( $this->config['total'], $this->config['currency'] ); ?>
+                    </span>
                 </div>
             <?php endif; ?>
         </div>
@@ -101,7 +122,7 @@ class PriceBreakdown {
     }
 
     /**
-     * Render a line item
+     * Render a line item with optional refund capability
      *
      * @param array $item Item configuration
      */
@@ -110,14 +131,34 @@ class PriceBreakdown {
         $amount      = $item['amount'] ?? 0;
         $quantity    = $item['quantity'] ?? null;
         $description = $item['description'] ?? '';
+        $item_id     = $item['id'] ?? '';
+        $product_id  = $item['product_id'] ?? '';
+        $price_id    = $item['price_id'] ?? '';
+        $refunded    = $item['refunded'] ?? false;
+        $refundable  = $item['refundable'] ?? $this->config['refundable'];
 
         if ( empty( $label ) || ( ! $this->config['show_zero'] && $amount == 0 ) ) {
             return;
         }
+
+        $item_classes = [ 'price-breakdown-item' ];
+        if ( $refunded ) {
+            $item_classes[] = 'refunded';
+        }
         ?>
-        <div class="price-breakdown-item">
+        <div class="<?php echo esc_attr( implode( ' ', $item_classes ) ); ?>"
+             <?php if ( $item_id ) : ?>data-item-id="<?php echo esc_attr( $item_id ); ?>"<?php endif; ?>
+             <?php if ( $product_id ) : ?>data-product-id="<?php echo esc_attr( $product_id ); ?>"<?php endif; ?>
+             <?php if ( $price_id ) : ?>data-price-id="<?php echo esc_attr( $price_id ); ?>"<?php endif; ?>
+             data-amount="<?php echo esc_attr( $amount ); ?>">
+
             <div class="item-details">
-                <span class="item-label"><?php echo esc_html( $label ); ?></span>
+                <span class="item-label">
+                    <?php echo esc_html( $label ); ?>
+                    <?php if ( $refunded ) : ?>
+                        <span class="refund-badge"><?php esc_html_e( 'Refunded', 'wp-flyout' ); ?></span>
+                    <?php endif; ?>
+                </span>
                 <?php if ( $quantity !== null ) : ?>
                     <span class="item-quantity">× <?php echo esc_html( $quantity ); ?></span>
                 <?php endif; ?>
@@ -125,7 +166,21 @@ class PriceBreakdown {
                     <span class="item-description"><?php echo esc_html( $description ); ?></span>
                 <?php endif; ?>
             </div>
-            <span class="item-amount"><?php echo $this->format_currency( $amount, $this->config['currency'] ); ?></span>
+
+            <div class="item-actions">
+                <span class="item-amount <?php echo $refunded ? 'strikethrough' : ''; ?>">
+                    <?php echo $this->format_currency( $amount, $this->config['currency'] ); ?>
+                </span>
+
+                <?php if ( $refundable && ! $refunded && $this->config['refundable'] ) : ?>
+                    <button type="button"
+                            class="price-breakdown-refund-btn"
+                            title="<?php esc_attr_e( 'Refund this item', 'wp-flyout' ); ?>"
+                            aria-label="<?php esc_attr_e( 'Refund', 'wp-flyout' ); ?>">
+                        <span class="dashicons dashicons-undo"></span>
+                    </button>
+                <?php endif; ?>
+            </div>
         </div>
         <?php
     }
@@ -135,10 +190,10 @@ class PriceBreakdown {
      */
     private function render_summary_lines(): void {
         $lines = [
-                'subtotal' => __( 'Subtotal', 'arraypress' ),
-                'discount' => __( 'Discount', 'arraypress' ),
-                'shipping' => __( 'Shipping', 'arraypress' ),
-                'tax'      => __( 'Tax', 'arraypress' )
+                'subtotal' => __( 'Subtotal', 'wp-flyout' ),
+                'discount' => __( 'Discount', 'wp-flyout' ),
+                'shipping' => __( 'Shipping', 'wp-flyout' ),
+                'tax'      => __( 'Tax', 'wp-flyout' ),
         ];
 
         foreach ( $lines as $key => $label ) {
@@ -156,11 +211,12 @@ class PriceBreakdown {
                 $amount = - $amount; // Show discounts as negative
             }
             ?>
-            <div class="<?php echo esc_attr( $class ); ?>">
+            <div class="<?php echo esc_attr( $class ); ?>" data-type="<?php echo esc_attr( $key ); ?>">
                 <span class="label"><?php echo esc_html( $label ); ?></span>
-                <span class="amount <?php echo $amount < 0 ? 'negative' : ''; ?>">
-					<?php echo $this->format_currency( $amount, $this->config['currency'] ); ?>
-				</span>
+                <span class="amount <?php echo $amount < 0 ? 'negative' : ''; ?>"
+                      data-amount="<?php echo esc_attr( abs( $amount ) ); ?>">
+                    <?php echo $this->format_currency( $amount, $this->config['currency'] ); ?>
+                </span>
             </div>
             <?php
         }

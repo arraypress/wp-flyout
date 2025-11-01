@@ -23,12 +23,6 @@
                 e.preventDefault();
                 Alert.dismiss($(this).closest('.wp-flyout-alert'));
             });
-
-            // Initialize on flyout open
-            $(document).on('wpflyout:opened', function (e, data) {
-                // Nothing specific needed on open
-                // But could trigger auto-dismiss timers here if needed
-            });
         },
 
         /**

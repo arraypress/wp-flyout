@@ -5,7 +5,7 @@
  * @package     ArrayPress\WPFlyout
  * @copyright   Copyright (c) 2025, ArrayPress Limited
  * @license     GPL2+
- * @version     2.0.0
+ * @version     3.0.0
  */
 
 declare( strict_types=1 );
@@ -15,28 +15,15 @@ namespace ArrayPress\WPFlyout;
 class Assets {
 
 	/**
-	 * Core CSS files to load (in order)
-	 *
-	 * @var array
-	 */
-	private static array $core_styles = [
-		'css/flyout/core.css',
-		'css/flyout/form.css',
-		'css/flyout/ui-elements.css',
-		'css/flyout/data-display.css',
-		'css/flyout/alert.css',
-	];
-
-	/**
 	 * Core JavaScript files
 	 *
 	 * @var array
 	 */
 	private static array $core_scripts = [
-		'js/wp-flyout.js',
-		'js/core/forms.js',
-		'js/core/manager.js',
-		'js/core/alert.js'
+		'js/wp-flyout.js',          // Core flyout functionality
+		'js/core/forms.js',         // Form utilities
+		'js/core/manager.js',       // Manager integration
+		'js/core/alert.js'          // Alert component
 	];
 
 	/**
@@ -45,7 +32,7 @@ class Assets {
 	 * @var array
 	 */
 	private static array $components = [
-		// Interactive Components
+		// Interactive Components (always separate)
 		'file-manager'    => [
 			'script' => 'js/components/file-manager.js',
 			'style'  => 'css/components/file-manager.css',
@@ -62,58 +49,7 @@ class Assets {
 			'deps'   => [ 'wp-flyout-ajax-select' ]
 		],
 
-		// Data Components
-		'data-table'      => [
-			'script' => '',
-			'style'  => 'css/components/data-table.css',
-			'deps'   => []
-		],
-		'info-grid'       => [
-			'script' => '',
-			'style'  => 'css/components/info-grid.css',
-			'deps'   => []
-		],
-		'timeline'        => [
-			'script' => '',
-			'style'  => 'css/components/timeline.css',
-			'deps'   => []
-		],
-		'stats-card'      => [
-			'script' => '',
-			'style'  => 'css/components/stats-card.css',
-			'deps'   => []
-		],
-
-		// Display Components
-		'alert'           => [
-			'script' => 'js/components/alert.js',
-			'style'  => 'css/components/alert.css',
-			'deps'   => []
-		],
-		'empty-state'     => [
-			'script' => '',
-			'style'  => 'css/components/empty-state.css',
-			'deps'   => []
-		],
-
-		// Domain Components
-		'entity-header'   => [
-			'script' => '',
-			'style'  => 'css/components/entity-header.css',
-			'deps'   => []
-		],
-		'payment-method'  => [
-			'script' => '',
-			'style'  => 'css/components/payment-method.css',
-			'deps'   => []
-		],
-		'price-breakdown' => [
-			'script' => '',
-			'style'  => 'css/components/price-breakdown.css',
-			'deps'   => []
-		],
-
-		// Form Components
+		// Optional Components (loaded on demand)
 		'ajax-select'     => [
 			'script' => 'js/components/ajax-select.js',
 			'style'  => 'css/components/ajax-select.css',
@@ -124,30 +60,26 @@ class Assets {
 			'style'  => 'css/components/tags.css',
 			'deps'   => []
 		],
-		'card-choice'     => [
-			'script' => '',
-			'style'  => 'css/components/card-choice.css',
-			'deps'   => []
-		],
-
-		// Layout Components
 		'accordion'       => [
 			'script' => 'js/components/accordion.js',
 			'style'  => 'css/components/accordion.css',
 			'deps'   => []
 		],
-
-		// Core Components
-		'action-bar'      => [
-			'script' => '',
-			'style'  => 'css/components/action-bar.css',
+		'card-choice'     => [
+			'script' => '', // No JS for this component
+			'style'  => 'css/components/card-choice.css',
 			'deps'   => []
 		],
-		'section-header'  => [
-			'script' => '',
-			'style'  => 'css/components/section-header.css',
+		'timeline'        => [
+			'script' => '', // No JS for this component
+			'style'  => 'css/components/timeline.css',
 			'deps'   => []
-		]
+		],
+		'price-breakdown' => [
+			'script' => 'js/components/price-breakdown.js',
+			'style'  => 'css/components/price-breakdown.css',
+			'deps'   => []
+		],
 	];
 
 	/**
@@ -166,33 +98,21 @@ class Assets {
 	 */
 	public static function register_assets(): void {
 		$base_file = __FILE__;
-		$version   = defined( 'WP_DEBUG' ) && WP_DEBUG ? time() : '2.0.0';
+		$version   = defined( 'WP_DEBUG' ) && WP_DEBUG ? time() : '3.0.0';
 
-		// Register core CSS files
-		$deps        = [ 'dashicons' ];
-		$last_handle = '';
-		foreach ( self::$core_styles as $css_file ) {
-			$handle = self::get_handle_from_path( $css_file );
-
-			wp_register_composer_style(
-				$handle,
-				$base_file,
-				$css_file,
-				$deps,
-				$version
-			);
-
-			// Make each subsequent file depend on the previous one
-			$deps        = [ $handle ];
-			$last_handle = $handle;
-		}
-
-		// Register virtual 'wp-flyout' style handle
-		wp_register_style( 'wp-flyout', false, [ $last_handle ], $version );
+		// Register core CSS (single consolidated file)
+		wp_register_composer_style(
+			'wp-flyout',
+			$base_file,
+			'css/flyout/core.css', // The consolidated CSS file
+			[ 'dashicons' ],
+			$version
+		);
 
 		// Register core JavaScript files
 		$js_deps        = [ 'jquery' ];
 		$last_js_handle = '';
+
 		foreach ( self::$core_scripts as $js_file ) {
 			$handle = self::get_handle_from_path( $js_file );
 
@@ -214,7 +134,7 @@ class Assets {
 
 		// Add inline script for global access
 		wp_add_inline_script(
-			'wp-flyout-wp-flyout', // First core script
+			'wp-flyout-wp-flyout', // First core script handle
 			'window.WPFlyout = window.WPFlyout || {};',
 			'before'
 		);
@@ -235,7 +155,7 @@ class Assets {
 		foreach ( self::$components as $name => $config ) {
 			$handle = 'wp-flyout-' . $name;
 
-			// Register component script if exists and not empty
+			// Register component script if exists
 			if ( ! empty( $config['script'] ) ) {
 				$deps = array_merge( [ 'jquery', 'wp-flyout' ], $config['deps'] ?? [] );
 				wp_register_composer_script(
@@ -247,13 +167,13 @@ class Assets {
 				);
 			}
 
-			// Register component style if exists and not empty
+			// Register component style if exists
 			if ( ! empty( $config['style'] ) ) {
 				wp_register_composer_style(
 					$handle,
 					$base_file,
 					$config['style'],
-					[ 'wp-flyout' ],
+					[ 'wp-flyout' ], // Depends on core styles
 					$version
 				);
 			}
@@ -271,7 +191,7 @@ class Assets {
 			self::register_assets();
 		}
 
-		// This will enqueue all core CSS and JS via dependencies
+		// This will enqueue all core CSS and JS
 		wp_enqueue_style( 'wp-flyout' );
 		wp_enqueue_script( 'wp-flyout' );
 	}
@@ -303,6 +223,9 @@ class Assets {
 					if ( isset( self::$components[ $dep_component ] ) ) {
 						self::enqueue_component( $dep_component );
 					}
+				} else {
+					// Enqueue non-component dependencies (like jquery-ui-sortable)
+					wp_enqueue_script( $dep );
 				}
 			}
 		}
@@ -358,4 +281,5 @@ class Assets {
 
 		return $prefix . '-' . $name;
 	}
+
 }
