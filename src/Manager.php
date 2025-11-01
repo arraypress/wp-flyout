@@ -22,6 +22,9 @@ use ArrayPress\WPFlyout\Components\Core\ActionBar;
 use ArrayPress\WPFlyout\Components\Interactive\OrderItems;
 use ArrayPress\WPFlyout\Components\Interactive\Notes;
 use ArrayPress\WPFlyout\Components\Interactive\FileManager;
+use ArrayPress\WPFlyout\Components\Domain\EntityHeader;
+use ArrayPress\WPFlyout\Components\Domain\PaymentMethod;
+use ArrayPress\WPFlyout\Components\Form\CardChoice;
 use Exception;
 
 /**
@@ -77,7 +80,10 @@ class Manager {
 		'order_items',
 		'notes',
 		'files',
-		'price_breakdown'  // Add if you have PriceBreakdown PHP class
+		'price_breakdown',
+		'entity_header',
+		'payment_method',
+		'card_choice'
 	];
 
 	/**
@@ -92,9 +98,11 @@ class Manager {
 		'ajax_select'     => 'ajax-select',
 		'tags'            => 'tags',
 		'price_breakdown' => 'price-breakdown',
+		'entity_header'   => 'entity-header',    // Add this
+		'payment_method'  => 'payment-method',   // Add this
+		'card_choice'     => 'card-choice',      // Add this
 		'accordion'       => 'accordion',
-		'timeline'        => 'timeline',
-		'card_choice'     => 'card-choice'
+		'timeline'        => 'timeline'
 	];
 
 	/**
@@ -450,13 +458,25 @@ class Manager {
 	private function render_component_field( array $field, $data ): string {
 		$type = $field['type'];
 
-		// Pass the entire field array to the component
-		$component_config = $field;
+		// Handle config vs direct field values
+		$component_config = $field['config'] ?? $field;
+
+		// Remove type from config if it exists
 		unset( $component_config['type'] );
 
 		// Map value to items for list components
-		if ( ! isset( $component_config['items'] ) && isset( $component_config['name'] ) ) {
-			$component_config['items'] = $this->extract_value( $data, $component_config['name'] );
+		if ( ! isset( $component_config['items'] ) && isset( $field['name'] ) ) {
+			$component_config['items'] = $this->extract_value( $data, $field['name'] );
+		}
+
+		// Map value for standard fields
+		if ( ! isset( $component_config['value'] ) && isset( $field['name'] ) ) {
+			$component_config['value'] = $this->extract_value( $data, $field['name'] );
+		}
+
+		// Ensure name is set if provided in field
+		if ( isset( $field['name'] ) && ! isset( $component_config['name'] ) ) {
+			$component_config['name'] = $field['name'];
 		}
 
 		switch ( $type ) {
@@ -477,6 +497,21 @@ class Manager {
 
 			case 'price_breakdown':
 				$component = new PriceBreakdown( $component_config );
+
+				return $component->render();
+
+			case 'entity_header':
+				$component = new EntityHeader( $component_config );
+
+				return $component->render();
+
+			case 'payment_method':
+				$component = new PaymentMethod( $component_config );
+
+				return $component->render();
+
+			case 'card_choice':
+				$component = new CardChoice( $component_config );
 
 				return $component->render();
 		}
