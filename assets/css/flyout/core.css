@@ -705,7 +705,11 @@
     line-height: 1.6;
 }
 
-/* Payment Method */
+/**
+ * WP Flyout - Payment Method Component
+ * Enhanced with SVG icon support
+ */
+
 .wp-flyout-payment-method {
     display: flex;
     align-items: center;
@@ -715,21 +719,45 @@
     border: 1px solid #e5e7eb;
     border-radius: 8px;
     margin-bottom: 10px;
+    transition: all 0.2s;
 }
 
+.wp-flyout-payment-method:hover {
+    border-color: #d1d5db;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+/* Payment icon container */
 .payment-icon {
     flex-shrink: 0;
-    width: 40px;
-    height: 40px;
+    width: 48px;
+    height: 32px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 8px;
+    border-radius: 6px;
     overflow: hidden;
-    background: #f2f2f2;
-    padding: 6px;
+    background: #f9fafb;
+    padding: 4px;
 }
 
+/* SVG icon styling */
+.payment-icon svg {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+}
+
+/* Dashicon fallback */
+.payment-icon .dashicons {
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+    color: #6b7280;
+}
+
+/* Payment details */
 .payment-details {
     flex: 1;
     min-width: 0;
@@ -749,7 +777,111 @@
 }
 
 .payment-last4 {
-    color: #4b5563;
+    color: #6b7280;
+    font-family: 'SF Mono', Consolas, Monaco, monospace;
+    font-size: 13px;
+}
+
+.payment-bank,
+.payment-paypal,
+.payment-type {
+    color: #374151;
+}
+
+/* Badges */
+.payment-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.payment-badge.default {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.payment-badge.expired {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+/* Format variations */
+.wp-flyout-payment-method.format-compact {
+    padding: 8px 12px;
+    border-radius: 6px;
+}
+
+.wp-flyout-payment-method.format-compact .payment-icon {
+    width: 40px;
+    height: 28px;
+}
+
+.wp-flyout-payment-method.format-compact .payment-primary {
+    font-size: 13px;
+}
+
+.wp-flyout-payment-method.format-detailed {
+    padding: 16px;
+    background: linear-gradient(135deg, #f9fafb 0%, #fff 100%);
+}
+
+/* Brand-specific colors (subtle backgrounds) */
+.wp-flyout-payment-method.brand-visa .payment-icon {
+    background: #f0f4ff;
+}
+
+.wp-flyout-payment-method.brand-mastercard .payment-icon {
+    background: #fff5f0;
+}
+
+.wp-flyout-payment-method.brand-amex .payment-icon {
+    background: #f0f9ff;
+}
+
+.wp-flyout-payment-method.brand-discover .payment-icon {
+    background: #fffbf0;
+}
+
+/* Payment method specific styles */
+.wp-flyout-payment-method.method-paypal .payment-icon {
+    background: #fef3c7;
+}
+
+.wp-flyout-payment-method.method-bank .payment-icon {
+    background: #f0fdf4;
+}
+
+/* Responsive */
+@media screen and (max-width: 480px) {
+    .wp-flyout-payment-method {
+        padding: 10px;
+    }
+
+    .payment-icon {
+        width: 40px;
+        height: 28px;
+    }
+
+    .payment-primary {
+        font-size: 13px;
+    }
+}
+
+/* Print styles */
+@media print {
+    .wp-flyout-payment-method {
+        border: 1px solid #000 !important;
+        background: #fff !important;
+    }
+
+    .payment-icon svg {
+        max-width: 40px;
+    }
 }
 
 /* ========================================
