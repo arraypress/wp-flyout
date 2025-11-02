@@ -467,6 +467,12 @@ class Manager {
 		$output = '';
 
 		foreach ( $fields as $field_key => $field ) {
+			// Handle numeric keys (when fields are indexed array)
+			if ( is_numeric( $field_key ) ) {
+				// Use the name field as the key if available
+				$field_key = $field['name'] ?? 'field_' . $field_key;
+			}
+
 			// Use field key as default name if not specified
 			if ( ! isset( $field['name'] ) ) {
 				$field['name'] = $field_key;
@@ -474,7 +480,7 @@ class Manager {
 
 			// Smart data resolution
 			if ( ! isset( $field['value'] ) && ! isset( $field['items'] ) ) {
-				$resolved_data = $this->resolve_field_data( $field_key, $field['type'] ?? 'text', $data );
+				$resolved_data = $this->resolve_field_data( (string) $field_key, $field['type'] ?? 'text', $data );
 
 				// Set value or items based on field type
 				if ( in_array( $field['type'] ?? '', [ 'notes', 'files', 'order_items' ] ) ) {
@@ -486,7 +492,7 @@ class Manager {
 
 			// Check if field type requires special component handling
 			if ( in_array( $field['type'] ?? '', self::COMPLEX_COMPONENTS, true ) ) {
-				$output .= $this->render_component_field( $field_key, $field, $data );
+				$output .= $this->render_component_field( (string) $field_key, $field, $data );
 			} else {
 				// Standard form field
 				$form_field = new FormField( $field );
