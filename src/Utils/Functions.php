@@ -14,6 +14,10 @@ declare( strict_types=1 );
 
 use ArrayPress\WPFlyout\Manager;
 
+// Global managers registry
+global $wp_flyout_managers;
+$wp_flyout_managers = [];
+
 if ( ! function_exists( 'register_flyout' ) ) {
 	/**
 	 * Register a flyout with automatic manager handling
@@ -45,7 +49,7 @@ if ( ! function_exists( 'register_flyout' ) ) {
 	 * @return Manager|null The manager instance or null if registration failed
 	 */
 	function register_flyout( string $id, array $config = [] ) {
-		static $managers = [];
+		global $wp_flyout_managers;
 
 		// Parse the ID to extract prefix and flyout name
 		$parts = explode( '_', $id, 2 );
@@ -60,14 +64,14 @@ if ( ! function_exists( 'register_flyout' ) ) {
 		}
 
 		// Get or create manager instance
-		if ( ! isset( $managers[ $prefix ] ) ) {
-			$managers[ $prefix ] = new Manager( $prefix );
+		if ( ! isset( $wp_flyout_managers[ $prefix ] ) ) {
+			$wp_flyout_managers[ $prefix ] = new Manager( $prefix );
 		}
 
 		// Register the flyout
 		try {
-			$managers[ $prefix ]->register_flyout( $flyout_id, $config );
-			return $managers[ $prefix ];
+			$wp_flyout_managers[ $prefix ]->register_flyout( $flyout_id, $config );
+			return $wp_flyout_managers[ $prefix ];
 		} catch ( Exception $e ) {
 			error_log( 'Failed to register flyout: ' . $e->getMessage() );
 			return null;
@@ -96,7 +100,7 @@ if ( ! function_exists( 'get_flyout_button' ) ) {
 	 * @return string Button HTML or empty string if flyout not found
 	 */
 	function get_flyout_button( string $id, array $data = [], array $args = [] ): string {
-		static $managers = [];
+		global $wp_flyout_managers;
 
 		// Parse the ID to find the manager
 		$parts = explode( '_', $id, 2 );
@@ -110,12 +114,11 @@ if ( ! function_exists( 'get_flyout_button' ) ) {
 		}
 
 		// Try to get the manager button
-		if ( isset( $managers[ $prefix ] ) ) {
-			return $managers[ $prefix ]->get_button( $flyout_id, $data, $args );
+		if ( isset( $wp_flyout_managers[ $prefix ] ) ) {
+			return $wp_flyout_managers[ $prefix ]->get_button( $flyout_id, $data, $args );
 		}
 
-		// Try to find it through the global registration tracking
-		// This won't work unless register_flyout was called, so return empty
+		// Return empty if manager not found
 		return '';
 	}
 }
@@ -159,7 +162,7 @@ if ( ! function_exists( 'get_flyout_link' ) ) {
 	 * @return string Link HTML or empty string if flyout not found
 	 */
 	function get_flyout_link( string $id, string $text, array $data = [], array $args = [] ): string {
-		static $managers = [];
+		global $wp_flyout_managers;
 
 		// Parse the ID to find the manager
 		$parts = explode( '_', $id, 2 );
@@ -173,12 +176,11 @@ if ( ! function_exists( 'get_flyout_link' ) ) {
 		}
 
 		// Try to get the manager link
-		if ( isset( $managers[ $prefix ] ) ) {
-			return $managers[ $prefix ]->link( $flyout_id, $text, $data, $args );
+		if ( isset( $wp_flyout_managers[ $prefix ] ) ) {
+			return $wp_flyout_managers[ $prefix ]->link( $flyout_id, $text, $data, $args );
 		}
 
-		// Try to find it through the global registration tracking
-		// This won't work unless register_flyout was called, so return empty
+		// Return empty if manager not found
 		return '';
 	}
 }
