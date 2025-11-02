@@ -12,63 +12,128 @@
 
 declare( strict_types=1 );
 
-use ArrayPress\WPFlyout\Flyout;
-use ArrayPress\WPFlyout\Assets;
+use ArrayPress\WPFlyout\Manager;
 
-if ( ! function_exists( 'wp_flyout' ) ) {
+if ( ! function_exists( 'register_flyout' ) ) {
 	/**
-	 * Create a new flyout instance
+	 * Register a flyout with automatic manager handling
 	 *
-	 * @since 1.0.0
+	 * This is the simplified global registration method that automatically
+	 * creates and manages Manager instances. The ID should follow the pattern:
+	 * 'prefix_flyout_name' (e.g., 'myapp_edit_customer', 'shop_add_product')
 	 *
-	 * @param string $id     Flyout ID.
-	 * @param array  $config Optional configuration.
-	 * @return Flyout
+	 * The prefix (first part before underscore) becomes the manager namespace,
+	 * and the rest becomes the flyout ID within that manager.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @param string $id     Full flyout identifier (prefix_name format)
+	 * @param array  $config {
+	 *     Flyout configuration array
+	 *
+	 *     @type string   $title       Flyout title
+	 *     @type string   $width       Width: 'small', 'medium', 'large', 'full'
+	 *     @type array    $panels      Panel configurations (optional)
+	 *     @type array    $fields      Field configurations
+	 *     @type array    $actions     Footer action buttons
+	 *     @type string   $capability  Required capability (default: 'manage_options')
+	 *     @type array    $admin_pages Admin page hooks to load on
+	 *     @type callable $load        Function to load data: function($id)
+	 *     @type callable $save        Function to save data: function($id, $data)
+	 *     @type callable $delete      Function to delete data: function($id)
+	 * }
+	 * @return Manager|null The manager instance or null if registration failed
 	 */
-	function wp_flyout( string $id, array $config = [] ): Flyout {
-		return new Flyout( $id, $config );
+	function register_flyout( string $id, array $config = [] ) {
+		static $managers = [];
+
+		// Parse the ID to extract prefix and flyout name
+		$parts = explode( '_', $id, 2 );
+
+		// If no underscore, use the whole ID as both prefix and flyout name
+		if ( count( $parts ) === 1 ) {
+			$prefix = $id;
+			$flyout_id = 'default';
+		} else {
+			$prefix = $parts[0];
+			$flyout_id = $parts[1];
+		}
+
+		// Get or create manager instance
+		if ( ! isset( $managers[ $prefix ] ) ) {
+			$managers[ $prefix ] = new Manager( $prefix );
+		}
+
+		// Register the flyout
+		try {
+			$managers[ $prefix ]->register_flyout( $flyout_id, $config );
+			return $managers[ $prefix ];
+		} catch ( Exception $e ) {
+			error_log( 'Failed to register flyout: ' . $e->getMessage() );
+			return null;
+		}
 	}
 }
 
-if ( ! function_exists( 'wp_flyout_init' ) ) {
+if ( ! function_exists( 'get_flyout_button' ) ) {
 	/**
-	 * Initialize the flyout system
+	 * Get a flyout trigger button HTML
 	 *
-	 * Call this in your plugin's init hook to register assets.
+	 * This is a convenience function that works with the global registration.
+	 * It automatically determines the correct manager from the flyout ID.
 	 *
-	 * @since 1.0.0
+	 * @since 2.0.0
 	 *
+	 * @param string $id   Full flyout identifier (same as used in register_flyout)
+	 * @param array  $data Data attributes to pass to the flyout
+	 * @param array  $args {
+	 *     Button configuration
+	 *
+	 *     @type string $text  Button text (default: 'Open')
+	 *     @type string $class Additional CSS classes
+	 *     @type string $icon  Dashicon name (without 'dashicons-' prefix)
+	 * }
+	 * @return string Button HTML or empty string if flyout not found
+	 */
+	function get_flyout_button( string $id, array $data = [], array $args = [] ): string {
+		static $managers = [];
+
+		// Parse the ID to find the manager
+		$parts = explode( '_', $id, 2 );
+
+		if ( count( $parts ) === 1 ) {
+			$prefix = $id;
+			$flyout_id = 'default';
+		} else {
+			$prefix = $parts[0];
+			$flyout_id = $parts[1];
+		}
+
+		// Try to get the manager button
+		if ( isset( $managers[ $prefix ] ) ) {
+			return $managers[ $prefix ]->get_button( $flyout_id, $data, $args );
+		}
+
+		// Try to find it through the global registration tracking
+		// This won't work unless register_flyout was called, so return empty
+		return '';
+	}
+}
+
+if ( ! function_exists( 'render_flyout_button' ) ) {
+	/**
+	 * Render a flyout trigger button
+	 *
+	 * Outputs the button HTML directly.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @param string $id   Full flyout identifier
+	 * @param array  $data Data attributes to pass
+	 * @param array  $args Button configuration
 	 * @return void
 	 */
-	function wp_flyout_init(): void {
-		Assets::init();
-	}
-}
-
-if ( ! function_exists( 'wp_flyout_enqueue' ) ) {
-	/**
-	 * Enqueue flyout assets
-	 *
-	 * Call this when you need flyout functionality on a page.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return void
-	 */
-	function wp_flyout_enqueue(): void {
-		Assets::enqueue();
-	}
-}
-
-if ( ! function_exists( 'wp_flyout_enqueue_component' ) ) {
-	/**
-	 * Enqueue specific flyout component assets
-	 *
-	 * @param string $component Component name (e.g., 'file-manager')
-	 *
-	 * @return bool Whether component was enqueued successfully
-	 */
-	function wp_flyout_enqueue_component( string $component ): bool {
-		return Assets::enqueue_component( $component );
+	function render_flyout_button( string $id, array $data = [], array $args = [] ): void {
+		echo get_flyout_button( $id, $data, $args );
 	}
 }

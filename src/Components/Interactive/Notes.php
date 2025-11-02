@@ -5,7 +5,7 @@
  * Displays notes with optional add/delete functionality via AJAX.
  *
  * @package     ArrayPress\WPFlyout\Components\Interactive
- * @version     4.0.0
+ * @version     5.0.0
  */
 
 declare( strict_types=1 );
@@ -30,17 +30,16 @@ class Notes {
      * @var array
      */
     private const DEFAULTS = [
-            'id'            => '',
-            'name'          => 'notes',
-            'items'         => [],
-            'editable'      => true,
-            'placeholder'   => 'Add a note...',
-            'empty_text'    => 'No notes yet.',
-            'object_type'   => '',
-            'object_id'     => '',
-            'add_action'    => '',      // AJAX action for adding notes
-            'delete_action' => '',      // AJAX action for deleting notes
-            'class'         => ''
+            'id'          => '',
+            'name'        => 'notes',
+            'items'       => [],
+            'editable'    => true,
+            'placeholder' => 'Add a note...',
+            'empty_text'  => 'No notes yet.',
+            'object_type' => '',        // Just the type for context
+            'ajax_add'    => '',         // AJAX action for adding notes
+            'ajax_delete' => '',         // AJAX action for deleting notes
+            'class'       => ''
     ];
 
     /**
@@ -75,8 +74,12 @@ class Notes {
 
         // Generate nonce for AJAX actions
         $nonce = '';
-        if ( $this->config['add_action'] || $this->config['delete_action'] ) {
-            $nonce = wp_create_nonce( 'notes_' . $this->config['object_type'] . '_' . $this->config['object_id'] );
+        if ( $this->config['ajax_add'] || $this->config['ajax_delete'] ) {
+            $nonce_key = 'notes';
+            if ( $this->config['object_type'] ) {
+                $nonce_key .= '_' . $this->config['object_type'];
+            }
+            $nonce = wp_create_nonce( $nonce_key );
         }
 
         ob_start();
@@ -85,9 +88,8 @@ class Notes {
              class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>"
              data-name="<?php echo esc_attr( $this->config['name'] ); ?>"
              data-object-type="<?php echo esc_attr( $this->config['object_type'] ); ?>"
-             data-object-id="<?php echo esc_attr( $this->config['object_id'] ); ?>"
-             data-add-action="<?php echo esc_attr( $this->config['add_action'] ); ?>"
-             data-delete-action="<?php echo esc_attr( $this->config['delete_action'] ); ?>"
+             data-ajax-add="<?php echo esc_attr( $this->config['ajax_add'] ); ?>"
+             data-ajax-delete="<?php echo esc_attr( $this->config['ajax_delete'] ); ?>"
              data-nonce="<?php echo esc_attr( $nonce ); ?>">
 
             <div class="notes-list">
@@ -100,7 +102,7 @@ class Notes {
                 <?php endif; ?>
             </div>
 
-            <?php if ( $this->config['editable'] && $this->config['add_action'] ) : ?>
+            <?php if ( $this->config['editable'] && $this->config['ajax_add'] ) : ?>
                 <div class="note-add-form">
                     <textarea placeholder="<?php echo esc_attr( $this->config['placeholder'] ); ?>"
                               rows="3"></textarea>
@@ -133,7 +135,7 @@ class Notes {
                     <span class="note-date"><?php echo esc_html( $note['formatted_date'] ); ?></span>
                 <?php endif; ?>
 
-                <?php if ( $this->config['editable'] && $this->config['delete_action'] && ! empty( $note['can_delete'] ) ) : ?>
+                <?php if ( $this->config['editable'] && $this->config['ajax_delete'] && ! empty( $note['can_delete'] ) ) : ?>
                     <button type="button" class="button-link" data-action="delete-note">
                         <span class="dashicons dashicons-trash"></span>
                     </button>

@@ -1,14 +1,14 @@
 <?php
 /**
- * WP Flyout Manager with Declarative Registration
+ * WP Flyout Manager with Smart Data Resolution
  *
- * Manages flyout registration, AJAX handling, and asset management.
- * Provides a declarative API for creating modal flyouts with minimal configuration.
+ * Manages flyout registration, AJAX handling, and automatic data mapping.
+ * Provides a declarative API with intelligent property/method resolution.
  *
  * @package     ArrayPress\WPFlyout
  * @copyright   Copyright (c) 2025, ArrayPress Limited
  * @license     GPL2+
- * @version     7.0.0
+ * @version     8.0.0
  * @author      David Sherlock
  */
 
@@ -30,7 +30,7 @@ use Exception;
 /**
  * Class Manager
  *
- * Orchestrates flyout operations with automatic asset management and declarative configuration.
+ * Orchestrates flyout operations with automatic data resolution and smart mapping.
  *
  * @since 1.0.0
  */
@@ -39,6 +39,7 @@ class Manager {
 	/**
 	 * Unique prefix for this manager instance
 	 *
+	 * @since 1.0.0
 	 * @var string
 	 */
 	private string $prefix;
@@ -46,6 +47,7 @@ class Manager {
 	/**
 	 * Registered flyout configurations
 	 *
+	 * @since 1.0.0
 	 * @var array
 	 */
 	private array $flyouts = [];
@@ -53,6 +55,7 @@ class Manager {
 	/**
 	 * Admin pages where assets should load
 	 *
+	 * @since 1.0.0
 	 * @var array
 	 */
 	private array $admin_pages = [];
@@ -60,6 +63,7 @@ class Manager {
 	/**
 	 * Components required across all flyouts
 	 *
+	 * @since 1.0.0
 	 * @var array
 	 */
 	private array $components = [];
@@ -67,28 +71,31 @@ class Manager {
 	/**
 	 * Whether assets have been enqueued
 	 *
+	 * @since 1.0.0
 	 * @var bool
 	 */
 	private bool $assets_enqueued = false;
 
 	/**
-	 * Field types that require special component handling
+	 * Complex component types that may use _data suffix
 	 *
+	 * @since 8.0.0
 	 * @var array
 	 */
-	private const COMPONENT_FIELD_TYPES = [
+	private const COMPLEX_COMPONENTS = [
+		'entity_header',
+		'payment_method',
+		'price_breakdown',
 		'order_items',
 		'notes',
 		'files',
-		'price_breakdown',
-		'entity_header',
-		'payment_method',
 		'card_choice'
 	];
 
 	/**
 	 * Map of field types to required asset components
 	 *
+	 * @since 1.0.0
 	 * @var array
 	 */
 	private const FIELD_COMPONENT_MAP = [
@@ -98,9 +105,9 @@ class Manager {
 		'ajax_select'     => 'ajax-select',
 		'tags'            => 'tags',
 		'price_breakdown' => 'price-breakdown',
-		'entity_header'   => 'entity-header',    // Add this
-		'payment_method'  => 'payment-method',   // Add this
-		'card_choice'     => 'card-choice',      // Add this
+		'entity_header'   => 'entity-header',
+		'payment_method'  => 'payment-method',
+		'card_choice'     => 'card-choice',
 		'accordion'       => 'accordion',
 		'timeline'        => 'timeline'
 	];
@@ -109,6 +116,8 @@ class Manager {
 	 * Constructor
 	 *
 	 * @param string $prefix Unique prefix for this manager instance
+	 *
+	 * @since 1.0.0
 	 */
 	public function __construct( string $prefix ) {
 		$this->prefix = sanitize_key( $prefix );
@@ -124,14 +133,21 @@ class Manager {
 	/**
 	 * Register a flyout with declarative configuration
 	 *
+	 * Fields are automatically mapped to data properties/methods using smart resolution:
+	 * 1. Direct property access ($data->field)
+	 * 2. Array key access ($data['field'])
+	 * 3. Getter method ($data->get_field())
+	 * 4. Direct method ($data->field())
+	 * 5. Complex components also try _data suffix methods
+	 *
 	 * @param string  $id          Unique flyout identifier
 	 * @param array   $config      {
 	 *                             Flyout configuration array
 	 *
 	 * @type string   $title       Flyout title
 	 * @type string   $width       Width size: 'small', 'medium', 'large', 'full'
-	 * @type array    $tabs        Tab configurations (optional)
-	 * @type array    $fields      Field configurations for single view
+	 * @type array    $panels      Panel configurations with labels or badge options
+	 * @type array    $fields      Field configurations with automatic data mapping
 	 * @type array    $actions     Footer action buttons
 	 * @type string   $capability  Required capability (default: 'manage_options')
 	 * @type array    $admin_pages Admin page hooks to load on
@@ -140,12 +156,15 @@ class Manager {
 	 * @type callable $delete      Function to delete data: function($id)
 	 *                             }
 	 * @return self Returns instance for method chaining
+	 * @since 8.0.0 Added smart data resolution and panel support
+	 *
+	 * @since 1.0.0
 	 */
 	public function register_flyout( string $id, array $config ): self {
 		$defaults = [
 			'title'       => '',
 			'width'       => 'medium',
-			'tabs'        => [],
+			'panels'      => [],
 			'fields'      => [],
 			'actions'     => [],
 			'capability'  => 'manage_options',
@@ -179,9 +198,8 @@ class Manager {
 	/**
 	 * Central AJAX handler with security checks
 	 *
-	 * Handles all security validation then routes to appropriate callbacks.
-	 *
 	 * @return void Sends JSON response and exits
+	 * @since 1.0.0
 	 */
 	public function handle_ajax(): void {
 		try {
@@ -221,6 +239,7 @@ class Manager {
 	 *
 	 * @return array Validated request data
 	 * @throws Exception If validation fails
+	 * @since 1.0.0
 	 */
 	private function validate_request(): array {
 		// Get request parameters
@@ -259,6 +278,7 @@ class Manager {
 	 * @param array $request Validated request data
 	 *
 	 * @return Flyout Configured flyout instance
+	 * @since 1.0.0
 	 */
 	private function handle_load( array $config, array $request ): Flyout {
 		// Get data from callback if provided
@@ -285,6 +305,7 @@ class Manager {
 	 * @param array $request Validated request data
 	 *
 	 * @return array Response array
+	 * @since 1.0.0
 	 */
 	private function handle_save( array $config, array $request ): array {
 		if ( ! $config['save'] || ! is_callable( $config['save'] ) ) {
@@ -295,7 +316,7 @@ class Manager {
 		parse_str( $request['form_data'], $form_data );
 		$id = $form_data['id'] ?? $request['id'] ?? null;
 
-		// Call save handler - let it throw exceptions or return response
+		// Call save handler
 		$result = call_user_func( $config['save'], $id, $form_data );
 
 		// Normalize response
@@ -311,7 +332,6 @@ class Manager {
 			throw new Exception( 'Save failed', 500 );
 		}
 
-		// Allow callbacks to return custom response arrays
 		return is_array( $result ) ? $result : [ 'success' => true ];
 	}
 
@@ -322,6 +342,7 @@ class Manager {
 	 * @param array $request Validated request data
 	 *
 	 * @return array Response array
+	 * @since 1.0.0
 	 */
 	private function handle_delete( array $config, array $request ): array {
 		if ( ! $config['delete'] || ! is_callable( $config['delete'] ) ) {
@@ -355,6 +376,9 @@ class Manager {
 	 * @param string $id     Record ID if editing
 	 *
 	 * @return Flyout Configured flyout instance
+	 * @since 1.0.0
+	 * @since 8.0.0 Updated to support panels instead of tabs
+	 *
 	 */
 	private function build_flyout( array $config, $data, $id = null ): Flyout {
 		$flyout_instance_id = $config['id'] ?? uniqid() . '_' . ( $id ?: 'new' );
@@ -364,9 +388,9 @@ class Manager {
 		$flyout->set_title( $config['title'] );
 		$flyout->set_width( $config['width'] );
 
-		// Build interface with tabs or single view
-		if ( ! empty( $config['tabs'] ) ) {
-			$this->build_tabbed_interface( $flyout, $config['tabs'], $data );
+		// Build interface with panels or single view
+		if ( ! empty( $config['panels'] ) ) {
+			$this->build_panel_interface( $flyout, $config['panels'], $config['fields'], $data );
 		} else {
 			$content = $this->render_fields( $config['fields'], $data );
 			$flyout->add_content( '', $content );
@@ -391,52 +415,78 @@ class Manager {
 	}
 
 	/**
-	 * Build tabbed interface for flyout
+	 * Build panel interface for flyout
 	 *
 	 * @param Flyout $flyout Flyout instance
-	 * @param array  $tabs   Tab configurations
+	 * @param array  $panels Panel configurations
+	 * @param array  $fields All field configurations
 	 * @param mixed  $data   Data for field population
 	 *
 	 * @return void
+	 * @since 8.0.0
 	 */
-	private function build_tabbed_interface( Flyout $flyout, array $tabs, $data ): void {
-		foreach ( $tabs as $tab_id => $tab ) {
-			$is_first = array_key_first( $tabs ) === $tab_id;
-			$flyout->add_tab( $tab_id, $tab['label'], $is_first );
+	private function build_panel_interface( Flyout $flyout, array $panels, array $fields, $data ): void {
+		// Group fields by panel
+		$fields_by_panel = [];
+		foreach ( $fields as $key => $field ) {
+			$panel = $field['panel'] ?? $field['tab'] ?? 'default';
+			if ( ! isset( $fields_by_panel[ $panel ] ) ) {
+				$fields_by_panel[ $panel ] = [];
+			}
+			$fields_by_panel[ $panel ][ $key ] = $field;
+		}
 
-			$content = $this->render_fields( $tab['fields'] ?? [], $data );
-			$flyout->set_tab_content( $tab_id, $content );
+		// Add panels with their fields
+		foreach ( $panels as $panel_id => $panel_config ) {
+			// Handle both simple string labels and array configs
+			$label = is_array( $panel_config ) ? $panel_config['label'] : $panel_config;
+			$badge = is_array( $panel_config ) ? ( $panel_config['badge'] ?? null ) : null;
+
+			$is_first = array_key_first( $panels ) === $panel_id;
+			$flyout->add_tab( $panel_id, $label, $is_first );
+
+			// Render fields for this panel
+			$panel_fields = $fields_by_panel[ $panel_id ] ?? [];
+			$content      = $this->render_fields( $panel_fields, $data );
+			$flyout->set_tab_content( $panel_id, $content );
 		}
 	}
 
 	/**
-	 * Render fields from configuration
+	 * Render fields from configuration with smart data resolution
 	 *
 	 * @param array $fields Field configurations
-	 * @param mixed $data   Data for field values
+	 * @param mixed $data   Data object or array
 	 *
 	 * @return string Generated HTML
+	 * @since 8.0.0 Added smart data resolution
+	 *
+	 * @since 1.0.0
 	 */
 	private function render_fields( array $fields, $data ): string {
 		$output = '';
 
-		foreach ( $fields as $field ) {
-			// Extract field value from data if not already set
-			if ( isset( $field['name'] ) && ! isset( $field['value'] ) ) {
-				$field['value'] = $this->extract_value( $data, $field['name'] );
+		foreach ( $fields as $field_key => $field ) {
+			// Use field key as default name if not specified
+			if ( ! isset( $field['name'] ) ) {
+				$field['name'] = $field_key;
 			}
 
-			// Check for options (for selects, ajax_select, etc.)
-			if ( isset( $field['name'] ) && is_array( $data ) ) {
-				$options_key = $field['name'] . '_options';
-				if ( isset( $data[ $options_key ] ) ) {
-					$field['options'] = $data[ $options_key ];
+			// Smart data resolution
+			if ( ! isset( $field['value'] ) && ! isset( $field['items'] ) ) {
+				$resolved_data = $this->resolve_field_data( $field_key, $field['type'] ?? 'text', $data );
+
+				// Set value or items based on field type
+				if ( in_array( $field['type'] ?? '', [ 'notes', 'files', 'order_items' ] ) ) {
+					$field['items'] = $resolved_data;
+				} else {
+					$field['value'] = $resolved_data;
 				}
 			}
 
 			// Check if field type requires special component handling
-			if ( in_array( $field['type'], self::COMPONENT_FIELD_TYPES, true ) ) {
-				$output .= $this->render_component_field( $field, $data );
+			if ( in_array( $field['type'] ?? '', self::COMPLEX_COMPONENTS, true ) ) {
+				$output .= $this->render_component_field( $field_key, $field, $data );
 			} else {
 				// Standard form field
 				$form_field = new FormField( $field );
@@ -448,70 +498,126 @@ class Manager {
 	}
 
 	/**
+	 * Resolve field data using smart property/method resolution
+	 *
+	 * Resolution order:
+	 * 1. Direct property ($data->field)
+	 * 2. Array key ($data['field'])
+	 * 3. Getter method ($data->get_field())
+	 * 4. Direct method ($data->field())
+	 * 5. For complex components, also try _data suffix
+	 *
+	 * @param string $field_key  Field identifier
+	 * @param string $field_type Field type
+	 * @param mixed  $data       Data source (object or array)
+	 *
+	 * @return mixed Resolved data or null
+	 * @since 8.0.0
+	 */
+	private function resolve_field_data( string $field_key, string $field_type, $data ) {
+		if ( ! $data ) {
+			return null;
+		}
+
+		// Try standard resolution
+		$value = $this->try_standard_resolution( $field_key, $data );
+
+		if ( $value !== null ) {
+			return $value;
+		}
+
+		// For complex components, also try with _data suffix
+		if ( in_array( $field_type, self::COMPLEX_COMPONENTS, true ) ) {
+			return $this->try_standard_resolution( $field_key . '_data', $data );
+		}
+
+		return null;
+	}
+
+	/**
+	 * Try standard property/method resolution
+	 *
+	 * @param string $key  Property/method name to resolve
+	 * @param mixed  $data Data source
+	 *
+	 * @return mixed Resolved value or null
+	 * @since 8.0.0
+	 */
+	private function try_standard_resolution( string $key, $data ) {
+		// 1. Direct property access
+		if ( is_object( $data ) && property_exists( $data, $key ) ) {
+			return $data->$key;
+		}
+
+		// 2. Array key access
+		if ( is_array( $data ) && isset( $data[ $key ] ) ) {
+			return $data[ $key ];
+		}
+
+		// 3. Getter method (get_field)
+		if ( is_object( $data ) ) {
+			$getter = 'get_' . $key;
+			if ( method_exists( $data, $getter ) ) {
+				return $data->$getter();
+			}
+
+			// 4. Direct method (field())
+			if ( method_exists( $data, $key ) ) {
+				return $data->$key();
+			}
+		}
+
+		return null;
+	}
+
+	/**
 	 * Render component-based field
 	 *
-	 * @param array $field Field configuration
-	 * @param mixed $data  Data for field values
+	 * @param string $field_key Field key
+	 * @param array  $field     Field configuration
+	 * @param mixed  $data      Original data object
 	 *
 	 * @return string Generated HTML
+	 * @since 1.0.0
+	 * @since 8.0.0 Simplified to work with resolved data
+	 *
 	 */
-	private function render_component_field( array $field, $data ): string {
+	private function render_component_field( string $field_key, array $field, $data ): string {
 		$type = $field['type'];
-
-		// Handle config vs direct field values
-		$component_config = $field['config'] ?? $field;
-
-		// Remove type from config if it exists
-		unset( $component_config['type'] );
-
-		// Map value to items for list components
-		if ( ! isset( $component_config['items'] ) && isset( $field['name'] ) ) {
-			$component_config['items'] = $this->extract_value( $data, $field['name'] );
-		}
-
-		// Map value for standard fields
-		if ( ! isset( $component_config['value'] ) && isset( $field['name'] ) ) {
-			$component_config['value'] = $this->extract_value( $data, $field['name'] );
-		}
-
-		// Ensure name is set if provided in field
-		if ( isset( $field['name'] ) && ! isset( $component_config['name'] ) ) {
-			$component_config['name'] = $field['name'];
-		}
 
 		switch ( $type ) {
 			case 'order_items':
-				$component = new OrderItems( $component_config );
+				$component = new OrderItems( $field );
 
 				return $component->render();
 
 			case 'notes':
-				$component = new Notes( $component_config );
+				$component = new Notes( $field );
 
 				return $component->render();
 
 			case 'files':
-				$component = new FileManager( $component_config );
+				$component = new FileManager( $field );
 
 				return $component->render();
 
 			case 'price_breakdown':
-				$component = new PriceBreakdown( $component_config );
+				$component = new PriceBreakdown( $field );
 
 				return $component->render();
 
 			case 'entity_header':
-				$component = new EntityHeader( $component_config );
+				$component = new EntityHeader( $field );
 
 				return $component->render();
 
 			case 'payment_method':
-				$component = new PaymentMethod( $component_config );
+				$component = new PaymentMethod( $field );
 
 				return $component->render();
 
 			case 'card_choice':
-				$component = new CardChoice( $component_config );
+				$component = new CardChoice( $field );
 
 				return $component->render();
 		}
@@ -520,52 +626,12 @@ class Manager {
 	}
 
 	/**
-	 * Extract value from data object/array
-	 *
-	 * @param mixed  $data       Data object or array
-	 * @param string $field_name Field name to extract
-	 *
-	 * @return mixed Extracted value or null
-	 */
-	private function extract_value( $data, string $field_name ) {
-		if ( ! $data ) {
-			return null;
-		}
-
-		// Array key
-		if ( is_array( $data ) && isset( $data[ $field_name ] ) ) {
-			return $data[ $field_name ];
-		}
-
-		// Object property
-		if ( is_object( $data ) ) {
-			// Direct property
-			if ( property_exists( $data, $field_name ) ) {
-				return $data->$field_name;
-			}
-
-			// Getter method (get_field_name)
-			$getter = 'get_' . $field_name;
-			if ( method_exists( $data, $getter ) ) {
-				return $data->$getter();
-			}
-
-			// Getter method (getFieldName)
-			$camelGetter = 'get' . str_replace( '_', '', ucwords( $field_name, '_' ) );
-			if ( method_exists( $data, $camelGetter ) ) {
-				return $data->$camelGetter();
-			}
-		}
-
-		return null;
-	}
-
-	/**
 	 * Render action buttons for footer
 	 *
 	 * @param array $actions Action button configurations
 	 *
 	 * @return string Generated HTML
+	 * @since 1.0.0
 	 */
 	private function render_actions( array $actions ): string {
 		$action_bar = new ActionBar( [ 'actions' => $actions ] );
@@ -579,6 +645,7 @@ class Manager {
 	 * @param array $config Flyout configuration
 	 *
 	 * @return array Default action buttons
+	 * @since 1.0.0
 	 */
 	private function get_default_actions( array $config ): array {
 		$actions = [];
@@ -616,19 +683,20 @@ class Manager {
 	 * @param array $config Flyout configuration
 	 *
 	 * @return void
+	 * @since 1.0.0
 	 */
 	private function detect_components( array $config ): void {
-		$all_fields = $config['fields'];
-
-		// Collect fields from all tabs
-		foreach ( $config['tabs'] as $tab ) {
-			$all_fields = array_merge( $all_fields, $tab['fields'] ?? [] );
+		// Collect all fields
+		$all_fields = [];
+		foreach ( $config['fields'] as $field ) {
+			$all_fields[] = $field;
 		}
 
 		// Detect required components from field types
 		foreach ( $all_fields as $field ) {
-			if ( isset( self::FIELD_COMPONENT_MAP[ $field['type'] ] ) ) {
-				$this->components[] = self::FIELD_COMPONENT_MAP[ $field['type'] ];
+			$type = $field['type'] ?? 'text';
+			if ( isset( self::FIELD_COMPONENT_MAP[ $type ] ) ) {
+				$this->components[] = self::FIELD_COMPONENT_MAP[ $type ];
 			}
 		}
 
@@ -642,21 +710,21 @@ class Manager {
 	 * @param array  $config    Flyout configuration
 	 *
 	 * @return void
+	 * @since 8.0.0 Updated to support ajax_ prefix naming
+	 *
+	 * @since 1.0.0
 	 */
 	private function register_component_endpoints( string $flyout_id, array $config ): void {
-		$all_fields = $config['fields'];
-
-		// Collect fields from all tabs
-		foreach ( $config['tabs'] as $tab ) {
-			$all_fields = array_merge( $all_fields, $tab['fields'] ?? [] );
-		}
-
-		// Register endpoints for components that need them
-		foreach ( $all_fields as $field ) {
-			if ( $field['type'] === 'ajax_select' && isset( $field['endpoint'] ) ) {
-				$this->register_ajax_endpoint( $field['endpoint'], $field['search_callback'] ?? null );
-			} elseif ( $field['type'] === 'order_items' && isset( $field['ajax_endpoint'] ) ) {
-				$this->register_ajax_endpoint( $field['ajax_endpoint'], $field['search_callback'] ?? null );
+		foreach ( $config['fields'] as $field ) {
+			// Check for AJAX endpoints in field config
+			foreach ( $field as $key => $value ) {
+				if ( str_starts_with( $key, 'ajax_' ) && is_string( $value ) ) {
+					// Register the endpoint if a callback is provided
+					$callback_key = str_replace( 'ajax_', '', $key ) . '_callback';
+					if ( isset( $field[ $callback_key ] ) ) {
+						$this->register_ajax_endpoint( $value, $field[ $callback_key ] );
+					}
+				}
 			}
 		}
 	}
@@ -668,13 +736,14 @@ class Manager {
 	 * @param callable|null $callback Callback function
 	 *
 	 * @return void
+	 * @since 1.0.0
 	 */
 	private function register_ajax_endpoint( string $endpoint, $callback = null ): void {
 		if ( ! $callback || ! is_callable( $callback ) ) {
 			return;
 		}
 
-		$action = 'wp_ajax_' . $this->prefix . '_' . $endpoint;
+		$action = 'wp_ajax_' . $endpoint;
 
 		if ( ! has_action( $action ) ) {
 			add_action( $action, $callback );
@@ -687,6 +756,7 @@ class Manager {
 	 * @param mixed $result Callback result
 	 *
 	 * @return void Sends JSON response and exits
+	 * @since 1.0.0
 	 */
 	private function send_response( $result ): void {
 		// Handle Flyout object
@@ -726,6 +796,7 @@ class Manager {
 	 * @param array  $args      Button configuration
 	 *
 	 * @return void Outputs HTML
+	 * @since 1.0.0
 	 */
 	public function button( string $flyout_id, array $data = [], array $args = [] ): void {
 		echo $this->get_button( $flyout_id, $data, $args );
@@ -739,6 +810,7 @@ class Manager {
 	 * @param array  $args      Button configuration
 	 *
 	 * @return string Button HTML or empty string if unauthorized
+	 * @since 1.0.0
 	 */
 	public function get_button( string $flyout_id, array $data = [], array $args = [] ): string {
 		if ( ! $this->can_access( $flyout_id ) ) {
@@ -781,6 +853,7 @@ class Manager {
 	 * @param array  $args      Additional link arguments
 	 *
 	 * @return string Link HTML or empty string if unauthorized
+	 * @since 1.0.0
 	 */
 	public function link( string $flyout_id, string $text, array $data = [], array $args = [] ): string {
 		if ( ! $this->can_access( $flyout_id ) ) {
@@ -809,6 +882,7 @@ class Manager {
 	 * @param string $class     Additional CSS classes
 	 *
 	 * @return array Attributes array
+	 * @since 1.0.0
 	 */
 	private function build_trigger_attributes( string $flyout_id, array $data, string $class = '' ): array {
 		$attrs = [
@@ -832,6 +906,7 @@ class Manager {
 	 * @param string $flyout_id Flyout identifier
 	 *
 	 * @return bool True if user has required capability
+	 * @since 1.0.0
 	 */
 	private function can_access( string $flyout_id ): bool {
 		if ( ! isset( $this->flyouts[ $flyout_id ] ) ) {
@@ -849,6 +924,7 @@ class Manager {
 	 * @param string $hook_suffix Current admin page hook
 	 *
 	 * @return void
+	 * @since 1.0.0
 	 */
 	public function maybe_enqueue_assets( string $hook_suffix ): void {
 		// Skip if already enqueued or no flyouts registered
@@ -868,6 +944,7 @@ class Manager {
 	 * @param string $hook_suffix Current admin page hook
 	 *
 	 * @return bool True if assets should load
+	 * @since 1.0.0
 	 */
 	private function should_enqueue( string $hook_suffix ): bool {
 		// Check specific configured pages first
@@ -901,6 +978,7 @@ class Manager {
 	 * Enqueue required assets
 	 *
 	 * @return void
+	 * @since 1.0.0
 	 */
 	public function enqueue_assets(): void {
 		// Enqueue core WP Flyout assets
@@ -918,6 +996,7 @@ class Manager {
 	 * Get all registered flyouts
 	 *
 	 * @return array Flyout configurations
+	 * @since 1.0.0
 	 */
 	public function get_flyouts(): array {
 		return $this->flyouts;
@@ -929,6 +1008,7 @@ class Manager {
 	 * @param string $flyout_id Flyout identifier
 	 *
 	 * @return bool True if flyout exists
+	 * @since 1.0.0
 	 */
 	public function has_flyout( string $flyout_id ): bool {
 		return isset( $this->flyouts[ $flyout_id ] );
@@ -938,6 +1018,7 @@ class Manager {
 	 * Get manager prefix
 	 *
 	 * @return string Manager prefix
+	 * @since 1.0.0
 	 */
 	public function get_prefix(): string {
 		return $this->prefix;

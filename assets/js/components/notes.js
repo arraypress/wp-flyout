@@ -1,10 +1,8 @@
 /**
- * WP Flyout Notes Component - Simplified
- *
- * Handles note management with AJAX endpoints for add/delete operations.
+ * WP Flyout Notes Component
  *
  * @package WPFlyout
- * @version 2.0.0
+ * @version 3.0.0
  */
 (function ($) {
     'use strict';
@@ -51,13 +49,12 @@
             }
 
             // Get AJAX configuration from data attributes
-            const addAction = $component.data('add-action');
+            const ajaxAdd = $component.data('ajax-add');
             const objectType = $component.data('object-type');
-            const objectId = $component.data('object-id');
             const nonce = $component.data('nonce');
 
-            if (!addAction) {
-                console.error('Notes: No add action configured');
+            if (!ajaxAdd) {
+                console.error('Notes: No AJAX add action configured');
                 return;
             }
 
@@ -68,10 +65,9 @@
                 url: window.ajaxurl || '/wp-admin/admin-ajax.php',
                 type: 'POST',
                 data: {
-                    action: addAction,
+                    action: ajaxAdd,
                     content: content,
                     object_type: objectType,
-                    object_id: objectId,
                     _wpnonce: nonce
                 },
                 success: function (response) {
@@ -116,11 +112,12 @@
             const $component = $button.closest('.wp-flyout-notes');
 
             const noteId = $note.data('note-id');
-            const deleteAction = $component.data('delete-action');
+            const ajaxDelete = $component.data('ajax-delete');
+            const objectType = $component.data('object-type');
             const nonce = $component.data('nonce');
 
-            if (!deleteAction) {
-                console.error('Notes: No delete action configured');
+            if (!ajaxDelete) {
+                console.error('Notes: No AJAX delete action configured');
                 return;
             }
 
@@ -131,8 +128,9 @@
                 url: window.ajaxurl || '/wp-admin/admin-ajax.php',
                 type: 'POST',
                 data: {
-                    action: deleteAction,
+                    action: ajaxDelete,
                     note_id: noteId,
+                    object_type: objectType,
                     _wpnonce: nonce
                 },
                 success: function (response) {
