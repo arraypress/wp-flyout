@@ -519,47 +519,147 @@ class Manager {
 	 *
 	 * @since 1.0.0
 	 */
+//	private function render_fields( array $fields, $data ): string {
+//		$output = '';
+//
+//		foreach ( $fields as $field_key => $field ) {
+//			// Handle numeric keys (when fields are indexed array)
+//			if ( is_numeric( $field_key ) ) {
+//				// Use the name field as the key if available
+//				$field_key = $field['name'] ?? 'field_' . $field_key;
+//			}
+//
+//			// Use field key as default name if not specified
+//			if ( ! isset( $field['name'] ) ) {
+//				$field['name'] = $field_key;
+//			}
+//
+//			// Smart data resolution
+//			if ( ! isset( $field['value'] ) && ! isset( $field['items'] ) ) {
+//				$resolved_data = $this->resolve_field_data( (string) $field_key, $field['type'] ?? 'text', $data );
+//
+//				// Set value or items based on field type
+//				if ( in_array( $field['type'] ?? '', [ 'notes', 'files', 'order_items' ] ) ) {
+//					$field['items'] = $resolved_data;
+//				} elseif ( $field['type'] === 'price_breakdown' && is_array( $resolved_data ) ) {
+//					// For price_breakdown, merge the entire resolved array
+//					$field = array_merge( $field, $resolved_data );
+//				} else {
+//					$field['value'] = $resolved_data;
+//				}
+//			}
+//
+//			// Check if field type requires special component handling
+//			if ( in_array( $field['type'] ?? '', self::COMPLEX_COMPONENTS, true ) ) {
+//				$output .= $this->render_component_field( (string) $field_key, $field, $data );
+//			} else {
+//				// Standard form field
+//				$form_field = new FormField( $field );
+//				$output     .= $form_field->render();
+//			}
+//		}
+//
+//		return $output;
+//	}
+
+	/**
+	 * Render fields from configuration
+	 *
+	 * Uses the Components registry for clean data resolution and rendering.
+	 *
+	 * @param array $fields Field configurations
+	 * @param mixed $data   Data object or array
+	 *
+	 * @return string Generated HTML
+	 * @since 9.0.0 Refactored to use Components registry
+	 *
+	 */
 	private function render_fields( array $fields, $data ): string {
 		$output = '';
 
 		foreach ( $fields as $field_key => $field ) {
-			// Handle numeric keys (when fields are indexed array)
+			// Normalize field key and name
 			if ( is_numeric( $field_key ) ) {
-				// Use the name field as the key if available
 				$field_key = $field['name'] ?? 'field_' . $field_key;
 			}
 
-			// Use field key as default name if not specified
 			if ( ! isset( $field['name'] ) ) {
 				$field['name'] = $field_key;
 			}
 
-			// Smart data resolution
-			if ( ! isset( $field['value'] ) && ! isset( $field['items'] ) ) {
-				$resolved_data = $this->resolve_field_data( (string) $field_key, $field['type'] ?? 'text', $data );
+			$type = $field['type'] ?? 'text';
 
-				// Set value or items based on field type
-				if ( in_array( $field['type'] ?? '', [ 'notes', 'files', 'order_items' ] ) ) {
-					$field['items'] = $resolved_data;
-				} elseif ( $field['type'] === 'price_breakdown' && is_array( $resolved_data ) ) {
-					// For price_breakdown, merge the entire resolved array
-					$field = array_merge( $field, $resolved_data );
-				} else {
-					$field['value'] = $resolved_data;
-				}
+			// Resolve data if not already set
+			if ( ! $this->has_preset_data( $field ) ) {
+				$resolved_data = Components::resolve_data( $type, $field_key, $data );
+				$field         = array_merge( $field, $resolved_data );
 			}
 
-			// Check if field type requires special component handling
-			if ( in_array( $field['type'] ?? '', self::COMPLEX_COMPONENTS, true ) ) {
-				$output .= $this->render_component_field( (string) $field_key, $field, $data );
+			// Render component or standard field
+			if ( Components::is_component( $type ) ) {
+				$component = Components::create( $type, $field );
+				$output    .= $component ? $component->render() : '';
 			} else {
-				// Standard form field
 				$form_field = new FormField( $field );
 				$output     .= $form_field->render();
 			}
 		}
 
 		return $output;
+	}
+
+	/**
+	 * Check if field has preset data
+	 *
+	 * Determines if a field already has data values set.
+	 *
+	 * @param array $field Field configuration
+	 *
+	 * @return bool True if data is already set
+	 * @since  9.0.0
+	 * @access private
+	 *
+	 */
+	private function has_preset_data( array $field ): bool {
+		// Get component configuration to check its fields
+		$type      = $field['type'] ?? 'text';
+		$component = Components::get( $type );
+
+		if ( $component && isset( $component['fields'] ) ) {
+			$fields_to_check = is_array( $component['fields'] )
+				? $component['fields']
+				: [ $component['fields'] ];
+
+			foreach ( $fields_to_check as $data_field ) {
+				if ( isset( $field[ $data_field ] ) ) {
+					return true;
+				}
+			}
+		}
+
+		// Check standard value field
+		return isset( $field['value'] );
+	}
+
+	/**
+	 * Detect and register required components from configuration
+	 *
+	 * @param array $config Flyout configuration
+	 *
+	 * @return void
+	 * @since 9.0.0 Updated to use Components registry
+	 *
+	 */
+	private function detect_components( array $config ): void {
+		foreach ( $config['fields'] as $field ) {
+			$type = $field['type'] ?? 'text';
+
+			if ( $asset = Components::get_asset( $type ) ) {
+				$this->components[] = $asset;
+			}
+		}
+
+		$this->components = array_unique( $this->components );
 	}
 
 	/**
@@ -767,23 +867,23 @@ class Manager {
 	 * @return void
 	 * @since 1.0.0
 	 */
-	private function detect_components( array $config ): void {
-		// Collect all fields
-		$all_fields = [];
-		foreach ( $config['fields'] as $field ) {
-			$all_fields[] = $field;
-		}
-
-		// Detect required components from field types
-		foreach ( $all_fields as $field ) {
-			$type = $field['type'] ?? 'text';
-			if ( isset( self::FIELD_COMPONENT_MAP[ $type ] ) ) {
-				$this->components[] = self::FIELD_COMPONENT_MAP[ $type ];
-			}
-		}
-
-		$this->components = array_unique( $this->components );
-	}
+//	private function detect_components( array $config ): void {
+//		// Collect all fields
+//		$all_fields = [];
+//		foreach ( $config['fields'] as $field ) {
+//			$all_fields[] = $field;
+//		}
+//
+//		// Detect required components from field types
+//		foreach ( $all_fields as $field ) {
+//			$type = $field['type'] ?? 'text';
+//			if ( isset( self::FIELD_COMPONENT_MAP[ $type ] ) ) {
+//				$this->components[] = self::FIELD_COMPONENT_MAP[ $type ];
+//			}
+//		}
+//
+//		$this->components = array_unique( $this->components );
+//	}
 
 	/**
 	 * Register AJAX endpoints for components
