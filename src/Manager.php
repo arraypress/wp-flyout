@@ -1077,6 +1077,24 @@ class Manager {
 	}
 
 	/**
+	 * Check if field type is a complex component
+	 *
+	 * @param string $type Field type
+	 *
+	 * @return bool
+	 * @since 3.0.0
+	 */
+	private function is_complex_component( string $type ): bool {
+		// Check custom components first
+		if ( isset( $this->custom_components[ $type ] ) ) {
+			return true;
+		}
+
+		// Check built-in complex components
+		return in_array( $type, self::COMPLEX_COMPONENTS, true );
+	}
+
+	/**
 	 * Enqueue required assets
 	 *
 	 * @return void
