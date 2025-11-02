@@ -71,6 +71,14 @@ class Manager {
 	private array $components = [];
 
 	/**
+	 * Custom component renderers registry
+	 *
+	 * @since 3.0.0
+	 * @var array<string, callable>
+	 */
+	private array $custom_components = [];
+
+	/**
 	 * Whether assets have been enqueued
 	 *
 	 * @since 1.0.0
@@ -200,7 +208,37 @@ class Manager {
 	}
 
 	/**
+	 * Register a custom component renderer
+	 *
+	 * Allows plugins to register their own component types with custom rendering logic.
+	 *
+	 * @param string   $type     Component type identifier (e.g., 'my_custom_widget')
+	 * @param callable $renderer Rendering callback: function(string $key, array $field, $data): string
+	 * @param string   $asset    Optional asset component name to enqueue (e.g., 'my-widget')
+	 *
+	 * @return self Returns instance for method chaining
+	 * @since 3.0.0
+	 */
+	public function register_component( string $type, callable $renderer, ?string $asset = null ): self {
+		$this->custom_components[ $type ] = [
+			'renderer' => $renderer,
+			'asset'    => $asset
+		];
+
+		// Add to component map if asset specified
+		if ( $asset ) {
+			$this->components[] = $asset;
+			$this->components   = array_unique( $this->components );
+		}
+
+		return $this;
+	}
+
+	/**
 	 * Central AJAX handler with security checks
+	 *
+	 * Routes requests to appropriate handlers based on action type.
+	 * All handlers send their own responses and exit.
 	 *
 	 * @return void Sends JSON response and exits
 	 * @since 1.0.0
@@ -213,25 +251,23 @@ class Manager {
 			// Get flyout config
 			$config = $this->flyouts[ $request['flyout_id'] ];
 
-			// Route to appropriate handler
+			// Route to appropriate handler - each sends its own response
 			switch ( $request['action'] ) {
 				case 'load':
-					$result = $this->handle_load( $config, $request );
+					$this->handle_load( $config, $request );
 					break;
 
 				case 'save':
-					$result = $this->handle_save( $config, $request );
+					$this->handle_save( $config, $request );
 					break;
 
 				case 'delete':
-					$result = $this->handle_delete( $config, $request );
+					$this->handle_delete( $config, $request );
 					break;
 
 				default:
-					throw new Exception( 'Invalid action', 400 );
+					wp_send_json_error( __( 'Invalid action', 'wp-flyout' ), 400 );
 			}
-
-			$this->send_response( $result );
 
 		} catch ( Exception $e ) {
 			wp_send_json_error( $e->getMessage(), $e->getCode() ?: 500 );
@@ -278,42 +314,55 @@ class Manager {
 	/**
 	 * Handle load action
 	 *
+	 * Loads data and builds flyout interface.
+	 * Directly sends JSON response and exits.
+	 *
 	 * @param array $config  Flyout configuration
 	 * @param array $request Validated request data
 	 *
-	 * @return Flyout Configured flyout instance
+	 * @return void Sends JSON response and exits
+	 * @throws Exception If load fails
 	 * @since 1.0.0
 	 */
-	private function handle_load( array $config, array $request ): Flyout {
+	private function handle_load( array $config, array $request ): void {
 		// Get data from callback if provided
 		$data = [];
 		if ( $config['load'] && is_callable( $config['load'] ) ) {
 			$data = call_user_func( $config['load'], $request['id'] );
 
+			// Handle WP_Error
+			if ( is_wp_error( $data ) ) {
+				wp_send_json_error( $data->get_error_message(), 400 );
+			}
+
 			// Allow callbacks to return false to indicate not found
 			if ( $data === false ) {
-				throw new Exception( 'Record not found', 404 );
+				wp_send_json_error( __( 'Record not found', 'wp-flyout' ), 404 );
 			}
 		}
 
 		// Build flyout interface
 		$flyout = $this->build_flyout( $config, $data, $request['id'] );
 
-		return $flyout;
+		// Send flyout HTML
+		wp_send_json_success( [ 'html' => $flyout->render() ] );
 	}
 
 	/**
 	 * Handle save action
 	 *
+	 * Processes save requests and always triggers page reload on success.
+	 * Directly sends JSON response and exits.
+	 *
 	 * @param array $config  Flyout configuration
 	 * @param array $request Validated request data
 	 *
-	 * @return array Response array
+	 * @return void Sends JSON response and exits
 	 * @since 1.0.0
 	 */
-	private function handle_save( array $config, array $request ): array {
+	private function handle_save( array $config, array $request ): void {
 		if ( ! $config['save'] || ! is_callable( $config['save'] ) ) {
-			throw new Exception( 'Save not configured', 501 );
+			wp_send_json_error( __( 'Save not configured', 'wp-flyout' ), 501 );
 		}
 
 		// Parse form data
@@ -323,53 +372,56 @@ class Manager {
 		// Call save handler
 		$result = call_user_func( $config['save'], $id, $form_data );
 
-		// Normalize response
-		if ( $result === true ) {
-			return [
-				'success' => true,
-				'message' => __( 'Saved successfully', 'wp-flyout' ),
-				'reload'  => true
-			];
+		// Handle WP_Error
+		if ( is_wp_error( $result ) ) {
+			wp_send_json_error( $result->get_error_message(), 400 );
 		}
 
+		// Handle false (failure)
 		if ( $result === false ) {
-			throw new Exception( 'Save failed', 500 );
+			wp_send_json_error( __( 'Save failed', 'wp-flyout' ), 500 );
 		}
 
-		return is_array( $result ) ? $result : [ 'success' => true ];
+		// Success - send simple success message (JS will always reload)
+		wp_send_json_success( [
+			'message' => __( 'Saved successfully', 'wp-flyout' )
+		] );
 	}
 
 	/**
 	 * Handle delete action
 	 *
+	 * Processes delete requests and always triggers page reload on success.
+	 * Directly sends JSON response and exits.
+	 *
 	 * @param array $config  Flyout configuration
 	 * @param array $request Validated request data
 	 *
-	 * @return array Response array
+	 * @return void Sends JSON response and exits
 	 * @since 1.0.0
 	 */
-	private function handle_delete( array $config, array $request ): array {
+	private function handle_delete( array $config, array $request ): void {
 		if ( ! $config['delete'] || ! is_callable( $config['delete'] ) ) {
-			throw new Exception( 'Delete not configured', 501 );
+			wp_send_json_error( __( 'Delete not configured', 'wp-flyout' ), 501 );
 		}
 
 		// Call delete handler
 		$result = call_user_func( $config['delete'], $request['id'] );
 
-		// Normalize response
-		if ( $result === true ) {
-			return [
-				'success' => true,
-				'message' => __( 'Deleted successfully', 'wp-flyout' ),
-				'reload'  => true
-			];
+		// Handle WP_Error
+		if ( is_wp_error( $result ) ) {
+			wp_send_json_error( $result->get_error_message(), 400 );
 		}
 
+		// Handle false (failure)
 		if ( $result === false ) {
-			throw new Exception( 'Delete failed', 500 );
+			wp_send_json_error( __( 'Delete failed', 'wp-flyout' ), 500 );
 		}
 
-		return is_array( $result ) ? $result : [ 'success' => true ];
+		// Success - send simple success message (JS will always reload)
+		wp_send_json_success( [
+			'message' => __( 'Deleted successfully', 'wp-flyout' )
+		] );
 	}
 
 	/**
@@ -584,7 +636,7 @@ class Manager {
 	}
 
 	/**
-	 * Render component-based field
+	 * Render component-based field (UPDATED)
 	 *
 	 * @param string $field_key Field key
 	 * @param array  $field     Field configuration
@@ -592,24 +644,19 @@ class Manager {
 	 *
 	 * @return string Generated HTML
 	 * @since 1.0.0
-	 * @since 8.0.0 Simplified to work with resolved data
-	 *
-	 */
-	/**
-	 * Render component-based field
-	 *
-	 * @param string $field_key Field key
-	 * @param array  $field     Field configuration
-	 * @param mixed  $data      Original data object
-	 *
-	 * @return string Generated HTML
-	 * @since 1.0.0
-	 * @since 8.0.0 Simplified to work with resolved data
-	 *
+	 * @since 3.0.0 Added support for custom registered components
 	 */
 	private function render_component_field( string $field_key, array $field, $data ): string {
 		$type = $field['type'];
 
+		// Check for custom component first
+		if ( isset( $this->custom_components[ $type ] ) ) {
+			$renderer = $this->custom_components[ $type ]['renderer'];
+
+			return call_user_func( $renderer, $field_key, $field, $data );
+		}
+
+		// Built-in components
 		switch ( $type ) {
 			case 'order_items':
 				$component = new OrderItems( $field );
@@ -646,7 +693,6 @@ class Manager {
 
 				return $component->render();
 
-			// ADD THESE CASES:
 			case 'accordion':
 				$component = new Accordion( $field );
 
@@ -752,10 +798,8 @@ class Manager {
 	 */
 	private function register_component_endpoints( string $flyout_id, array $config ): void {
 		foreach ( $config['fields'] as $field ) {
-			// Check for AJAX endpoints in field config
 			foreach ( $field as $key => $value ) {
 				if ( str_starts_with( $key, 'ajax_' ) && is_string( $value ) ) {
-					// Register the endpoint if a callback is provided
 					$callback_key = str_replace( 'ajax_', '', $key ) . '_callback';
 					if ( isset( $field[ $callback_key ] ) ) {
 						$this->register_ajax_endpoint( $value, $field[ $callback_key ] );
@@ -763,6 +807,28 @@ class Manager {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Register a custom AJAX handler for a component
+	 *
+	 * Allows components to have their own AJAX endpoints.
+	 *
+	 * @param string   $action  AJAX action name (wp_ajax_{$action} will be hooked)
+	 * @param callable $handler Handler callback
+	 * @param bool     $nopriv  Whether to also register for non-logged-in users
+	 *
+	 * @return self Returns instance for method chaining
+	 * @since 3.0.0
+	 */
+	public function register_ajax_handler( string $action, callable $handler, bool $nopriv = false ): self {
+		add_action( 'wp_ajax_' . $action, $handler );
+
+		if ( $nopriv ) {
+			add_action( 'wp_ajax_nopriv_' . $action, $handler );
+		}
+
+		return $this;
 	}
 
 	/**
@@ -774,7 +840,7 @@ class Manager {
 	 * @return void
 	 * @since 1.0.0
 	 */
-	private function register_ajax_endpoint( string $endpoint, $callback = null ): void {
+	private function register_ajax_endpoint( string $endpoint, callable $callback = null ): void {
 		if ( ! $callback || ! is_callable( $callback ) ) {
 			return;
 		}

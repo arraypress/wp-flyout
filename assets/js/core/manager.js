@@ -1,5 +1,11 @@
 /**
  * WP Flyout Manager - Simplified version
+ *
+ * Handles AJAX flyout loading, saving, and deletion.
+ * Always reloads page after successful save/delete operations.
+ *
+ * @package     ArrayPress\WPFlyout
+ * @version     3.0.0
  */
 (function ($) {
     'use strict';
@@ -8,6 +14,9 @@
 
         /**
          * Initialize manager
+         *
+         * @since 1.0.0
+         * @return {void}
          */
         init: function () {
             $(document).on('click', '.wp-flyout-trigger', this.handleTrigger.bind(this));
@@ -15,6 +24,10 @@
 
         /**
          * Handle trigger click
+         *
+         * @since 1.0.0
+         * @param {jQuery.Event} e Click event
+         * @return {void}
          */
         handleTrigger: function (e) {
             e.preventDefault();
@@ -27,6 +40,10 @@
 
         /**
          * Extract configuration from trigger button
+         *
+         * @since 1.0.0
+         * @param {jQuery} $btn Trigger button element
+         * @return {Object} Configuration object
          */
         extractConfig: function ($btn) {
             const config = {
@@ -48,6 +65,10 @@
 
         /**
          * Load flyout via AJAX
+         *
+         * @since 1.0.0
+         * @param {Object} config Flyout configuration
+         * @return {void}
          */
         loadFlyout: function (config) {
             $.post(ajaxurl, {
@@ -69,6 +90,11 @@
 
         /**
          * Display flyout and setup handlers
+         *
+         * @since 1.0.0
+         * @param {string} html   Flyout HTML content
+         * @param {Object} config Flyout configuration
+         * @return {void}
          */
         displayFlyout: function (html, config) {
             // Remove existing flyouts and add new one
@@ -93,6 +119,10 @@
 
         /**
          * Ensure form wrapper exists
+         *
+         * @since 1.0.0
+         * @param {jQuery} $flyout Flyout element
+         * @return {void}
          */
         ensureForm: function ($flyout) {
             if (!$flyout.find('form').length) {
@@ -105,6 +135,12 @@
 
         /**
          * Bind event handlers
+         *
+         * @since 1.0.0
+         * @param {jQuery} $flyout  Flyout element
+         * @param {string} flyoutId Flyout ID
+         * @param {Object} config   Flyout configuration
+         * @return {void}
          */
         bindHandlers: function ($flyout, flyoutId, config) {
             // Save button
@@ -135,6 +171,10 @@
 
         /**
          * Validate form
+         *
+         * @since 1.0.0
+         * @param {jQuery} $form Form element
+         * @return {Object} Validation result with isValid flag and first invalid field
          */
         validateForm: function ($form) {
             let isValid = true;
@@ -157,7 +197,16 @@
         },
 
         /**
-         * Handle save
+         * Handle save action
+         *
+         * Validates form, sends save request, and always reloads page on success.
+         *
+         * @since 1.0.0
+         * @since 3.0.0 Removed conditional reload - always reloads on success
+         * @param {jQuery} $flyout  Flyout element
+         * @param {string} flyoutId Flyout ID
+         * @param {Object} config   Flyout configuration
+         * @return {void}
          */
         handleSave: function ($flyout, flyoutId, config) {
             const $form = $flyout.find('form').first();
@@ -188,13 +237,13 @@
                     this.setButtonState($saveBtn, false);
 
                     if (response.success) {
-                        const data = response.data || {};
-                        this.showAlert($flyout, data.message || 'Saved successfully!', 'success');
+                        const message = response.data?.message || 'Saved successfully!';
+                        this.showAlert($flyout, message, 'success');
 
-                        // Close after delay
+                        // Always close and reload after delay
                         setTimeout(() => {
                             WPFlyout.close(flyoutId);
-                            if (data.reload) location.reload();
+                            location.reload();
                         }, 1500);
                     } else {
                         this.showAlert($flyout, response.data || 'An error occurred', 'error');
@@ -207,7 +256,16 @@
         },
 
         /**
-         * Handle delete
+         * Handle delete action
+         *
+         * Sends delete request and always reloads page on success.
+         *
+         * @since 1.0.0
+         * @since 3.0.0 Removed conditional reload - always reloads on success
+         * @param {jQuery} $flyout  Flyout element
+         * @param {string} flyoutId Flyout ID
+         * @param {Object} config   Flyout configuration
+         * @return {void}
          */
         handleDelete: function ($flyout, flyoutId, config) {
             const $deleteBtn = $flyout.find('.wp-flyout-delete');
@@ -225,12 +283,13 @@
             })
                 .done(response => {
                     if (response.success) {
-                        const data = response.data || {};
-                        this.showAlert($flyout, data.message || 'Deleted successfully!', 'success');
+                        const message = response.data?.message || 'Deleted successfully!';
+                        this.showAlert($flyout, message, 'success');
 
+                        // Always close and reload after delay
                         setTimeout(() => {
                             WPFlyout.close(flyoutId);
-                            if (data.reload) location.reload();
+                            location.reload();
                         }, 1000);
                     } else {
                         this.setButtonState($deleteBtn, false);
@@ -245,6 +304,12 @@
 
         /**
          * Show alert message
+         *
+         * @since 1.0.0
+         * @param {jQuery} $flyout Flyout element
+         * @param {string} message Alert message text
+         * @param {string} type    Alert type (success, error, warning, info)
+         * @return {void}
          */
         showAlert: function ($flyout, message, type) {
             if (window.WPFlyoutAlert) {
@@ -259,6 +324,12 @@
 
         /**
          * Set button loading state
+         *
+         * @since 1.0.0
+         * @param {jQuery} $btn     Button element
+         * @param {boolean} disabled Whether button should be disabled
+         * @param {string} text     Optional text to show when disabled
+         * @return {void}
          */
         setButtonState: function ($btn, disabled, text) {
             if (!$btn.length) return;
