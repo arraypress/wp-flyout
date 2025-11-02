@@ -489,6 +489,9 @@ class Manager {
 				// Set value or items based on field type
 				if ( in_array( $field['type'] ?? '', [ 'notes', 'files', 'order_items' ] ) ) {
 					$field['items'] = $resolved_data;
+				} elseif ( $field['type'] === 'price_breakdown' && is_array( $resolved_data ) ) {
+					// For price_breakdown, merge the entire resolved array
+					$field = array_merge( $field, $resolved_data );
 				} else {
 					$field['value'] = $resolved_data;
 				}
@@ -610,39 +613,48 @@ class Manager {
 		switch ( $type ) {
 			case 'order_items':
 				$component = new OrderItems( $field );
+
 				return $component->render();
 
 			case 'notes':
 				$component = new Notes( $field );
+
 				return $component->render();
 
 			case 'files':
 				$component = new FileManager( $field );
+
 				return $component->render();
 
 			case 'price_breakdown':
 				$component = new PriceBreakdown( $field );
+
 				return $component->render();
 
 			case 'entity_header':
 				$component = new EntityHeader( $field );
+
 				return $component->render();
 
 			case 'payment_method':
 				$component = new PaymentMethod( $field );
+
 				return $component->render();
 
 			case 'card_choice':
 				$component = new CardChoice( $field );
+
 				return $component->render();
 
 			// ADD THESE CASES:
 			case 'accordion':
 				$component = new Accordion( $field );
+
 				return $component->render();
 
 			case 'timeline':
 				$component = new Timeline( $field );
+
 				return $component->render();
 		}
 
