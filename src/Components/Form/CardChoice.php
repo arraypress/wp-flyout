@@ -134,15 +134,18 @@ class CardChoice {
         $input_id   = sanitize_key( $this->config['name'] . '_' . $value );
         $input_name = $this->config['name'];
 
+        // FIXED: Use 'mode' instead of 'type' for input type
+        $input_type = $this->config['mode'] ?? 'radio';
+
         // Array notation for checkboxes
-        if ( $this->config['method'] === 'checkbox' ) {
+        if ( $input_type === 'checkbox' ) {
             $input_name .= '[]';
         }
 
         $is_checked = $this->is_checked( $value );
         ?>
         <div class="card-choice">
-            <input type="<?php echo esc_attr( $this->config['method'] ); ?>"
+            <input type="<?php echo esc_attr( $input_type ); ?>"
                    id="<?php echo esc_attr( $input_id ); ?>"
                    name="<?php echo esc_attr( $input_name ); ?>"
                    value="<?php echo esc_attr( $value ); ?>"
@@ -185,7 +188,8 @@ class CardChoice {
      *
      */
     private function is_checked( string $value ): bool {
-        if ( $this->config['method'] === 'checkbox' ) {
+        // FIXED: Check using 'mode' instead of 'type'
+        if ( $this->config['mode'] === 'checkbox' ) {
             return is_array( $this->config['value'] ) &&
                    in_array( $value, $this->config['value'], true );
         }

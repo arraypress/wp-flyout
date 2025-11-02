@@ -16,6 +16,7 @@ declare( strict_types=1 );
 
 namespace ArrayPress\WPFlyout;
 
+use ArrayPress\WPFlyout\Components\Data\Timeline;
 use ArrayPress\WPFlyout\Components\Domain\PriceBreakdown;
 use ArrayPress\WPFlyout\Components\Form\FormField;
 use ArrayPress\WPFlyout\Components\Core\ActionBar;
@@ -25,6 +26,7 @@ use ArrayPress\WPFlyout\Components\Interactive\FileManager;
 use ArrayPress\WPFlyout\Components\Domain\EntityHeader;
 use ArrayPress\WPFlyout\Components\Domain\PaymentMethod;
 use ArrayPress\WPFlyout\Components\Form\CardChoice;
+use ArrayPress\WPFlyout\Components\Layout\Accordion;
 use Exception;
 
 /**
@@ -89,7 +91,9 @@ class Manager {
 		'order_items',
 		'notes',
 		'files',
-		'card_choice'
+		'card_choice',
+		'accordion',
+		'timeline'
 	];
 
 	/**
@@ -588,43 +592,57 @@ class Manager {
 	 * @since 8.0.0 Simplified to work with resolved data
 	 *
 	 */
+	/**
+	 * Render component-based field
+	 *
+	 * @param string $field_key Field key
+	 * @param array  $field     Field configuration
+	 * @param mixed  $data      Original data object
+	 *
+	 * @return string Generated HTML
+	 * @since 1.0.0
+	 * @since 8.0.0 Simplified to work with resolved data
+	 *
+	 */
 	private function render_component_field( string $field_key, array $field, $data ): string {
 		$type = $field['type'];
 
 		switch ( $type ) {
 			case 'order_items':
 				$component = new OrderItems( $field );
-
 				return $component->render();
 
 			case 'notes':
 				$component = new Notes( $field );
-
 				return $component->render();
 
 			case 'files':
 				$component = new FileManager( $field );
-
 				return $component->render();
 
 			case 'price_breakdown':
 				$component = new PriceBreakdown( $field );
-
 				return $component->render();
 
 			case 'entity_header':
 				$component = new EntityHeader( $field );
-
 				return $component->render();
 
 			case 'payment_method':
 				$component = new PaymentMethod( $field );
-
 				return $component->render();
 
 			case 'card_choice':
 				$component = new CardChoice( $field );
+				return $component->render();
 
+			// ADD THESE CASES:
+			case 'accordion':
+				$component = new Accordion( $field );
+				return $component->render();
+
+			case 'timeline':
+				$component = new Timeline( $field );
 				return $component->render();
 		}
 
