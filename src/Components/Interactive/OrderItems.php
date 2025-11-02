@@ -39,12 +39,12 @@ class OrderItems {
             'id'             => '',
             'name'           => 'order_items',
             'items'          => [],
-            'mode'           => 'edit', // 'edit' or 'view'
+            'mode'           => 'edit',
             'currency'       => 'USD',
             'show_quantity'  => true,
             'show_totals'    => true,
-            'ajax_endpoint'  => '',
-            'details_action' => 'get_product_details',
+            'ajax_search'    => '',  // Changed from ajax_search
+            'ajax_details'   => 'get_product_details', // Changed from ajax_details
             'placeholder'    => 'Search for products...',
             'empty_text'     => 'No products added yet.',
             'add_text'       => 'Add Product',
@@ -101,7 +101,7 @@ class OrderItems {
                 'mode'           => $this->config['mode'],
                 'name'           => $this->config['name'],
                 'currency'       => $this->config['currency'],
-                'details-action' => $this->config['details_action']
+                'details-action' => $this->config['ajax_details']
         ];
 
         $is_edit = $this->config['mode'] === 'edit';
@@ -112,7 +112,7 @@ class OrderItems {
              class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>"
                 <?php echo $this->build_data_attributes( $data ); ?>>
 
-            <?php if ( $is_edit && $this->config['ajax_endpoint'] ) : ?>
+            <?php if ( $is_edit && $this->config['ajax_search'] ) : ?>
                 <?php $this->render_product_selector(); ?>
             <?php endif; ?>
 
@@ -134,14 +134,14 @@ class OrderItems {
      * Render product selector
      */
     private function render_product_selector(): void {
-        $nonce = wp_create_nonce( 'order_items_' . $this->config['ajax_endpoint'] );
+        $nonce = wp_create_nonce( 'order_items_' . $this->config['ajax_search'] );
         ?>
         <div class="order-items-selector">
             <select class="product-ajax-select"
-                    data-ajax="<?php echo esc_attr( $this->config['ajax_endpoint'] ); ?>"
+                    data-ajax="<?php echo esc_attr( $this->config['ajax_search'] ); ?>"
                     data-placeholder="<?php echo esc_attr( $this->config['placeholder'] ); ?>"
                     data-nonce="<?php echo esc_attr( $nonce ); ?>"
-                    data-details-action="<?php echo esc_attr( $this->config['details_action'] ); ?>">
+                    data-details-action="<?php echo esc_attr( $this->config['ajax_details'] ); ?>">
             </select>
             <button type="button" class="button" data-action="add-product">
                 <span class="dashicons dashicons-plus-alt"></span>

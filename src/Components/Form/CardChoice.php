@@ -44,7 +44,7 @@ class CardChoice {
     private const DEFAULTS = [
             'id'      => '',
             'name'    => '',
-            'type'    => 'radio', // 'radio' or 'checkbox'
+            'mode'    => 'radio', // Changed from 'type' to 'mode'
             'options' => [],
             'value'   => null,
             'columns' => 2,
@@ -67,7 +67,7 @@ class CardChoice {
         }
 
         // Ensure value is array for checkboxes
-        if ( $this->config['type'] === 'checkbox' && ! is_array( $this->config['value'] ) ) {
+        if ( $this->config['method'] === 'checkbox' && ! is_array( $this->config['value'] ) ) {
             $this->config['value'] = $this->config['value'] ? [ $this->config['value'] ] : [];
         }
     }
@@ -97,7 +97,7 @@ class CardChoice {
         ?>
         <div id="<?php echo esc_attr( $this->config['id'] ); ?>"
              class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>"
-             role="<?php echo $this->config['type'] === 'radio' ? 'radiogroup' : 'group'; ?>">
+             role="<?php echo $this->config['method'] === 'radio' ? 'radiogroup' : 'group'; ?>">
             <?php foreach ( $this->config['options'] as $value => $option ) : ?>
                 <?php $this->render_option( $value, $option ); ?>
             <?php endforeach; ?>
@@ -135,14 +135,14 @@ class CardChoice {
         $input_name = $this->config['name'];
 
         // Array notation for checkboxes
-        if ( $this->config['type'] === 'checkbox' ) {
+        if ( $this->config['method'] === 'checkbox' ) {
             $input_name .= '[]';
         }
 
         $is_checked = $this->is_checked( $value );
         ?>
         <div class="card-choice">
-            <input type="<?php echo esc_attr( $this->config['type'] ); ?>"
+            <input type="<?php echo esc_attr( $this->config['method'] ); ?>"
                    id="<?php echo esc_attr( $input_id ); ?>"
                    name="<?php echo esc_attr( $input_name ); ?>"
                    value="<?php echo esc_attr( $value ); ?>"
@@ -185,7 +185,7 @@ class CardChoice {
      *
      */
     private function is_checked( string $value ): bool {
-        if ( $this->config['type'] === 'checkbox' ) {
+        if ( $this->config['method'] === 'checkbox' ) {
             return is_array( $this->config['value'] ) &&
                    in_array( $value, $this->config['value'], true );
         }

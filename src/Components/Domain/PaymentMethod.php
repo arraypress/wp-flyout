@@ -33,7 +33,7 @@ class PaymentMethod {
      */
     private const DEFAULTS = [
             'id'          => '',
-            'type'        => 'card', // card, bank, PayPal, crypto
+            'method'      => 'card', // Changed from 'type' to avoid conflict
             'brand'       => '',
             'last4'       => '',
             'exp_month'   => '',
@@ -41,11 +41,11 @@ class PaymentMethod {
             'holder_name' => '',
             'email'       => '',
             'is_default'  => false,
-            'status'      => 'active', // active, expired, pending
+            'status'      => 'active',
             'provider'    => '',
             'show_icon'   => true,
             'show_expiry' => true,
-            'format'      => 'default', // default, compact, detailed
+            'format'      => 'default',
             'class'       => ''
     ];
 
@@ -84,7 +84,7 @@ class PaymentMethod {
         $classes = [
                 'wp-flyout-payment-method',
                 'format-' . $this->config['format'],
-                'payment-' . $this->config['type']
+                'payment-' . $this->config['method']
         ];
 
         if ( ! empty( $this->config['class'] ) ) {
@@ -138,11 +138,11 @@ class PaymentMethod {
      * @return string
      */
     private function get_payment_icon(): string {
-        if ( $this->config['type'] === 'card' && $this->config['brand'] ) {
+        if ( $this->config['method'] === 'card' && $this->config['brand'] ) {
             return $this->get_card_icon( $this->config['brand'] );
         }
 
-        $icon = self::ICONS[ $this->config['type'] ] ?? 'money-alt';
+        $icon = self::ICONS[ $this->config['method'] ] ?? 'money-alt';
 
         return '<span class="dashicons dashicons-' . esc_attr( $icon ) . '"></span>';
     }
@@ -166,7 +166,7 @@ class PaymentMethod {
      * @return string
      */
     private function get_payment_display(): string {
-        if ( $this->config['type'] === 'card' ) {
+        if ( $this->config['method'] === 'card' ) {
             $display = '';
 
             if ( ! empty( $this->config['brand'] ) ) {
@@ -188,21 +188,21 @@ class PaymentMethod {
             return $display;
         }
 
-        if ( $this->config['type'] === 'bank' && ! empty( $this->config['last4'] ) ) {
+        if ( $this->config['method'] === 'bank' && ! empty( $this->config['last4'] ) ) {
             return sprintf(
                     '<span class="payment-bank">%s</span>',
                     sprintf( esc_html__( 'Bank Account •••• %s', 'arraypress' ), esc_html( $this->config['last4'] ) )
             );
         }
 
-        if ( $this->config['type'] === 'paypal' && ! empty( $this->config['email'] ) ) {
+        if ( $this->config['method'] === 'paypal' && ! empty( $this->config['email'] ) ) {
             return sprintf(
                     '<span class="payment-paypal">PayPal (%s)</span>',
                     esc_html( $this->config['email'] )
             );
         }
 
-        return '<span class="payment-type">' . ucfirst( $this->config['type'] ) . '</span>';
+        return '<span class="payment-type">' . ucfirst( $this->config['method'] ) . '</span>';
     }
 
 }
