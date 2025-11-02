@@ -31,7 +31,6 @@
 
 /* Add product button */
 .order-items-selector button[data-action="add-product"] {
-    padding: 10px 24px;
     background: #2271b1;
     color: #fff;
     border: 1px solid #2271b1;
@@ -44,13 +43,6 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-}
-
-.order-items-selector button[data-action="add-product"]:hover {
-    background: #1e5a8e;
-    border-color: #1e5a8e;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .order-items-selector button[data-action="add-product"]:active {
