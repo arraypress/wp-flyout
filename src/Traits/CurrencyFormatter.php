@@ -1,44 +1,62 @@
 <?php
-/**
- * Currency Formatter Trait
- *
- * Provides currency formatting using the wp-currencies library.
- * Centralizes currency display logic for components dealing with prices.
- *
- * @package     ArrayPress\WPFlyout\Traits
- * @copyright   Copyright (c) 2025, ArrayPress Limited
- * @license     GPL2+
- * @version     1.0.0
- * @author      David Sherlock
- */
+// src/Traits/CurrencyFormatter.php
 
 declare( strict_types=1 );
 
 namespace ArrayPress\WPFlyout\Traits;
 
-/**
- * Trait CurrencyFormatter
- *
- * Formats currency values using wp-currencies library.
- *
- * @since 1.0.0
- */
 trait CurrencyFormatter {
 
+	/**
+	 * Format currency amount
+	 *
+	 * Formats amount to currency string using wp-currencies library.
+	 * Accepts both cents (int) and dollar amounts (float).
+	 * Falls back to $this->config['currency'] or 'USD' if currency not provided.
+	 *
+	 * @param int|float|string $amount    Amount in cents (int) or dollars (float/string).
+	 *                                    Examples: 1999 (int) = $19.99, 19.99 (float) = $19.99, "19.99" (string) = $19.99
+	 * @param string|null      $currency  Currency code (e.g., 'USD', 'EUR'). Optional.
+	 *
+	 * @return string Formatted currency string
+	 */
 	protected function format_currency( $amount, ?string $currency = null ): string {
 		// Determine currency to use
 		$currency = $currency ?? ( $this->config['currency'] ?? 'USD' );
 
-		// FIXED: Only convert to cents if it's a float/dollar amount
-		// If the amount is less than 100 and is a float, assume it's in dollars
-		if ( is_float( $amount ) || ( $amount < 100 && floor( $amount ) != $amount ) ) {
-			$amount_in_cents = (int) round( $amount * 100 );
+		// Convert to numeric
+		$amount_numeric = is_string( $amount ) ? (float) $amount : $amount;
+
+		// Determine if amount is in dollars or cents
+		// If it's a float, or a small number with decimals, it's likely in dollars
+		if ( is_float( $amount_numeric ) ||
+		     ( $amount_numeric < 100 && $amount_numeric != floor( $amount_numeric ) ) ) {
+			$amount_in_cents = (int) round( $amount_numeric * 100 );
 		} else {
 			// Otherwise assume it's already in cents
-			$amount_in_cents = (int) $amount;
+			$amount_in_cents = (int) $amount_numeric;
 		}
 
-		return format_currency( $amount_in_cents, $currency );
+		// If format_currency function exists (from wp-currencies), use it
+		if ( function_exists( 'format_currency' ) ) {
+			return format_currency( $amount_in_cents, $currency );
+		}
+
+		// Fallback formatting
+		$symbols = [
+			'USD' => '$',
+			'EUR' => '€',
+			'GBP' => '£',
+			'JPY' => '¥',
+			'CAD' => '$',
+			'AUD' => '$'
+		];
+
+		$symbol = $symbols[ $currency ] ?? $currency . ' ';
+		$decimals = ( $currency === 'JPY' ) ? 0 : 2;
+		$amount_in_dollars = $amount_in_cents / 100;
+
+		return $symbol . number_format( $amount_in_dollars, $decimals );
 	}
 
 }
