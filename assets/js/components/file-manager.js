@@ -144,12 +144,16 @@
             const $items = $manager.find('.file-manager-items');
             const index = $items.find('.file-manager-item').length;
 
-            // Replace template variables with empty values
+            // Generate unique lookup_key for new items
+            const lookupKey = 'file_' + Math.random().toString(36).substring(2, 15);
+
+            // Replace template variables
             let html = template
                 .replace(/{{index}}/g, index)
                 .replace(/{{name}}/g, '')
                 .replace(/{{url}}/g, '')
-                .replace(/{{id}}/g, '')
+                .replace(/{{attachment_id}}/g, '')
+                .replace(/{{lookup_key}}/g, lookupKey)
                 .replace(/{{extension}}/g, '')
                 .replace(/{{extension_upper}}/g, '')
                 .replace(/{{extension_display}}/g, 'display:none')

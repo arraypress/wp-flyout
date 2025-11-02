@@ -134,12 +134,13 @@ class FileManager {
     private function render_file_item( array $file, int $index ): void {
         $file_extension = $this->get_file_extension( $file['url'] ?? '' );
         $file_icon      = $this->get_file_icon( $file_extension );
+        $lookup_key     = $file['lookup_key'] ?? '';
         ?>
         <div class="file-manager-item" data-index="<?php echo $index; ?>">
             <?php if ( $this->config['reorderable'] ) : ?>
                 <span class="file-handle" title="<?php esc_attr_e( 'Drag to reorder', 'wp-flyout' ); ?>">
-                    <span class="dashicons dashicons-menu"></span>
-                </span>
+                <span class="dashicons dashicons-menu"></span>
+            </span>
             <?php endif; ?>
 
             <div class="file-icon" data-extension="<?php echo esc_attr( $file_extension ); ?>">
@@ -165,9 +166,15 @@ class FileManager {
                        class="file-url-input">
 
                 <input type="hidden"
-                       name="<?php echo esc_attr( $this->config['name'] ); ?>[<?php echo $index; ?>][id]"
-                       value="<?php echo esc_attr( $file['id'] ?? '' ); ?>"
-                       data-field="id">
+                       name="<?php echo esc_attr( $this->config['name'] ); ?>[<?php echo $index; ?>][attachment_id]"
+                       value="<?php echo esc_attr( $file['attachment_id'] ?? $file['id'] ?? '' ); ?>"
+                       data-field="attachment_id">
+
+                <!-- Add lookup_key field -->
+                <input type="hidden"
+                       name="<?php echo esc_attr( $this->config['name'] ); ?>[<?php echo $index; ?>][lookup_key]"
+                       value="<?php echo esc_attr( $lookup_key ); ?>"
+                       data-field="lookup_key">
             </div>
 
             <div class="file-actions">
@@ -288,8 +295,12 @@ class FileManager {
                    placeholder="File name" data-field="name" class="file-name-input">
             <input type="url" name="<?php echo esc_attr( $this->config['name'] ); ?>[{{index}}][url]" value="{{url}}"
                    placeholder="File URL" data-field="url" class="file-url-input">
-            <input type="hidden" name="<?php echo esc_attr( $this->config['name'] ); ?>[{{index}}][id]" value="{{id}}"
-                   data-field="id">
+            <input type="hidden" name="<?php echo esc_attr( $this->config['name'] ); ?>[{{index}}][attachment_id]"
+                   value="{{attachment_id}}"
+                   data-field="attachment_id">
+            <input type="hidden" name="<?php echo esc_attr( $this->config['name'] ); ?>[{{index}}][lookup_key]"
+                   value="{{lookup_key}}"
+                   data-field="lookup_key">
         </div>
         <div class="file-actions">
             <?php if ( $this->config['browseable'] ) : ?>
