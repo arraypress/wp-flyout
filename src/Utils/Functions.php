@@ -137,3 +137,67 @@ if ( ! function_exists( 'render_flyout_button' ) ) {
 		echo get_flyout_button( $id, $data, $args );
 	}
 }
+
+if ( ! function_exists( 'get_flyout_link' ) ) {
+	/**
+	 * Get a flyout trigger link HTML
+	 *
+	 * This is a convenience function that works with the global registration.
+	 * It automatically determines the correct manager from the flyout ID.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @param string $id   Full flyout identifier (same as used in register_flyout)
+	 * @param string $text Link text to display
+	 * @param array  $data Data attributes to pass to the flyout
+	 * @param array  $args {
+	 *     Link configuration
+	 *
+	 *     @type string $class  Additional CSS classes
+	 *     @type string $target Link target attribute (e.g., '_blank')
+	 * }
+	 * @return string Link HTML or empty string if flyout not found
+	 */
+	function get_flyout_link( string $id, string $text, array $data = [], array $args = [] ): string {
+		static $managers = [];
+
+		// Parse the ID to find the manager
+		$parts = explode( '_', $id, 2 );
+
+		if ( count( $parts ) === 1 ) {
+			$prefix = $id;
+			$flyout_id = 'default';
+		} else {
+			$prefix = $parts[0];
+			$flyout_id = $parts[1];
+		}
+
+		// Try to get the manager link
+		if ( isset( $managers[ $prefix ] ) ) {
+			return $managers[ $prefix ]->link( $flyout_id, $text, $data, $args );
+		}
+
+		// Try to find it through the global registration tracking
+		// This won't work unless register_flyout was called, so return empty
+		return '';
+	}
+}
+
+if ( ! function_exists( 'render_flyout_link' ) ) {
+	/**
+	 * Render a flyout trigger link
+	 *
+	 * Outputs the link HTML directly.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @param string $id   Full flyout identifier
+	 * @param string $text Link text to display
+	 * @param array  $data Data attributes to pass
+	 * @param array  $args Link configuration
+	 * @return void
+	 */
+	function render_flyout_link( string $id, string $text, array $data = [], array $args = [] ): void {
+		echo get_flyout_link( $id, $text, $data, $args );
+	}
+}

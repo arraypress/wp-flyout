@@ -1,13 +1,14 @@
 <?php
 /**
- * Timeline Component
+ * Timeline Component - Simplified
  *
  * Displays chronological events in a vertical timeline format.
  *
  * @package     ArrayPress\WPFlyout\Components\Data
  * @copyright   Copyright (c) 2025, ArrayPress Limited
  * @license     GPL2+
- * @version     2.0.0
+ * @version     3.0.0
+ * @author      David Sherlock
  */
 
 declare( strict_types=1 );
@@ -16,12 +17,20 @@ namespace ArrayPress\WPFlyout\Components\Data;
 
 use ArrayPress\WPFlyout\Traits\Renderable;
 
+/**
+ * Class Timeline
+ *
+ * Renders a vertical timeline of events.
+ *
+ * @since 3.0.0
+ */
 class Timeline {
     use Renderable;
 
     /**
      * Component configuration
      *
+     * @since 3.0.0
      * @var array
      */
     private array $config;
@@ -29,96 +38,44 @@ class Timeline {
     /**
      * Default configuration
      *
+     * @since 3.0.0
      * @var array
      */
     private const DEFAULTS = [
-            'id'          => '',
-            'events'      => [],
-            'date_format' => 'M j, Y',
-            'time_format' => 'g:i A',
-            'show_icons'  => true,
-            'compact'     => false,
-            'class'       => ''
+            'id'      => '',
+            'events'  => [],
+            'compact' => false,
+            'class'   => ''
     ];
 
     /**
      * Constructor
      *
-     * @param array $config Configuration options
+     * @param array $config  {
+     *                       Configuration options
+     *
+     * @type string $id      Component ID (auto-generated if empty)
+     * @type array  $events  Array of timeline events
+     * @type bool   $compact Use compact display mode
+     * @type string $class   Additional CSS classes
+     *                       }
+     * @since 3.0.0
+     *
      */
     public function __construct( array $config = [] ) {
         $this->config = wp_parse_args( $config, self::DEFAULTS );
 
-        // Auto-generate ID if not provided
         if ( empty( $this->config['id'] ) ) {
             $this->config['id'] = 'timeline-' . wp_generate_uuid4();
         }
-
-        // Normalize events
-        $this->config['events'] = $this->normalize_events( $this->config['events'] );
-    }
-
-    /**
-     * Normalize event data
-     *
-     * @param array $events Raw events array
-     *
-     * @return array
-     */
-    private function normalize_events( array $events ): array {
-        $normalized = [];
-
-        foreach ( $events as $event ) {
-            if ( is_string( $event ) ) {
-                $event = [ 'title' => $event ];
-            }
-
-            $normalized[] = wp_parse_args( $event, [
-                    'title'       => '',
-                    'description' => '',
-                    'date'        => current_time( 'mysql' ),
-                    'icon'        => 'marker',
-                    'type'        => 'default',
-                    'user'        => '',
-                    'meta'        => []
-            ] );
-        }
-
-        return $normalized;
-    }
-
-    /**
-     * Format date for display
-     *
-     * @param string $date Date string
-     *
-     * @return string
-     */
-    private function format_date( string $date ): string {
-        $timestamp = strtotime( $date );
-        if ( ! $timestamp ) {
-            return $date;
-        }
-
-        $today      = date( 'Y-m-d' );
-        $yesterday  = date( 'Y-m-d', strtotime( '-1 day' ) );
-        $event_date = date( 'Y-m-d', $timestamp );
-
-        if ( $event_date === $today ) {
-            return sprintf( __( 'Today at %s', 'wp-flyout' ), date( $this->config['time_format'], $timestamp ) );
-        }
-
-        if ( $event_date === $yesterday ) {
-            return sprintf( __( 'Yesterday at %s', 'wp-flyout' ), date( $this->config['time_format'], $timestamp ) );
-        }
-
-        return date( $this->config['date_format'], $timestamp );
     }
 
     /**
      * Render the component
      *
-     * @return string
+     * @return string Generated HTML
+     * @since 3.0.0
+     *
      */
     public function render(): string {
         if ( empty( $this->config['events'] ) ) {
@@ -137,9 +94,12 @@ class Timeline {
         ?>
         <div id="<?php echo esc_attr( $this->config['id'] ); ?>"
              class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>">
-            <?php foreach ( $this->config['events'] as $index => $event ) : ?>
-                <?php $this->render_event( $event, $index ); ?>
-            <?php endforeach; ?>
+            <?php
+            $total = count( $this->config['events'] );
+            foreach ( $this->config['events'] as $index => $event ) :
+                $this->render_event( $event, $index, $total );
+            endforeach;
+            ?>
         </div>
         <?php
         return ob_get_clean();
@@ -150,50 +110,52 @@ class Timeline {
      *
      * @param array $event Event data
      * @param int   $index Event index
+     * @param int   $total Total events count
+     *
+     * @return void
+     * @since  3.0.0
+     * @access private
+     *
      */
-    private function render_event( array $event, int $index ): void {
+    private function render_event( array $event, int $index, int $total ): void {
+        // Normalize event data
+        if ( is_string( $event ) ) {
+            $event = [ 'title' => $event ];
+        }
+
+        $title       = $event['title'] ?? '';
+        $description = $event['description'] ?? '';
+        $date        = $event['date'] ?? '';
+        $type        = $event['type'] ?? 'default';
+        $icon        = $event['icon'] ?? 'marker';
+
+        if ( empty( $title ) ) {
+            return;
+        }
+
         $classes = [
                 'timeline-item',
-                'timeline-' . $event['type']
+                'timeline-item-' . sanitize_html_class( $type )
         ];
 
-        if ( $index === 0 ) {
-            $classes[] = 'first';
-        }
-        if ( $index === count( $this->config['events'] ) - 1 ) {
-            $classes[] = 'last';
+        // Mark last item for CSS
+        if ( $index === $total - 1 ) {
+            $classes[] = 'last-item';
         }
         ?>
         <div class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>">
-            <?php if ( $this->config['show_icons'] ) : ?>
-                <div class="timeline-badge">
-                    <span class="dashicons dashicons-<?php echo esc_attr( $event['icon'] ); ?>"></span>
-                </div>
-            <?php endif; ?>
-
+            <div class="timeline-badge">
+                <span class="dashicons dashicons-<?php echo esc_attr( $icon ); ?>"></span>
+            </div>
             <div class="timeline-content">
-                <div class="timeline-header">
-                    <span class="timeline-date"><?php echo esc_html( $this->format_date( $event['date'] ) ); ?></span>
-                    <?php if ( $event['user'] ) : ?>
-                        <span class="timeline-user"><?php echo esc_html( $event['user'] ); ?></span>
-                    <?php endif; ?>
-                </div>
-
-                <h4 class="timeline-title"><?php echo esc_html( $event['title'] ); ?></h4>
-
-                <?php if ( $event['description'] ) : ?>
-                    <p class="timeline-description"><?php echo esc_html( $event['description'] ); ?></p>
+                <?php if ( $date ) : ?>
+                    <div class="timeline-date"><?php echo esc_html( $date ); ?></div>
                 <?php endif; ?>
 
-                <?php if ( ! empty( $event['meta'] ) ) : ?>
-                    <div class="timeline-meta">
-                        <?php foreach ( $event['meta'] as $key => $value ) : ?>
-                            <span class="meta-item">
-								<strong><?php echo esc_html( $key ); ?>:</strong>
-								<?php echo esc_html( $value ); ?>
-							</span>
-                        <?php endforeach; ?>
-                    </div>
+                <h4 class="timeline-title"><?php echo esc_html( $title ); ?></h4>
+
+                <?php if ( $description ) : ?>
+                    <p class="timeline-description"><?php echo wp_kses_post( $description ); ?></p>
                 <?php endif; ?>
             </div>
         </div>

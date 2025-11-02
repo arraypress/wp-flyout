@@ -1,43 +1,50 @@
 /**
- * WP Flyout Timeline Component Styles
+ * Timeline Component Styles - Simplified
  *
- * Vertical timeline with connector lines and status indicators
+ * @package     ArrayPress\WPFlyout
+ * @version     3.0.0
  */
+
+/* ==========================================
+   CONTAINER
+   ========================================== */
 
 .wp-flyout-timeline {
     position: relative;
-    padding: 20px 0 10px 0;
+    padding: 20px 0;
     margin: 20px 0;
 }
 
-/* Timeline Item */
+/* ==========================================
+   TIMELINE ITEM
+   ========================================== */
+
 .timeline-item {
     position: relative;
     padding-left: 50px;
-    margin-bottom: 25px;
+    margin-bottom: 30px;
 }
 
-.timeline-item:last-child {
-    margin-bottom: 0;
-}
-
-/* Connector line using pseudo-element on each item */
+/* Connector line */
 .timeline-item::before {
     content: '';
     position: absolute;
     left: 19px;
     top: 22px;
-    bottom: -27px;
+    bottom: -32px;
     width: 2px;
     background: #dcdcde;
 }
 
-/* Don't show connector on last item */
+/* Hide connector on last item */
 .timeline-item.last-item::before {
     display: none;
 }
 
-/* Badge */
+/* ==========================================
+   BADGE
+   ========================================== */
+
 .timeline-badge {
     position: absolute;
     left: 10px;
@@ -57,17 +64,13 @@
     font-size: 12px;
     width: 12px;
     height: 12px;
-    color: #50575e;
+    color: #646970;
 }
 
-/* Status type badges */
+/* Status types */
 .timeline-item-success .timeline-badge {
     border-color: #00a32a;
     background: #00a32a;
-}
-
-.timeline-item-success .timeline-badge .dashicons {
-    color: #fff;
 }
 
 .timeline-item-info .timeline-badge {
@@ -75,17 +78,9 @@
     background: #2271b1;
 }
 
-.timeline-item-info .timeline-badge .dashicons {
-    color: #fff;
-}
-
 .timeline-item-warning .timeline-badge {
     border-color: #dba617;
     background: #dba617;
-}
-
-.timeline-item-warning .timeline-badge .dashicons {
-    color: #fff;
 }
 
 .timeline-item-error .timeline-badge {
@@ -93,24 +88,28 @@
     background: #d63638;
 }
 
+.timeline-item-success .timeline-badge .dashicons,
+.timeline-item-info .timeline-badge .dashicons,
+.timeline-item-warning .timeline-badge .dashicons,
 .timeline-item-error .timeline-badge .dashicons {
     color: #fff;
 }
 
-/* Content area */
+/* ==========================================
+   CONTENT
+   ========================================== */
+
 .timeline-content {
     background: #f6f7f7;
     padding: 15px;
     border-radius: 4px;
     border: 1px solid #dcdcde;
-    position: relative;
 }
 
 .timeline-date {
     font-size: 12px;
     color: #8c8f94;
-    margin-bottom: 6px;
-    font-weight: 500;
+    margin-bottom: 8px;
 }
 
 .timeline-title {
@@ -118,43 +117,22 @@
     font-size: 14px;
     font-weight: 600;
     color: #1e1e1e;
-    line-height: 1.4;
 }
 
 .timeline-description {
-    margin: 0 0 8px 0;
+    margin: 0;
     font-size: 13px;
     line-height: 1.5;
     color: #50575e;
 }
 
-.timeline-description:last-child {
-    margin-bottom: 0;
-}
+/* ==========================================
+   COMPACT MODE
+   ========================================== */
 
-.timeline-meta {
-    margin-top: 8px;
-    padding-top: 8px;
-    border-top: 1px solid #dcdcde;
-    font-size: 12px;
-}
-
-.timeline-user {
-    font-size: 12px;
-    color: #8c8f94;
-    font-style: italic;
-}
-
-.timeline-extra {
-    margin-top: 10px;
-    padding-top: 10px;
-    border-top: 1px solid #dcdcde;
-}
-
-/* Compact mode */
 .wp-flyout-timeline.compact .timeline-item {
     margin-bottom: 15px;
-    padding-left: 40px;
+    padding-left: 35px;
 }
 
 .wp-flyout-timeline.compact .timeline-item::before {
@@ -168,56 +146,18 @@
 }
 
 .wp-flyout-timeline.compact .timeline-content {
-    padding: 10px 12px;
+    padding: 10px;
     background: transparent;
     border: none;
 }
 
-.wp-flyout-timeline.compact .timeline-title {
-    font-size: 13px;
-    margin-bottom: 4px;
-}
+/* ==========================================
+   RESPONSIVE
+   ========================================== */
 
-.wp-flyout-timeline.compact .timeline-description {
-    font-size: 12px;
-    margin-bottom: 4px;
-}
-
-.wp-flyout-timeline.compact .timeline-date {
-    font-size: 11px;
-}
-
-/* Hover effects */
-.timeline-item:hover .timeline-content {
-    border-color: #c3c4c7;
-    background: #fff;
-}
-
-.timeline-item:hover .timeline-badge {
-    transform: scale(1.1);
-    transition: transform 0.2s ease;
-}
-
-/* Animation for new items */
-@keyframes slideInLeft {
-    from {
-        opacity: 0;
-        transform: translateX(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
-
-.timeline-item {
-    animation: slideInLeft 0.3s ease-out;
-}
-
-/* Responsive adjustments */
 @media screen and (max-width: 782px) {
     .timeline-item {
-        padding-left: 40px;
+        padding-left: 35px;
     }
 
     .timeline-item::before {
@@ -226,51 +166,5 @@
 
     .timeline-badge {
         left: 5px;
-        width: 18px;
-        height: 18px;
-    }
-
-    .timeline-badge .dashicons {
-        font-size: 10px;
-        width: 10px;
-        height: 10px;
-    }
-
-    .timeline-content {
-        padding: 12px;
-    }
-
-    .timeline-title {
-        font-size: 13px;
-    }
-
-    .timeline-description {
-        font-size: 12px;
-    }
-}
-
-@media screen and (max-width: 600px) {
-    .timeline-item {
-        padding-left: 35px;
-    }
-
-    .timeline-item::before {
-        left: 12px;
-    }
-
-    .timeline-badge {
-        left: 3px;
-    }
-}
-
-/* Print styles */
-@media print {
-    .timeline-item::before {
-        background: #000 !important;
-        print-color-adjust: exact;
-    }
-
-    .timeline-content {
-        border: 1px solid #000 !important;
     }
 }

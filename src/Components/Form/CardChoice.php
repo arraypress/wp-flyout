@@ -1,13 +1,14 @@
 <?php
 /**
- * CardChoice Component
+ * CardChoice Component - Simplified
  *
- * Visual card-style checkboxes and radio buttons.
+ * Visual card-style radio buttons and checkboxes.
  *
  * @package     ArrayPress\WPFlyout\Components\Form
  * @copyright   Copyright (c) 2025, ArrayPress Limited
  * @license     GPL2+
- * @version     2.0.0
+ * @version     3.0.0
+ * @author      David Sherlock
  */
 
 declare( strict_types=1 );
@@ -16,12 +17,20 @@ namespace ArrayPress\WPFlyout\Components\Form;
 
 use ArrayPress\WPFlyout\Traits\Renderable;
 
+/**
+ * Class CardChoice
+ *
+ * Renders card-based selection interface.
+ *
+ * @since 3.0.0
+ */
 class CardChoice {
     use Renderable;
 
     /**
      * Component configuration
      *
+     * @since 3.0.0
      * @var array
      */
     private array $config;
@@ -29,30 +38,30 @@ class CardChoice {
     /**
      * Default configuration
      *
+     * @since 3.0.0
      * @var array
      */
     private const DEFAULTS = [
-            'id'          => '',
-            'name'        => '',
-            'type'        => 'radio', // radio or checkbox
-            'options'     => [],
-            'value'       => null,
-            'columns'     => 2,
-            'required'    => false,
-            'compact'     => false,
-            'show_checks' => true,
-            'class'       => ''
+            'id'      => '',
+            'name'    => '',
+            'type'    => 'radio', // 'radio' or 'checkbox'
+            'options' => [],
+            'value'   => null,
+            'columns' => 2,
+            'class'   => ''
     ];
 
     /**
      * Constructor
      *
      * @param array $config Configuration options
+     *
+     * @since 3.0.0
+     *
      */
     public function __construct( array $config = [] ) {
         $this->config = wp_parse_args( $config, self::DEFAULTS );
 
-        // Auto-generate ID if not provided
         if ( empty( $this->config['id'] ) ) {
             $this->config['id'] = 'card-choice-' . wp_generate_uuid4();
         }
@@ -61,46 +70,17 @@ class CardChoice {
         if ( $this->config['type'] === 'checkbox' && ! is_array( $this->config['value'] ) ) {
             $this->config['value'] = $this->config['value'] ? [ $this->config['value'] ] : [];
         }
-
-        // Process options
-        $this->config['options'] = $this->process_options( $this->config['options'] );
-    }
-
-    /**
-     * Process options to ensure consistent structure
-     *
-     * @param array $options
-     *
-     * @return array
-     */
-    private function process_options( array $options ): array {
-        $processed = [];
-
-        foreach ( $options as $value => $option ) {
-            if ( is_string( $option ) ) {
-                $option = [ 'title' => $option ];
-            }
-
-            $processed[ $value ] = wp_parse_args( $option, [
-                    'title'       => '',
-                    'description' => '',
-                    'icon'        => null,
-                    'badge'       => null,
-                    'badge_type'  => null,
-                    'disabled'    => false
-            ] );
-        }
-
-        return $processed;
     }
 
     /**
      * Render the component
      *
-     * @return string
+     * @return string Generated HTML
+     * @since 3.0.0
+     *
      */
     public function render(): string {
-        if ( empty( $this->config['options'] ) ) {
+        if ( empty( $this->config['options'] ) || empty( $this->config['name'] ) ) {
             return '';
         }
 
@@ -108,10 +88,6 @@ class CardChoice {
                 'wp-flyout-card-choice-group',
                 'columns-' . $this->config['columns']
         ];
-
-        if ( $this->config['compact'] ) {
-            $classes[] = 'compact';
-        }
 
         if ( ! empty( $this->config['class'] ) ) {
             $classes[] = $this->config['class'];
@@ -134,56 +110,64 @@ class CardChoice {
      * Render a single option card
      *
      * @param string $value  Option value
-     * @param array  $option Option configuration
+     * @param mixed  $option Option config (string or array)
+     *
+     * @return void
+     * @since  3.0.0
+     * @access private
+     *
      */
-    private function render_option( string $value, array $option ): void {
-        $is_checked = $this->is_checked( $value );
+    private function render_option( string $value, $option ): void {
+        // Handle simple string format
+        if ( is_string( $option ) ) {
+            $option = [ 'title' => $option ];
+        }
+
+        $title       = $option['title'] ?? '';
+        $description = $option['description'] ?? '';
+        $icon        = $option['icon'] ?? '';
+
+        if ( empty( $title ) ) {
+            return;
+        }
+
         $input_id   = sanitize_key( $this->config['name'] . '_' . $value );
         $input_name = $this->config['name'];
 
-        // For checkboxes, use array notation
+        // Array notation for checkboxes
         if ( $this->config['type'] === 'checkbox' ) {
             $input_name .= '[]';
         }
+
+        $is_checked = $this->is_checked( $value );
         ?>
         <div class="card-choice">
             <input type="<?php echo esc_attr( $this->config['type'] ); ?>"
                    id="<?php echo esc_attr( $input_id ); ?>"
                    name="<?php echo esc_attr( $input_name ); ?>"
                    value="<?php echo esc_attr( $value ); ?>"
-                    <?php checked( $is_checked ); ?>
-                    <?php disabled( $option['disabled'] ); ?>
-                    <?php echo $this->config['required'] ? 'required' : ''; ?>>
+                    <?php checked( $is_checked ); ?>>
 
             <label class="card-choice-label" for="<?php echo esc_attr( $input_id ); ?>">
                 <div class="card-choice-header">
-                    <?php if ( ! empty( $option['icon'] ) ) : ?>
+                    <?php if ( $icon ) : ?>
                         <div class="card-choice-icon">
-                            <span class="dashicons dashicons-<?php echo esc_attr( $option['icon'] ); ?>"></span>
+                            <span class="dashicons dashicons-<?php echo esc_attr( $icon ); ?>"></span>
                         </div>
                     <?php endif; ?>
 
                     <div class="card-choice-content">
                         <div class="card-choice-title">
-                            <?php echo esc_html( $option['title'] ); ?>
-
-                            <?php if ( ! empty( $option['badge'] ) ) : ?>
-                                <span class="card-choice-badge <?php echo $option['badge_type'] ? 'badge-' . esc_attr( $option['badge_type'] ) : ''; ?>">
-									<?php echo esc_html( $option['badge'] ); ?>
-								</span>
-                            <?php endif; ?>
+                            <?php echo esc_html( $title ); ?>
                         </div>
-
-                        <?php if ( ! empty( $option['description'] ) ) : ?>
+                        <?php if ( $description ) : ?>
                             <p class="card-choice-description">
-                                <?php echo esc_html( $option['description'] ); ?>
+                                <?php echo esc_html( $description ); ?>
                             </p>
                         <?php endif; ?>
                     </div>
 
-                    <?php if ( $this->config['show_checks'] ) : ?>
-                        <div class="card-choice-check"></div>
-                    <?php endif; ?>
+                    <div class="card-choice-check"></div>
                 </div>
             </label>
         </div>
@@ -195,11 +179,15 @@ class CardChoice {
      *
      * @param string $value Option value
      *
-     * @return bool
+     * @return bool True if checked
+     * @since  3.0.0
+     * @access private
+     *
      */
     private function is_checked( string $value ): bool {
         if ( $this->config['type'] === 'checkbox' ) {
-            return is_array( $this->config['value'] ) && in_array( $value, $this->config['value'], true );
+            return is_array( $this->config['value'] ) &&
+                   in_array( $value, $this->config['value'], true );
         }
 
         return $this->config['value'] === $value;

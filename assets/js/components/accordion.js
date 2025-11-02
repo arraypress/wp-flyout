@@ -1,10 +1,12 @@
 /**
- * Accordion & Collapsible Component JavaScript
+ * Accordion Component JavaScript
  *
  * Handles expand/collapse interactions with smooth animations.
+ * Simplified version using event delegation for better performance.
  *
  * @package     ArrayPress\WPFlyout
- * @version     1.0.0
+ * @version     3.0.0
+ * @author      David Sherlock
  */
 
 (function ($) {
@@ -12,191 +14,125 @@
 
     /**
      * Accordion Handler
+     *
+     * @namespace WPFlyoutAccordion
+     * @since 3.0.0
      */
     const Accordion = {
+
         /**
-         * Initialize all accordions
+         * Initialize accordion functionality
+         *
+         * Uses event delegation for better performance and dynamic content support.
+         *
+         * @since 3.0.0
+         * @return {void}
          */
         init: function () {
-            $('.wp-flyout-accordion').each(function () {
-                Accordion.initAccordion($(this));
-            });
-
-            // Initialize on flyout open
-            $(document).on('wpflyout:opened', function (e, data) {
-                $(data.element).find('.wp-flyout-accordion').each(function () {
-                    if (!$(this).data('accordion-initialized')) {
-                        Accordion.initAccordion($(this));
-                    }
-                });
-            });
+            // Handle accordion clicks using delegation
+            $(document).on('click.wpflyout.accordion', '.wp-flyout-accordion .accordion-header', this.handleClick);
         },
 
         /**
-         * Initialize a single accordion
+         * Handle accordion header click
+         *
+         * @since 3.0.0
+         * @param {Event} e Click event
+         * @return {void}
          */
-        initAccordion: function ($accordion) {
-            if ($accordion.data('accordion-initialized')) {
-                return;
+        handleClick: function (e) {
+            e.preventDefault();
+
+            /** @type {jQuery} */
+            const $header = $(this);
+            /** @type {jQuery} */
+            const $accordion = $header.closest('.wp-flyout-accordion');
+            /** @type {jQuery} */
+            const $section = $header.closest('.accordion-section');
+            /** @type {jQuery} */
+            const $content = $section.find('.accordion-content');
+            /** @type {boolean} */
+            const allowMultiple = $accordion.data('allow-multiple') === true;
+            /** @type {boolean} */
+            const isOpen = $section.hasClass('is-open');
+
+            // Close others if not allowing multiple
+            if (!allowMultiple && !isOpen) {
+                Accordion.closeOthers($accordion, $section);
             }
 
-            $accordion.data('accordion-initialized', true);
+            // Toggle current section
+            if (isOpen) {
+                Accordion.close($section, $content, $header);
+            } else {
+                Accordion.open($section, $content, $header);
+            }
 
-            const allowMultiple = $accordion.data('allow-multiple') === true;
-
-            // Handle header clicks
-            $accordion.on('click', '.accordion-header', function (e) {
-                e.preventDefault();
-
-                const $header = $(this);
-                const $section = $header.closest('.accordion-section');
-                const $content = $section.find('.accordion-content');
-                const isOpen = $section.hasClass('is-open');
-
-                // If not allowing multiple, close others
-                if (!allowMultiple && !isOpen) {
-                    Accordion.closeAll($accordion);
-                }
-
-                // Toggle this section
-                if (isOpen) {
-                    Accordion.closeSection($section, $content);
-                } else {
-                    Accordion.openSection($section, $content);
-                }
-            });
-
-            // Trigger initialized event
-            $accordion.trigger('accordion:initialized', {
-                allowMultiple: allowMultiple,
-                sectionCount: $accordion.find('.accordion-section').length
-            });
+            // Trigger custom event
+            $section.trigger('accordion:toggled', {isOpen: !isOpen});
         },
 
         /**
-         * Open a section
+         * Open an accordion section
+         *
+         * @since 3.0.0
+         * @param {jQuery} $section Section element
+         * @param {jQuery} $content Content element
+         * @param {jQuery} $header  Header button element
+         * @return {void}
          */
-        openSection: function ($section, $content) {
+        open: function ($section, $content, $header) {
             $section.addClass('is-open');
             $content.slideDown(300, function () {
                 $section.trigger('accordion:opened');
             });
-
-            // Update ARIA
-            $section.find('.accordion-header').attr('aria-expanded', 'true');
+            $header.attr('aria-expanded', 'true');
         },
 
         /**
-         * Close a section
+         * Close an accordion section
+         *
+         * @since 3.0.0
+         * @param {jQuery} $section Section element
+         * @param {jQuery} $content Content element
+         * @param {jQuery} $header  Header button element
+         * @return {void}
          */
-        closeSection: function ($section, $content) {
+        close: function ($section, $content, $header) {
             $section.removeClass('is-open');
             $content.slideUp(300, function () {
                 $section.trigger('accordion:closed');
             });
-
-            // Update ARIA
-            $section.find('.accordion-header').attr('aria-expanded', 'false');
+            $header.attr('aria-expanded', 'false');
         },
 
         /**
-         * Close all sections in an accordion
+         * Close all other sections in accordion
+         *
+         * @since 3.0.0
+         * @param {jQuery} $accordion Accordion container
+         * @param {jQuery} $current   Current section to keep open
+         * @return {void}
          */
-        closeAll: function ($accordion) {
-            $accordion.find('.accordion-section.is-open').each(function () {
+        closeOthers: function ($accordion, $current) {
+            $accordion.find('.accordion-section.is-open').not($current).each(function () {
+                /** @type {jQuery} */
                 const $section = $(this);
+                /** @type {jQuery} */
                 const $content = $section.find('.accordion-content');
-                Accordion.closeSection($section, $content);
+                /** @type {jQuery} */
+                const $header = $section.find('.accordion-header');
+                Accordion.close($section, $content, $header);
             });
-        }
-    };
-
-    /**
-     * Collapsible Handler
-     */
-    const Collapsible = {
-        /**
-         * Initialize all collapsibles
-         */
-        init: function () {
-            $('.wp-flyout-collapsible').each(function () {
-                Collapsible.initCollapsible($(this));
-            });
-
-            // Initialize on flyout open
-            $(document).on('wpflyout:opened', function (e, data) {
-                $(data.element).find('.wp-flyout-collapsible').each(function () {
-                    if (!$(this).data('collapsible-initialized')) {
-                        Collapsible.initCollapsible($(this));
-                    }
-                });
-            });
-        },
-
-        /**
-         * Initialize a single collapsible
-         */
-        initCollapsible: function ($collapsible) {
-            if ($collapsible.data('collapsible-initialized')) {
-                return;
-            }
-
-            $collapsible.data('collapsible-initialized', true);
-
-            // Handle header click
-            $collapsible.on('click', '.collapsible-header', function (e) {
-                e.preventDefault();
-
-                const $header = $(this);
-                const $content = $collapsible.find('.collapsible-content');
-                const isOpen = $collapsible.hasClass('is-open');
-
-                if (isOpen) {
-                    Collapsible.close($collapsible, $content);
-                } else {
-                    Collapsible.open($collapsible, $content);
-                }
-            });
-
-            // Trigger initialized event
-            $collapsible.trigger('collapsible:initialized');
-        },
-
-        /**
-         * Open collapsible
-         */
-        open: function ($collapsible, $content) {
-            $collapsible.addClass('is-open');
-            $content.slideDown(300, function () {
-                $collapsible.trigger('collapsible:opened');
-            });
-
-            // Update ARIA
-            $collapsible.find('.collapsible-header').attr('aria-expanded', 'true');
-        },
-
-        /**
-         * Close collapsible
-         */
-        close: function ($collapsible, $content) {
-            $collapsible.removeClass('is-open');
-            $content.slideUp(300, function () {
-                $collapsible.trigger('collapsible:closed');
-            });
-
-            // Update ARIA
-            $collapsible.find('.collapsible-header').attr('aria-expanded', 'false');
         }
     };
 
     // Initialize when ready
     $(function () {
         Accordion.init();
-        Collapsible.init();
     });
 
-    // Export
+    // Export for external use
     window.WPFlyoutAccordion = Accordion;
-    window.WPFlyoutCollapsible = Collapsible;
 
 })(jQuery);

@@ -1,133 +1,153 @@
 /**
  * Tag Input Component - Simplified
  *
- * Handles tag addition/removal with keyboard support.
- * No duplicates allowed, no min/max limits.
- *
  * @package     ArrayPress\WPFlyout
- * @version     2.0.0
+ * @version     3.0.0
  */
 
 (function ($) {
     'use strict';
 
+    /**
+     * Tag Input Handler
+     *
+     * @namespace WPFlyoutTagInput
+     * @since 3.0.0
+     */
     const TagInput = {
         /**
-         * Initialize all tag inputs
+         * Initialize tag inputs
+         *
+         * @since 3.0.0
+         * @return {void}
          */
         init: function () {
-            $('.wp-flyout-tag-input').each(function () {
-                TagInput.initInput($(this));
-            });
-
-            // Initialize on flyout open
-            $(document).on('wpflyout:opened', function (e, data) {
-                $(data.element).find('.wp-flyout-tag-input').each(function () {
-                    if (!$(this).data('tag-input-initialized')) {
-                        TagInput.initInput($(this));
-                    }
-                });
-            });
+            // Use event delegation for all interactions
+            $(document)
+                .on('click', '.tag-input-container', this.handleContainerClick)
+                .on('keydown', '.tag-input-field', this.handleKeydown)
+                .on('paste', '.tag-input-field', this.handlePaste)
+                .on('click', '.tag-remove', this.handleRemove);
         },
 
         /**
-         * Initialize a single tag input
+         * Handle container click to focus input
+         *
+         * @since 3.0.0
+         * @param {Event} e Click event
+         * @return {void}
          */
-        initInput: function ($container) {
-            if ($container.data('tag-input-initialized')) {
-                return;
+        handleContainerClick: function (e) {
+            if (e.target === this) {
+                $(this).find('.tag-input-field').focus();
             }
+        },
 
-            $container.data('tag-input-initialized', true);
+        /**
+         * Handle keyboard input
+         *
+         * @since 3.0.0
+         * @param {Event} e Keydown event
+         * @return {void}
+         */
+        handleKeydown: function (e) {
+            const $input = $(this);
+            const $container = $input.closest('.wp-flyout-tag-input');
+            const value = $input.val().trim();
 
-            const $input = $container.find('.tag-input-field');
-            const name = $container.data('name') || 'tags';
-
-            // Click on container focuses input
-            $container.find('.tag-input-container').on('click', function (e) {
-                if (e.target === this) {
-                    $input.focus();
-                }
-            });
-
-            // Handle input keydown
-            $input.on('keydown', function (e) {
-                const value = $(this).val().trim();
-
-                // Enter or comma to add tag
-                if ((e.key === 'Enter' || e.key === ',') && value) {
-                    e.preventDefault();
-                    TagInput.addTag($container, value, name);
-                    $(this).val('');
-                }
-
-                // Backspace on empty input removes last tag
-                if (e.key === 'Backspace' && !value) {
-                    const $lastTag = $container.find('.tag-item').last();
-                    if ($lastTag.length) {
-                        TagInput.removeTag($container, $lastTag);
+            switch (e.key) {
+                case 'Enter':
+                case ',':
+                    if (value) {
+                        e.preventDefault();
+                        TagInput.addTag($container, value);
+                        $input.val('');
                     }
-                }
+                    break;
 
-                // Escape clears input
-                if (e.key === 'Escape') {
-                    $(this).val('').blur();
-                }
-            });
+                case 'Backspace':
+                    if (!value) {
+                        e.preventDefault();
+                        TagInput.removeLastTag($container);
+                    }
+                    break;
 
-            // Handle paste - split by commas
-            $input.on('paste', function (e) {
-                e.preventDefault();
-                const pastedText = (e.originalEvent.clipboardData || window.clipboardData).getData('text');
-                const tags = pastedText.split(',').map(t => t.trim()).filter(t => t);
+                case 'Escape':
+                    $input.val('').blur();
+                    break;
+            }
+        },
 
-                tags.forEach(tag => {
-                    TagInput.addTag($container, tag, name);
-                });
+        /**
+         * Handle paste event
+         *
+         * @since 3.0.0
+         * @param {Event} e Paste event
+         * @return {void}
+         */
+        handlePaste: function (e) {
+            e.preventDefault();
+            const $input = $(this);
+            const $container = $input.closest('.wp-flyout-tag-input');
+            const pastedText = (e.originalEvent.clipboardData || window.clipboardData).getData('text');
 
-                $(this).val('');
-            });
+            // Split by commas and add each tag
+            const tags = pastedText.split(',').map(t => t.trim()).filter(t => t);
+            tags.forEach(tag => TagInput.addTag($container, tag));
 
-            // Remove tag on click
-            $container.on('click', '.tag-remove', function () {
-                TagInput.removeTag($container, $(this).closest('.tag-item'));
-            });
+            $input.val('');
+        },
+
+        /**
+         * Handle tag removal
+         *
+         * @since 3.0.0
+         * @param {Event} e Click event
+         * @return {void}
+         */
+        handleRemove: function (e) {
+            e.preventDefault();
+            const $tag = $(this).closest('.tag-item');
+            TagInput.removeTag($tag);
         },
 
         /**
          * Add a tag
+         *
+         * @since 3.0.0
+         * @param {jQuery} $container Container element
+         * @param {string} value      Tag value
+         * @return {boolean} True if added successfully
          */
-        addTag: function ($container, value, name) {
+        addTag: function ($container, value) {
             value = value.trim();
+            if (!value) return false;
 
-            if (!value) {
-                return false;
-            }
-
-            // Check for duplicates (case-insensitive)
-            const exists = $container.find('.tag-item').filter(function() {
+            // Check for duplicates
+            const exists = $container.find('.tag-item').filter(function () {
                 return $(this).data('tag').toLowerCase() === value.toLowerCase();
             }).length > 0;
 
             if (exists) {
-                // Visual feedback
                 $container.find('.tag-input-field').addClass('error');
-                setTimeout(function () {
-                    $container.find('.tag-input-field').removeClass('error');
-                }, 300);
+                setTimeout(() => $container.find('.tag-input-field').removeClass('error'), 300);
                 return false;
             }
 
-            // Create tag element
-            const $tag = $('<span class="tag-item" data-tag="' + value + '">' +
-                '<span class="tag-text">' + $('<div>').text(value).html() + '</span>' +
-                '<button type="button" class="tag-remove" aria-label="Remove">' +
-                '<span class="dashicons dashicons-no-alt"></span>' +
-                '</button>' +
-                '</span>');
+            const name = $container.data('name') || 'tags';
+
+            // Create tag HTML
+            const $tag = $(`
+                <span class="tag-item" data-tag="${value}">
+                    <span class="tag-text">${$('<div>').text(value).html()}</span>
+                    <button type="button" class="tag-remove" aria-label="Remove">
+                        <span class="dashicons dashicons-no-alt"></span>
+                    </button>
+                </span>
+            `);
 
             // Create hidden input
-            const $hidden = $('<input type="hidden" name="' + name + '[]" value="' + value + '">');
+            const $hidden = $(`<input type="hidden" name="${name}[]" value="${value}">`);
 
             // Add to container
             $container.find('.tag-input-field').before($tag);
@@ -141,16 +161,33 @@
 
         /**
          * Remove a tag
+         *
+         * @since 3.0.0
+         * @param {jQuery} $tag Tag element
+         * @return {void}
          */
-        removeTag: function ($container, $tag) {
+        removeTag: function ($tag) {
+            const $container = $tag.closest('.wp-flyout-tag-input');
             const value = $tag.data('tag');
 
-            // Remove with animation
             $tag.fadeOut(200, function () {
                 $(this).remove();
-                // Remove corresponding hidden input
-                $container.find('input[type="hidden"][value="' + value + '"]').remove();
+                $container.find(`input[type="hidden"][value="${value}"]`).remove();
             });
+        },
+
+        /**
+         * Remove last tag
+         *
+         * @since 3.0.0
+         * @param {jQuery} $container Container element
+         * @return {void}
+         */
+        removeLastTag: function ($container) {
+            const $lastTag = $container.find('.tag-item').last();
+            if ($lastTag.length) {
+                TagInput.removeTag($lastTag);
+            }
         }
     };
 

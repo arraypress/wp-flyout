@@ -2,12 +2,14 @@
 /**
  * Accordion Component
  *
- * Displays collapsible content sections.
+ * Displays collapsible content sections with support for single or multiple open panels.
+ * Simplified version that combines accordion and collapsible functionality.
  *
  * @package     ArrayPress\WPFlyout\Components\Layout
  * @copyright   Copyright (c) 2025, ArrayPress Limited
  * @license     GPL2+
- * @version     2.0.0
+ * @version     3.0.0
+ * @author      David Sherlock
  */
 
 declare( strict_types=1 );
@@ -16,12 +18,20 @@ namespace ArrayPress\WPFlyout\Components\Layout;
 
 use ArrayPress\WPFlyout\Traits\Renderable;
 
+/**
+ * Class Accordion
+ *
+ * Renders expandable/collapsible content sections.
+ *
+ * @since 3.0.0
+ */
 class Accordion {
     use Renderable;
 
     /**
      * Component configuration
      *
+     * @since 3.0.0
      * @var array
      */
     private array $config;
@@ -29,24 +39,31 @@ class Accordion {
     /**
      * Default configuration
      *
+     * @since 3.0.0
      * @var array
      */
     private const DEFAULTS = [
             'id'           => '',
             'items'        => [],
-            'multiple'     => false,
-            'collapsible'  => true,
-            'default_open' => null,
-            'icons'        => true,
-            'class'        => '',
-            'item_class'   => '',
-            'header_tag'   => 'h3'
+            'multiple'     => false,  // Allow multiple sections open
+            'default_open' => null,   // Index or array of indices
+            'class'        => ''
     ];
 
     /**
      * Constructor
      *
-     * @param array $config Configuration options
+     * @param array    $config       {
+     *                               Configuration options
+     *
+     * @type string    $id           Component ID (auto-generated if empty)
+     * @type array     $items        Array of accordion items
+     * @type bool      $multiple     Allow multiple sections open (default: false)
+     * @type int|int[] $default_open Index or array of indices to open by default
+     * @type string    $class        Additional CSS classes
+     *                               }
+     * @since 3.0.0
+     *
      */
     public function __construct( array $config = [] ) {
         $this->config = wp_parse_args( $config, self::DEFAULTS );
@@ -60,31 +77,25 @@ class Accordion {
     /**
      * Render the component
      *
-     * @return string
+     * @return string Generated HTML
+     * @since 3.0.0
+     *
      */
     public function render(): string {
         if ( empty( $this->config['items'] ) ) {
             return '';
         }
 
-        $classes = [ 'accordion' ];
+        $classes = [ 'wp-flyout-accordion' ];
         if ( ! empty( $this->config['class'] ) ) {
             $classes[] = $this->config['class'];
-        }
-
-        $data_attrs = [];
-        if ( $this->config['multiple'] ) {
-            $data_attrs[] = 'data-multiple="true"';
-        }
-        if ( $this->config['collapsible'] ) {
-            $data_attrs[] = 'data-collapsible="true"';
         }
 
         ob_start();
         ?>
         <div id="<?php echo esc_attr( $this->config['id'] ); ?>"
              class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>"
-                <?php echo implode( ' ', $data_attrs ); ?>>
+             data-allow-multiple="<?php echo $this->config['multiple'] ? 'true' : 'false'; ?>">
             <?php foreach ( $this->config['items'] as $index => $item ) : ?>
                 <?php $this->render_item( $item, $index ); ?>
             <?php endforeach; ?>
@@ -96,74 +107,60 @@ class Accordion {
     /**
      * Render a single accordion item
      *
-     * @param array $item  Item configuration
-     * @param int   $index Item index
+     * @param array $item    {
+     *                       Item configuration
+     *
+     * @type string $title   Item title (required)
+     * @type string $content Item content HTML (required)
+     * @type string $icon    Optional dashicon name (without 'dashicons-' prefix)
+     *                       }
+     *
+     * @param int   $index   Item index for default open state
+     *
+     * @return void
+     * @since  3.0.0
+     * @access private
+     *
      */
     private function render_item( array $item, int $index ): void {
         $title   = $item['title'] ?? '';
         $content = $item['content'] ?? '';
         $icon    = $item['icon'] ?? '';
-        $badge   = $item['badge'] ?? '';
-        $is_open = $item['open'] ?? false;
 
         if ( empty( $title ) || empty( $content ) ) {
             return;
         }
 
         // Check if this item should be open by default
+        $is_open = false;
         if ( $this->config['default_open'] === $index ||
-             ( is_array( $this->config['default_open'] ) && in_array( $index, $this->config['default_open'] ) ) ) {
+             ( is_array( $this->config['default_open'] ) &&
+               in_array( $index, $this->config['default_open'], true ) ) ) {
             $is_open = true;
         }
 
-        $item_id    = $this->config['id'] . '-item-' . $index;
-        $header_id  = $item_id . '-header';
-        $content_id = $item_id . '-content';
-
-        $item_classes = [ 'accordion-item' ];
+        $item_classes = [ 'accordion-section' ];
         if ( $is_open ) {
             $item_classes[] = 'is-open';
         }
-        if ( ! empty( $this->config['item_class'] ) ) {
-            $item_classes[] = $this->config['item_class'];
-        }
         ?>
-    <div class="<?php echo esc_attr( implode( ' ', $item_classes ) ); ?>"
-         data-index="<?php echo esc_attr( $index ); ?>">
-        <<?php echo esc_html( $this->config['header_tag'] ); ?>
-        id="<?php echo esc_attr( $header_id ); ?>"
-        class="accordion-header">
-        <button type="button"
-                class="accordion-trigger"
-                aria-expanded="<?php echo $is_open ? 'true' : 'false'; ?>"
-                aria-controls="<?php echo esc_attr( $content_id ); ?>">
-
-            <?php if ( $this->config['icons'] ) : ?>
-                <span class="accordion-icon" aria-hidden="true">
-							<span class="dashicons dashicons-arrow-down-alt2"></span>
-						</span>
-            <?php endif; ?>
-
-            <?php if ( $icon ) : ?>
-                <span class="accordion-item-icon dashicons dashicons-<?php echo esc_attr( $icon ); ?>"></span>
-            <?php endif; ?>
-
-            <span class="accordion-title"><?php echo esc_html( $title ); ?></span>
-
-            <?php if ( $badge ) : ?>
-                <span class="accordion-badge"><?php echo esc_html( $badge ); ?></span>
-            <?php endif; ?>
-        </button>
-        </<?php echo esc_html( $this->config['header_tag'] ); ?>>
-
-        <div id="<?php echo esc_attr( $content_id ); ?>"
-             class="accordion-content"
-             aria-labelledby="<?php echo esc_attr( $header_id ); ?>"
-                <?php echo ! $is_open ? 'hidden' : ''; ?>>
-            <div class="accordion-content-inner">
-                <?php echo wp_kses_post( $content ); ?>
+        <div class="<?php echo esc_attr( implode( ' ', $item_classes ) ); ?>">
+            <button type="button"
+                    class="accordion-header"
+                    aria-expanded="<?php echo $is_open ? 'true' : 'false'; ?>">
+                <?php if ( $icon ) : ?>
+                    <span class="dashicons dashicons-<?php echo esc_attr( $icon ); ?>"></span>
+                <?php endif; ?>
+                <span class="accordion-title"><?php echo esc_html( $title ); ?></span>
+                <span class="accordion-indicator">
+                    <span class="dashicons dashicons-arrow-down-alt2"></span>
+                </span>
+            </button>
+            <div class="accordion-content" <?php echo ! $is_open ? 'style="display:none"' : ''; ?>>
+                <div class="accordion-content-inner">
+                    <?php echo wp_kses_post( $content ); ?>
+                </div>
             </div>
-        </div>
         </div>
         <?php
     }
