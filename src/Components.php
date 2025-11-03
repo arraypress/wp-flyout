@@ -267,10 +267,42 @@ class Components {
 			return [ 'value' => self::resolve_value( $field_key, $data ) ];
 		}
 
-		// Handle single field components
+		// This handles cases like pricing => ['items' => ..., 'subtotal' => ...]
+		$resolved = self::resolve_value( $field_key, $data );
+
+		// If we found an array at field_key, check if it has the fields we need
+		if ( is_array( $resolved ) ) {
+			// For string fields (like 'items'), check if it exists in resolved data
+			if ( is_string( $component['fields'] ) ) {
+				$field_name = $component['fields'];
+				// If the resolved array has the field we need, return the whole array
+				if ( isset( $resolved[ $field_name ] ) ) {
+					return $resolved;
+				}
+
+				// Otherwise return the field name => resolved value
+				return [ $field_name => $resolved ];
+			}
+
+			// For array fields, check if resolved has all/most required fields
+			if ( is_array( $component['fields'] ) ) {
+				$has_any_field = false;
+				foreach ( $component['fields'] as $field ) {
+					if ( isset( $resolved[ $field ] ) ) {
+						$has_any_field = true;
+						break;
+					}
+				}
+				// If the resolved array contains any of our expected fields, use it
+				if ( $has_any_field ) {
+					return $resolved;
+				}
+			}
+		}
+
+		// Handle single field components (like 'items' for notes)
 		if ( is_string( $component['fields'] ) ) {
 			$field_name = $component['fields'];
-
 			// Try to resolve the value
 			$value = self::resolve_value( $field_key, $data );
 
@@ -278,26 +310,10 @@ class Components {
 			return [ $field_name => $value ];
 		}
 
-		// Handle multiple field components
-		// First check if the field_key resolves to a complete dataset with all required fields
-		$resolved = self::resolve_value( $field_key, $data );
-		if ( is_array( $resolved ) ) {
-			$has_all_fields = true;
-			foreach ( $component['fields'] as $field ) {
-				if ( ! isset( $resolved[ $field ] ) ) {
-					$has_all_fields = false;
-					break;
-				}
-			}
-			if ( $has_all_fields ) {
-				return $resolved;
-			}
-		}
-
-		// Otherwise resolve each field individually
+		// Otherwise resolve each field individually (fallback for scattered fields)
 		$result = [];
 		foreach ( $component['fields'] as $field ) {
-			// For 'value' field, use the actual field key instead
+			// Special case: 'value' should use the field_key
 			if ( $field === 'value' ) {
 				$result[ $field ] = self::resolve_value( $field_key, $data );
 			} else {
