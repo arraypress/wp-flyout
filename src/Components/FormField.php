@@ -14,10 +14,10 @@
 
 declare( strict_types=1 );
 
-namespace ArrayPress\WPFlyout\Components\Form;
+namespace ArrayPress\WPFlyout\Components;
 
 use ArrayPress\WPFlyout\Components\Layout\Separator;
-use ArrayPress\WPFlyout\Traits\Renderable;
+use ArrayPress\WPFlyout\Interfaces\Renderable;
 
 /**
  * Class FormField
@@ -26,8 +26,7 @@ use ArrayPress\WPFlyout\Traits\Renderable;
  *
  * @since 5.0.0
  */
-class FormField {
-    use Renderable;
+class FormField implements Renderable {
 
     /**
      * Field configuration

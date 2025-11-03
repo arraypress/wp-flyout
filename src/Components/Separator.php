@@ -12,12 +12,11 @@
 
 declare( strict_types=1 );
 
-namespace ArrayPress\WPFlyout\Components\Layout;
+namespace ArrayPress\WPFlyout\Components;
 
-use ArrayPress\WPFlyout\Traits\Renderable;
+use ArrayPress\WPFlyout\Interfaces\Renderable;
 
-class Separator {
-    use Renderable;
+class Separator implements Renderable {
 
     /**
      * Component configuration

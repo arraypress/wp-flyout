@@ -14,9 +14,9 @@
 
 declare( strict_types=1 );
 
-namespace ArrayPress\WPFlyout\Components\Layout;
+namespace ArrayPress\WPFlyout\Components;
 
-use ArrayPress\WPFlyout\Traits\Renderable;
+use ArrayPress\WPFlyout\Interfaces\Renderable;
 
 /**
  * Class Accordion
@@ -25,8 +25,7 @@ use ArrayPress\WPFlyout\Traits\Renderable;
  *
  * @since 3.0.0
  */
-class Accordion {
-    use Renderable;
+class Accordion implements Renderable {
 
     /**
      * Component configuration

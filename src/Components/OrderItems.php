@@ -12,14 +12,13 @@
 
 declare( strict_types=1 );
 
-namespace ArrayPress\WPFlyout\Components\Interactive;
+namespace ArrayPress\WPFlyout\Components;
 
-use ArrayPress\WPFlyout\Traits\Renderable;
+use ArrayPress\WPFlyout\Interfaces\Renderable;
 use ArrayPress\WPFlyout\Traits\CurrencyFormatter;
 use ArrayPress\WPFlyout\Traits\HtmlAttributes;
 
-class OrderItems {
-    use Renderable;
+class OrderItems implements Renderable {
     use CurrencyFormatter;
     use HtmlAttributes;
 
@@ -272,7 +271,7 @@ class OrderItems {
             <div class="total-row">
                 <span class="total-label"><?php esc_html_e( 'Subtotal:', 'wp-flyout' ); ?></span>
                 <span class="subtotal-amount total-value" data-value="<?php echo esc_attr( (string) $subtotal ); ?>">
-					<?php echo esc_html( $this->format_currency( $subtotal, $this->config['currency'] ) ); ?>
+					<?php echo esc_html( $this->format_currency( (int) $subtotal, $this->config['currency'] ) ); ?>
 				</span>
             </div>
         </div>

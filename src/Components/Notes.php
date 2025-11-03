@@ -10,12 +10,11 @@
 
 declare( strict_types=1 );
 
-namespace ArrayPress\WPFlyout\Components\Interactive;
+namespace ArrayPress\WPFlyout\Components;
 
-use ArrayPress\WPFlyout\Traits\Renderable;
+use ArrayPress\WPFlyout\Interfaces\Renderable;
 
-class Notes {
-    use Renderable;
+class Notes implements Renderable {
 
     /**
      * Component configuration

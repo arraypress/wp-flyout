@@ -12,15 +12,14 @@
 
 declare( strict_types=1 );
 
-namespace ArrayPress\WPFlyout\Components\Data;
+namespace ArrayPress\WPFlyout\Components;
 
 use ArrayPress\WPFlyout\Traits\HtmlAttributes;
-use ArrayPress\WPFlyout\Traits\Renderable;
-use ArrayPress\WPFlyout\Traits\EmptyValueFormatter;
+use ArrayPress\WPFlyout\Interfaces\Renderable;
+use ArrayPress\WPFlyout\Traits\Formatter;
 
-class InfoGrid {
-    use Renderable;
-    use EmptyValueFormatter;
+class InfoGrid implements Renderable {
+    use Formatter;
     use HtmlAttributes;
 
     /**

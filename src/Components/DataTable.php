@@ -12,14 +12,13 @@
 
 declare( strict_types=1 );
 
-namespace ArrayPress\WPFlyout\Components\Data;
+namespace ArrayPress\WPFlyout\Components;
 
-use ArrayPress\WPFlyout\Traits\Renderable;
-use ArrayPress\WPFlyout\Traits\EmptyValueFormatter;
+use ArrayPress\WPFlyout\Interfaces\Renderable;
+use ArrayPress\WPFlyout\Traits\Formatter;
 
-class DataTable {
-    use Renderable;
-    use EmptyValueFormatter;
+class DataTable implements Renderable {
+    use Formatter;
 
     /**
      * Component configuration

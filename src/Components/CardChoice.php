@@ -13,9 +13,9 @@
 
 declare( strict_types=1 );
 
-namespace ArrayPress\WPFlyout\Components\Form;
+namespace ArrayPress\WPFlyout\Components;
 
-use ArrayPress\WPFlyout\Traits\Renderable;
+use ArrayPress\WPFlyout\Interfaces\Renderable;
 
 /**
  * Class CardChoice
@@ -24,8 +24,7 @@ use ArrayPress\WPFlyout\Traits\Renderable;
  *
  * @since 3.0.0
  */
-class CardChoice {
-    use Renderable;
+class CardChoice implements Renderable {
 
     /**
      * Component configuration

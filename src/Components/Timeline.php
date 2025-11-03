@@ -13,9 +13,9 @@
 
 declare( strict_types=1 );
 
-namespace ArrayPress\WPFlyout\Components\Data;
+namespace ArrayPress\WPFlyout\Components;
 
-use ArrayPress\WPFlyout\Traits\Renderable;
+use ArrayPress\WPFlyout\Interfaces\Renderable;
 
 /**
  * Class Timeline
@@ -24,8 +24,7 @@ use ArrayPress\WPFlyout\Traits\Renderable;
  *
  * @since 3.0.0
  */
-class Timeline {
-    use Renderable;
+class Timeline implements Renderable {
 
     /**
      * Component configuration

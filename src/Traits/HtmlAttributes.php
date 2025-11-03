@@ -20,6 +20,7 @@ trait HtmlAttributes {
 	 * Build HTML attributes string from array
 	 *
 	 * @param array $attrs Attributes array (key => value)
+	 *
 	 * @return string HTML attributes string
 	 */
 	protected function build_attributes( array $attrs ): string {
@@ -34,6 +35,7 @@ trait HtmlAttributes {
 				$result[] = sprintf( '%s="%s"', esc_attr( $key ), esc_attr( (string) $value ) );
 			}
 		}
+
 		return implode( ' ', $result );
 	}
 
@@ -41,6 +43,7 @@ trait HtmlAttributes {
 	 * Build data attributes from array
 	 *
 	 * @param array $data Data attributes (without 'data-' prefix)
+	 *
 	 * @return string HTML data attributes string
 	 */
 	protected function build_data_attributes( array $data ): string {
@@ -50,6 +53,7 @@ trait HtmlAttributes {
 				$attrs[ 'data-' . $key ] = $value;
 			}
 		}
+
 		return $this->build_attributes( $attrs );
 	}
 
@@ -59,21 +63,11 @@ trait HtmlAttributes {
 	 * Filters out empty values and returns escaped class string.
 	 *
 	 * @param array $classes Array of class names
+	 *
 	 * @return string Escaped class string
 	 */
 	protected function build_classes( array $classes ): string {
 		return esc_attr( implode( ' ', array_filter( $classes ) ) );
-	}
-
-	/**
-	 * Merge and build attributes
-	 *
-	 * @param array $defaults Default attributes
-	 * @param array $custom   Custom attributes to merge
-	 * @return string HTML attributes string
-	 */
-	protected function merge_attributes( array $defaults, array $custom ): string {
-		return $this->build_attributes( array_merge( $defaults, $custom ) );
 	}
 
 }

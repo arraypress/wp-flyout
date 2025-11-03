@@ -13,13 +13,12 @@
 
 declare( strict_types=1 );
 
-namespace ArrayPress\WPFlyout\Components\Domain;
+namespace ArrayPress\WPFlyout\Components;
 
-use ArrayPress\WPFlyout\Traits\Renderable;
+use ArrayPress\WPFlyout\Interfaces\Renderable;
 use ArrayPress\WPFlyout\Traits\CurrencyFormatter;
 
-class PriceBreakdown {
-    use Renderable;
+class PriceBreakdown implements Renderable {
     use CurrencyFormatter;
 
     /**
@@ -40,7 +39,6 @@ class PriceBreakdown {
             'subtotal'        => null,
             'tax'             => null,
             'discount'        => null,
-            'shipping'        => null,
             'total'           => 0,
             'currency'        => 'USD',
             'show_zero'       => false,
@@ -192,7 +190,6 @@ class PriceBreakdown {
         $lines = [
                 'subtotal' => __( 'Subtotal', 'wp-flyout' ),
                 'discount' => __( 'Discount', 'wp-flyout' ),
-                'shipping' => __( 'Shipping', 'wp-flyout' ),
                 'tax'      => __( 'Tax', 'wp-flyout' ),
         ];
 

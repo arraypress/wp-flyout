@@ -12,13 +12,12 @@
 
 declare( strict_types=1 );
 
-namespace ArrayPress\WPFlyout\Components\Core;
+namespace ArrayPress\WPFlyout\Components;
 
-use ArrayPress\WPFlyout\Traits\Renderable;
+use ArrayPress\WPFlyout\Interfaces\Renderable;
 use ArrayPress\WPFlyout\Traits\HtmlAttributes;
 
-class ActionBar {
-    use Renderable;
+class ActionBar implements Renderable {
     use HtmlAttributes;
 
     /**

@@ -13,12 +13,11 @@
 
 declare( strict_types=1 );
 
-namespace ArrayPress\WPFlyout\Components\Domain;
+namespace ArrayPress\WPFlyout\Components;
 
-use ArrayPress\WPFlyout\Traits\Renderable;
+use ArrayPress\WPFlyout\Interfaces\Renderable;
 
-class PaymentMethod {
-    use Renderable;
+class PaymentMethod implements Renderable {
 
     /**
      * Component configuration

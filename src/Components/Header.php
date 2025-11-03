@@ -1,6 +1,6 @@
 <?php
 /**
- * EntityHeader Component
+ * Header Component
  *
  * Displays a unified header for any entity (customer, product, order, etc).
  *
@@ -12,12 +12,11 @@
 
 declare( strict_types=1 );
 
-namespace ArrayPress\WPFlyout\Components\Domain;
+namespace ArrayPress\WPFlyout\Components;
 
-use ArrayPress\WPFlyout\Traits\Renderable;
+use ArrayPress\WPFlyout\Interfaces\Renderable;
 
-class EntityHeader {
-    use Renderable;
+class Header implements Renderable {
 
     /**
      * Component configuration

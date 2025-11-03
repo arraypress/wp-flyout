@@ -12,12 +12,11 @@
 
 declare( strict_types=1 );
 
-namespace ArrayPress\WPFlyout\Components\Core;
+namespace ArrayPress\WPFlyout\Components;
 
-use ArrayPress\WPFlyout\Traits\Renderable;
+use ArrayPress\WPFlyout\Interfaces\Renderable;
 
-class SectionHeader {
-    use Renderable;
+class SectionHeader implements Renderable {
 
     /**
      * Component configuration

@@ -12,13 +12,12 @@
 
 declare( strict_types=1 );
 
-namespace ArrayPress\WPFlyout\Components\Display;
+namespace ArrayPress\WPFlyout\Components;
 
-use ArrayPress\WPFlyout\Traits\Renderable;
+use ArrayPress\WPFlyout\Interfaces\Renderable;
 use ArrayPress\WPFlyout\Traits\HtmlAttributes;
 
-class EmptyState {
-    use Renderable;
+class EmptyState implements Renderable {
     use HtmlAttributes;
 
     /**
