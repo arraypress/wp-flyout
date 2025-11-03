@@ -17,7 +17,6 @@ declare( strict_types=1 );
 
 namespace ArrayPress\WPFlyout;
 
-use ArrayPress\WPFlyout\Manager;
 use Exception;
 use InvalidArgumentException;
 
@@ -54,9 +53,7 @@ class Registry {
 	 *
 	 * @since 1.0.0
 	 */
-	private function __construct() {
-		// Prevent direct instantiation
-	}
+	private function __construct() {}
 
 	/**
 	 * Prevent cloning
@@ -66,9 +63,7 @@ class Registry {
 	 * @return void
 	 * @since 1.0.0
 	 */
-	private function __clone() {
-		// Prevent cloning
-	}
+	private function __clone() {}
 
 	/**
 	 * Prevent unserialization
@@ -298,4 +293,5 @@ class Registry {
 	public static function reset(): void {
 		self::$instance = null;
 	}
+
 }

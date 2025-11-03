@@ -15,8 +15,8 @@ declare( strict_types=1 );
 
 namespace ArrayPress\WPFlyout;
 
-use ArrayPress\WPFlyout\Components\Form\FormField;
-use ArrayPress\WPFlyout\Components\Core\ActionBar;
+use ArrayPress\WPFlyout\Components\FormField;
+use ArrayPress\WPFlyout\Components\ActionBar;
 use Exception;
 
 /**
