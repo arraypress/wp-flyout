@@ -16,7 +16,7 @@ declare( strict_types=1 );
 
 namespace ArrayPress\WPFlyout\Components;
 
-use ArrayPress\WPFlyout\Components\Layout\Separator;
+use ArrayPress\WPFlyout\Components\Separator;
 use ArrayPress\WPFlyout\Interfaces\Renderable;
 
 /**
