@@ -16,26 +16,7 @@
 }
 
 /* Input field */
-.wp-ajax-select input[type="text"] {
-    flex: 1;
-    padding: 0 55px 0 8px; /* Right space for buttons, normal left padding */
-    height: 30px;
-    border: 1px solid #8c8f94;
-    border-radius: 4px;
-    font-size: 14px;
-    line-height: 2.14285714; /* Match WP admin */
-    background-color: #fff;
-    box-sizing: border-box;
-}
-
-.wp-ajax-select input[type="text"]:focus {
-    border-color: #2271b1;
-    outline: 0;
-    box-shadow: 0 0 0 1px #2271b1;
-}
-
 .wp-ajax-select.has-value input[type="text"] {
-    background-color: #f6f7f7;
     cursor: default;
 }
 
