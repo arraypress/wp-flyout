@@ -1,10 +1,10 @@
 /**
- * WordPress AJAX Select Component - Simplified
+ * WordPress AJAX Select Component - Fixed
  *
  * Dynamic select dropdown with AJAX search functionality
  *
  * @package ArrayPress\WPFlyout
- * @version 2.0.0
+ * @version 2.1.0
  */
 (function ($) {
     'use strict';
@@ -19,6 +19,13 @@
             }
 
             this.$select.data('wpAjaxSelectInitialized', true);
+
+            // Clean up all option text to remove whitespace
+            this.$select.find('option').each(function () {
+                const $option = $(this);
+                const cleanText = $.trim($option.text());
+                $option.text(cleanText);
+            });
 
             // Parse data attributes
             const dataOptions = {};
@@ -51,8 +58,7 @@
             // Build UI with wrapper for input and chevron
             this.$container = $('<div class="wp-ajax-select">');
             this.$wrapper = $('<div class="wp-ajax-select-wrapper">');
-            this.$input = $('<input type="text" class="regular-text">');
-            this.$input = $('<input type="text">');
+            this.$input = $('<input type="text">'); // No regular-text class
             this.$chevron = $('<span class="dashicons dashicons-arrow-down-alt2"></span>');
             this.$clear = $('<span class="wp-ajax-select-clear" style="display:none">×</span>');
             this.$results = $('<div class="wp-ajax-select-results" style="display:none">');
@@ -73,7 +79,8 @@
             // Handle initial value - NO AJAX if we have the text!
             const $selected = this.$select.find('option:selected');
             if ($selected.length && $selected.val()) {
-                this.setSelected($selected.val(), $selected.text());
+                const trimmedText = $.trim($selected.text());
+                this.setSelected($selected.val(), trimmedText);
             }
 
             this.bindEvents();
@@ -228,6 +235,9 @@
         }
 
         select(value, text) {
+            // Trim the text
+            text = $.trim(text);
+
             // Add option if it doesn't exist
             if (!this.$select.find(`option[value="${value}"]`).length) {
                 this.$select.append(`<option value="${value}">${text}</option>`);
@@ -239,6 +249,8 @@
         }
 
         setSelected(value, text) {
+            // Ensure text is trimmed
+            text = $.trim(text);
             this.$input.val(text).prop('readonly', true);
             this.$clear.show();
             this.$container.addClass('has-value');
@@ -260,12 +272,12 @@
 
             if (text) {
                 // We have both - no need for AJAX
-                this.select(value, text);
+                this.select(value, $.trim(text));
             } else {
                 // Only have value - check for existing option
                 const $option = this.$select.find(`option[value="${value}"]`);
                 if ($option.length) {
-                    this.select(value, $option.text());
+                    this.select(value, $.trim($option.text()));
                 }
             }
 
