@@ -16,7 +16,7 @@ namespace ArrayPress\WPFlyout\Components;
 
 use ArrayPress\WPFlyout\Interfaces\Renderable;
 
-class Header implements Renderable {
+class EntityHeader implements Renderable {
 
     /**
      * Component configuration

@@ -15,16 +15,16 @@ declare( strict_types=1 );
 
 namespace ArrayPress\WPFlyout;
 
-use ArrayPress\WPFlyout\Components\Domain\EntityHeader;
-use ArrayPress\WPFlyout\Components\Domain\PaymentMethod;
-use ArrayPress\WPFlyout\Components\Domain\PriceBreakdown;
-use ArrayPress\WPFlyout\Components\Form\CardChoice;
-use ArrayPress\WPFlyout\Components\Form\FormField;
-use ArrayPress\WPFlyout\Components\Interactive\FileManager;
-use ArrayPress\WPFlyout\Components\Interactive\Notes;
-use ArrayPress\WPFlyout\Components\Interactive\OrderItems;
-use ArrayPress\WPFlyout\Components\Layout\Accordion;
-use ArrayPress\WPFlyout\Components\Data\Timeline;
+use ArrayPress\WPFlyout\Components\EntityHeader;
+use ArrayPress\WPFlyout\Components\PaymentMethod;
+use ArrayPress\WPFlyout\Components\PriceBreakdown;
+use ArrayPress\WPFlyout\Components\CardChoice;
+use ArrayPress\WPFlyout\Components\FormField;
+use ArrayPress\WPFlyout\Components\FileManager;
+use ArrayPress\WPFlyout\Components\Notes;
+use ArrayPress\WPFlyout\Components\OrderItems;
+use ArrayPress\WPFlyout\Components\Accordion;
+use ArrayPress\WPFlyout\Components\Timeline;
 use InvalidArgumentException;
 
 /**
@@ -90,14 +90,14 @@ class Components {
 
 		self::register( 'notes', [
 			'class'       => Notes::class,
-			'fields'      => 'items', // Changed from 'notes' to 'items' for consistency
+			'fields'      => 'items',
 			'asset'       => 'notes',
 			'description' => 'Notes/comments with add/delete functionality'
 		] );
 
 		self::register( 'files', [
 			'class'       => FileManager::class,
-			'fields'      => 'items', // Changed from 'files' to 'items' for consistency
+			'fields'      => 'items',
 			'asset'       => 'file-manager',
 			'description' => 'File attachments with drag-drop sorting'
 		] );
