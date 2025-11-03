@@ -297,7 +297,12 @@ class Components {
 		// Otherwise resolve each field individually
 		$result = [];
 		foreach ( $component['fields'] as $field ) {
-			$result[ $field ] = self::resolve_value( $field, $data );
+			// For 'value' field, use the actual field key instead
+			if ( $field === 'value' ) {
+				$result[ $field ] = self::resolve_value( $field_key, $data );
+			} else {
+				$result[ $field ] = self::resolve_value( $field, $data );
+			}
 		}
 
 		return $result;
