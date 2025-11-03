@@ -90,7 +90,7 @@ class Components {
 		self::register( 'line_items', [
 			'class'       => LineItems::class,
 			'fields'      => 'items',
-			'asset'       => 'order-items',
+			'asset'       => 'line-items',
 			'description' => 'Order line items with quantities and pricing'
 		] );
 
