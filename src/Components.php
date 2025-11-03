@@ -480,4 +480,5 @@ class Components {
 		self::$components  = [];
 		self::$initialized = false;
 	}
+
 }
