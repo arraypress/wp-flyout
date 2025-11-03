@@ -67,7 +67,7 @@ class CardChoice {
         }
 
         // Ensure value is array for checkboxes
-        if ( $this->config['method'] === 'checkbox' && ! is_array( $this->config['value'] ) ) {
+        if ( $this->config['mode'] === 'checkbox' && ! is_array( $this->config['value'] ) ) {
             $this->config['value'] = $this->config['value'] ? [ $this->config['value'] ] : [];
         }
     }
@@ -97,7 +97,7 @@ class CardChoice {
         ?>
         <div id="<?php echo esc_attr( $this->config['id'] ); ?>"
              class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>"
-             role="<?php echo $this->config['method'] === 'radio' ? 'radiogroup' : 'group'; ?>">
+             role="<?php echo $this->config['mode'] === 'radio' ? 'radiogroup' : 'group'; ?>">
             <?php foreach ( $this->config['options'] as $value => $option ) : ?>
                 <?php $this->render_option( $value, $option ); ?>
             <?php endforeach; ?>
