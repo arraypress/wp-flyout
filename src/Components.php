@@ -25,6 +25,15 @@ use ArrayPress\WPFlyout\Components\Notes;
 use ArrayPress\WPFlyout\Components\OrderItems;
 use ArrayPress\WPFlyout\Components\Accordion;
 use ArrayPress\WPFlyout\Components\Timeline;
+
+use ArrayPress\WPFlyout\Components\SectionHeader;
+use ArrayPress\WPFlyout\Components\Separator;
+use ArrayPress\WPFlyout\Components\EmptyState;
+use ArrayPress\WPFlyout\Components\DataTable;
+use ArrayPress\WPFlyout\Components\InfoGrid;
+use ArrayPress\WPFlyout\Components\Alert;
+use ArrayPress\WPFlyout\Components\ActionBar;
+
 use InvalidArgumentException;
 
 /**
@@ -138,6 +147,55 @@ class Components {
 			'fields'      => 'value',
 			'asset'       => 'ajax-select',
 			'description' => 'AJAX-powered select field'
+		] );
+
+		self::register( 'section_header', [
+			'class'       => SectionHeader::class,
+			'fields'      => [ 'title', 'description', 'icon', 'actions' ],
+			'asset'       => null, // No JS/CSS needed
+			'description' => 'Section headers with optional descriptions'
+		] );
+
+		self::register( 'separator', [
+			'class'       => Separator::class,
+			'fields'      => [ 'text', 'icon' ],
+			'asset'       => null,
+			'description' => 'Visual dividers with optional text'
+		] );
+
+		self::register( 'empty_state', [
+			'class'       => EmptyState::class,
+			'fields'      => [ 'icon', 'title', 'description', 'action_text' ],
+			'asset'       => null,
+			'description' => 'Empty state messages with actions'
+		] );
+
+		self::register( 'data_table', [
+			'class'       => DataTable::class,
+			'fields'      => [ 'columns', 'data' ],
+			'asset'       => null,
+			'description' => 'Structured data table display'
+		] );
+
+		self::register( 'info_grid', [
+			'class'       => InfoGrid::class,
+			'fields'      => [ 'items' ],
+			'asset'       => null,
+			'description' => 'Information grid layout'
+		] );
+
+		self::register( 'alert', [
+			'class'       => Alert::class,
+			'fields'      => [ 'type', 'message', 'title' ],
+			'asset'       => null,
+			'description' => 'Alert messages with various styles'
+		] );
+
+		self::register( 'action_bar', [
+			'class'       => ActionBar::class,
+			'fields'      => [ 'actions' ],
+			'asset'       => null,
+			'description' => 'Action button toolbar'
 		] );
 
 		self::$initialized = true;
