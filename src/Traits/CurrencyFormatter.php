@@ -14,8 +14,6 @@ declare( strict_types=1 );
 
 namespace ArrayPress\WPFlyout\Traits;
 
-use ArrayPress\Currencies\Currency;
-
 trait CurrencyFormatter {
 
 	/**
@@ -29,12 +27,15 @@ trait CurrencyFormatter {
 	 *
 	 * @return string Formatted currency string
 	 */
-	protected function format_currency( int $amount_in_cents, ?string $currency = null ): string {
+	protected function format_currency( $amount_in_cents, ?string $currency = null ): string {
+
+		$amount_in_cents = (int) $amount_in_cents;
+
 		// Determine currency to use
 		$currency = $currency ?? ( $this->config['currency'] ?? 'USD' );
 
 		// Use the Currency library directly
-		return Currency::format( $amount_in_cents, $currency );
+		return format_currency( $amount_in_cents, $currency );
 	}
 
 }

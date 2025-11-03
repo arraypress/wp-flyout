@@ -193,17 +193,6 @@
    ACCESSIBILITY
    ========================================== */
 
-/* High contrast mode support */
-@media (prefers-contrast: high) {
-    .accordion-section {
-        border-width: 2px;
-    }
-
-    .accordion-header:focus {
-        outline-width: 3px;
-    }
-}
-
 /* Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
     .accordion-section,

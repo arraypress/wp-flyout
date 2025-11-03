@@ -58,7 +58,7 @@
             // Build UI with wrapper for input and chevron
             this.$container = $('<div class="wp-ajax-select">');
             this.$wrapper = $('<div class="wp-ajax-select-wrapper">');
-            this.$input = $('<input type="text">'); // No regular-text class
+            this.$input = $('<input class="regular-text" type="text">');
             this.$chevron = $('<span class="dashicons dashicons-arrow-down-alt2"></span>');
             this.$clear = $('<span class="wp-ajax-select-clear" style="display:none">×</span>');
             this.$results = $('<div class="wp-ajax-select-results" style="display:none">');
