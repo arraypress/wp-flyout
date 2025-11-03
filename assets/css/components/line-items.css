@@ -1,14 +1,14 @@
 /**
- * WP Flyout - Order Items Component
- * Modern product selection and order management
+ * WP Flyout - Line Items Component
+ * Modern product selection and line item management
  */
 
-.wp-flyout-order-items {
+.wp-flyout-line-items {
     margin: 20px 0;
 }
 
 /* Product selector */
-.order-items-selector {
+.line-items-selector {
     display: flex;
     gap: 12px;
     margin-bottom: 20px;
@@ -20,17 +20,17 @@
 }
 
 /* AJAX select wrapper - must match ajax-select.css expectations */
-.order-items-selector .wp-ajax-select {
+.line-items-selector .wp-ajax-select {
     flex: 1;
     min-width: 250px;
 }
 
-.order-items-selector .product-ajax-select {
+.line-items-selector .product-ajax-select {
     display: none; /* Hidden, replaced by AJAX select component */
 }
 
-/* Add product button */
-.order-items-selector button[data-action="add-product"] {
+/* Add item button */
+.line-items-selector button[data-action="add-item"] {
     background: #2271b1;
     color: #fff;
     border: 1px solid #2271b1;
@@ -45,27 +45,34 @@
     gap: 6px;
 }
 
-.order-items-selector button[data-action="add-product"]:active {
-    transform: translateY(0);
+.line-items-selector button[data-action="add-item"]:hover {
+    background: #1e5a8e;
+    border-color: #1e5a8e;
 }
 
-.order-items-selector button[data-action="add-product"]:disabled {
+.line-items-selector button[data-action="add-item"]:active {
+    transform: translateY(1px);
+}
+
+.line-items-selector button[data-action="add-item"]:disabled {
     opacity: 0.6;
     cursor: not-allowed;
     transform: none;
 }
 
 /* Loading spinner for button */
-.order-items-selector button .dashicons.spin {
+.line-items-selector button .dashicons.spin {
     animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
-    to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 /* Items table container */
-.order-items-table {
+.line-items-table {
     margin-bottom: 20px;
     border: 1px solid #dcdcde;
     border-radius: 8px;
@@ -74,19 +81,19 @@
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
-.order-items-table table {
+.line-items-table table {
     width: 100%;
     border-collapse: collapse;
     margin: 0;
 }
 
 /* Table header */
-.order-items-table thead {
+.line-items-table thead {
     background: linear-gradient(180deg, #f9f9fa 0%, #f3f4f5 100%);
     border-bottom: 1px solid #dcdcde;
 }
 
-.order-items-table th {
+.line-items-table th {
     padding: 12px 15px;
     text-align: left;
     font-weight: 600;
@@ -97,39 +104,39 @@
 }
 
 /* Table body */
-.order-items-table tbody tr {
+.line-items-table tbody tr {
     border-bottom: 1px solid #f0f0f1;
     transition: background-color 0.15s;
 }
 
-.order-items-table tbody tr:last-child {
+.line-items-table tbody tr:last-child {
     border-bottom: none;
 }
 
-.order-items-table tbody tr:hover {
+.line-items-table tbody tr:hover {
     background: #f8f9fa;
 }
 
-.order-items-table td {
+.line-items-table td {
     padding: 15px;
     vertical-align: middle;
     font-size: 14px;
 }
 
 /* Column specific styles */
-.column-product {
+.column-item {
     width: auto;
     min-width: 200px;
 }
 
-.column-product > div {
+.column-item > div {
     display: flex;
     align-items: center;
     gap: 12px;
 }
 
-/* Product thumbnail */
-.product-thumbnail {
+/* Item thumbnail */
+.item-thumbnail {
     width: 48px;
     height: 48px;
     object-fit: cover;
@@ -138,7 +145,7 @@
     flex-shrink: 0;
 }
 
-.product-thumbnail-placeholder {
+.item-thumbnail-placeholder {
     width: 48px;
     height: 48px;
     background: linear-gradient(135deg, #f0f0f1 0%, #f9f9fa 100%);
@@ -151,7 +158,7 @@
     flex-shrink: 0;
 }
 
-.product-thumbnail-placeholder .dashicons {
+.item-thumbnail-placeholder .dashicons {
     font-size: 24px;
     width: 24px;
     height: 24px;
@@ -191,7 +198,7 @@
 
 /* Price columns */
 .column-price,
-.column-subtotal {
+.column-total {
     width: 120px;
     text-align: right;
     font-weight: 600;
@@ -199,11 +206,35 @@
 }
 
 .column-price th,
-.column-subtotal th {
+.column-total th {
     text-align: right;
 }
 
-.item-subtotal {
+/* Editable price input */
+.price-input {
+    width: 90px;
+    padding: 6px 10px;
+    text-align: right;
+    border: 1px solid #dcdcde;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.15s;
+    color: #1e1e1e;
+}
+
+.price-input:hover {
+    border-color: #949494;
+}
+
+.price-input:focus {
+    border-color: #2271b1;
+    box-shadow: 0 0 0 1px #2271b1;
+    outline: none;
+}
+
+/* Item total */
+.item-total {
     color: #135e96;
     font-size: 15px;
 }
@@ -238,7 +269,7 @@
 }
 
 /* Empty state */
-.order-items-empty {
+.line-items-empty {
     padding: 60px 40px;
     text-align: center;
     background: linear-gradient(135deg, #f6f7f7 0%, #fff 100%);
@@ -246,13 +277,13 @@
     border-radius: 8px;
 }
 
-.order-items-empty p {
+.line-items-empty p {
     margin: 0 0 20px 0;
     font-size: 15px;
     color: #646970;
 }
 
-.order-items-empty .dashicons {
+.line-items-empty .dashicons {
     font-size: 48px;
     width: 48px;
     height: 48px;
@@ -260,82 +291,40 @@
     margin-bottom: 15px;
 }
 
-/* Totals section */
-.order-items-totals {
+/* Total section */
+.line-items-total {
     background: linear-gradient(135deg, #f9f9fa 0%, #fff 100%);
     padding: 20px;
     border: 1px solid #dcdcde;
     border-radius: 8px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-}
-
-.total-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px 0;
-    font-size: 15px;
-}
-
-.total-row:not(:last-child) {
-    border-bottom: 1px solid #f0f0f1;
 }
 
 .total-label {
-    color: #50575e;
-    font-weight: 500;
-}
-
-.total-value,
-.subtotal-amount {
-    color: #1e1e1e;
-    font-weight: 600;
-    font-size: 16px;
-}
-
-/* Grand total row */
-.total-row.grand-total {
-    border-top: 2px solid #dcdcde;
-    margin-top: 15px;
-    padding-top: 15px;
-}
-
-.total-row.grand-total .total-label {
     font-size: 17px;
     font-weight: 600;
     color: #1e1e1e;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
-.total-row.grand-total .total-value {
-    font-size: 20px;
+.total-amount {
+    font-size: 24px;
     font-weight: 700;
     color: #135e96;
-}
-
-/* View mode */
-.wp-flyout-order-items[data-mode="view"] .order-items-selector {
-    display: none;
-}
-
-.wp-flyout-order-items[data-mode="view"] .quantity-input {
-    background: transparent;
-    border: none;
-    pointer-events: none;
-    padding: 0;
-    font-weight: 600;
-}
-
-.wp-flyout-order-items[data-mode="view"] .column-actions {
-    display: none;
+    font-variant-numeric: tabular-nums;
 }
 
 /* Loading state */
-.wp-flyout-order-items.loading {
+.wp-flyout-line-items.loading {
     position: relative;
     min-height: 200px;
 }
 
-.wp-flyout-order-items.loading::after {
+.wp-flyout-line-items.loading::after {
     content: "";
     position: absolute;
     top: 50%;
@@ -350,40 +339,75 @@
 }
 
 @keyframes spinner {
-    to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 /* Responsive */
 @media screen and (max-width: 782px) {
-    .order-items-selector {
+    .line-items-selector {
         flex-direction: column;
         padding: 15px;
     }
 
-    .order-items-selector .wp-ajax-select {
+    .line-items-selector .wp-ajax-select {
         width: 100%;
     }
 
-    .order-items-selector button {
+    .line-items-selector button {
         width: 100%;
         justify-content: center;
     }
 
-    .order-items-table {
+    .line-items-table {
         overflow-x: auto;
     }
 
-    .order-items-table table {
+    .line-items-table table {
         min-width: 600px;
     }
 
-    .product-thumbnail,
-    .product-thumbnail-placeholder {
+    .item-thumbnail,
+    .item-thumbnail-placeholder {
         width: 36px;
         height: 36px;
     }
 
     .quantity-input {
         width: 60px;
+    }
+
+    .price-input {
+        width: 80px;
+    }
+
+    .line-items-total {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .total-amount {
+        font-size: 20px;
+    }
+}
+
+/* When price is not editable, show as plain text */
+.wp-flyout-line-items:not([data-editable-price="1"]) .column-price {
+    font-variant-numeric: tabular-nums;
+}
+
+/* Highlight row on add/update */
+.line-item-highlight {
+    animation: highlight 1s ease-out;
+}
+
+@keyframes highlight {
+    0% {
+        background-color: #ffffcc;
+    }
+    100% {
+        background-color: transparent;
     }
 }

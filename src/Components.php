@@ -22,18 +22,15 @@ use ArrayPress\WPFlyout\Components\CardChoice;
 use ArrayPress\WPFlyout\Components\FormField;
 use ArrayPress\WPFlyout\Components\FileManager;
 use ArrayPress\WPFlyout\Components\Notes;
-use ArrayPress\WPFlyout\Components\OrderItems;
+use ArrayPress\WPFlyout\Components\LineItems;
 use ArrayPress\WPFlyout\Components\Accordion;
 use ArrayPress\WPFlyout\Components\Timeline;
-
 use ArrayPress\WPFlyout\Components\SectionHeader;
 use ArrayPress\WPFlyout\Components\Separator;
 use ArrayPress\WPFlyout\Components\EmptyState;
 use ArrayPress\WPFlyout\Components\DataTable;
 use ArrayPress\WPFlyout\Components\InfoGrid;
 use ArrayPress\WPFlyout\Components\Alert;
-use ArrayPress\WPFlyout\Components\ActionBar;
-
 use InvalidArgumentException;
 
 /**
@@ -90,8 +87,8 @@ class Components {
 		] );
 
 		// Interactive Components
-		self::register( 'order_items', [
-			'class'       => OrderItems::class,
+		self::register( 'line_items', [
+			'class'       => LineItems::class,
 			'fields'      => 'items',
 			'asset'       => 'order-items',
 			'description' => 'Order line items with quantities and pricing'
@@ -189,13 +186,6 @@ class Components {
 			'fields'      => [ 'type', 'message', 'title' ],
 			'asset'       => null,
 			'description' => 'Alert messages with various styles'
-		] );
-
-		self::register( 'action_bar', [
-			'class'       => ActionBar::class,
-			'fields'      => [ 'actions' ],
-			'asset'       => null,
-			'description' => 'Action button toolbar'
 		] );
 
 		self::$initialized = true;

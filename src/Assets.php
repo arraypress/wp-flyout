@@ -43,9 +43,9 @@ class Assets {
 			'style'  => 'css/components/notes.css',
 			'deps'   => []
 		],
-		'order-items'     => [
-			'script' => 'js/components/order-items.js',
-			'style'  => 'css/components/order-items.css',
+		'line-items'     => [
+			'script' => 'js/components/line-items.js',
+			'style'  => 'css/components/line-items.css',
 			'deps'   => [ 'wp-flyout-ajax-select' ]
 		],
 
