@@ -78,7 +78,10 @@ class Timeline {
      *
      */
     public function render(): string {
-        if ( empty( $this->config['events'] ) ) {
+        // Get events array properly
+        $events = $this->config['events'] ?? [];
+
+        if ( empty( $events ) ) {
             return '';
         }
 
@@ -95,9 +98,11 @@ class Timeline {
         <div id="<?php echo esc_attr( $this->config['id'] ); ?>"
              class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>">
             <?php
-            $total = count( $this->config['events'] );
-            foreach ( $this->config['events'] as $index => $event ) :
+            $total = count( $events );
+            $index = 0;
+            foreach ( $events as $event ) :
                 $this->render_event( $event, $index, $total );
+                $index++;
             endforeach;
             ?>
         </div>

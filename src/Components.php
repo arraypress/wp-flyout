@@ -267,45 +267,34 @@ class Components {
 			return [ 'value' => self::resolve_value( $field_key, $data ) ];
 		}
 
-		// Try to resolve the field key as a complete dataset first
-		$resolved = self::resolve_value( $field_key, $data );
-		if ( is_array( $resolved ) ) {
-			return $resolved;
-		}
-
 		// Handle single field components
 		if ( is_string( $component['fields'] ) ) {
 			$field_name = $component['fields'];
 
-			// For 'items' fields, try multiple resolutions
-			if ( $field_name === 'items' ) {
-				// Try the field key itself first
-				$value = self::resolve_value( $field_key, $data );
+			// Try to resolve the value
+			$value = self::resolve_value( $field_key, $data );
 
-				// If not found, try common alternatives based on the field key
-				if ( $value === null ) {
-					// For 'notes' field, try 'notes' property
-					if ( $field_key === 'notes' ) {
-						$value = self::resolve_value( 'notes', $data );
-					} // For 'files' field, try 'files' or 'attachments'
-					elseif ( $field_key === 'files' || $field_key === 'attachments' ) {
-						$value = self::resolve_value( 'files', $data )
-							?: self::resolve_value( 'attachments', $data );
-					} // For 'order_items' field
-					elseif ( $field_key === 'order_items' ) {
-						$value = self::resolve_value( 'order_items', $data )
-							?: self::resolve_value( 'items', $data );
-					}
-				}
-			} else {
-				$value = self::resolve_value( $field_key, $data )
-					?: self::resolve_value( $field_name, $data );
-			}
-
+			// ALWAYS return with the proper field name as key
 			return [ $field_name => $value ];
 		}
 
-		// Resolve multiple fields
+		// Handle multiple field components
+		// First check if the field_key resolves to a complete dataset with all required fields
+		$resolved = self::resolve_value( $field_key, $data );
+		if ( is_array( $resolved ) ) {
+			$has_all_fields = true;
+			foreach ( $component['fields'] as $field ) {
+				if ( ! isset( $resolved[ $field ] ) ) {
+					$has_all_fields = false;
+					break;
+				}
+			}
+			if ( $has_all_fields ) {
+				return $resolved;
+			}
+		}
+
+		// Otherwise resolve each field individually
 		$result = [];
 		foreach ( $component['fields'] as $field ) {
 			$result[ $field ] = self::resolve_value( $field, $data );
