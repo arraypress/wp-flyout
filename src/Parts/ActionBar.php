@@ -12,7 +12,7 @@
 
 declare( strict_types=1 );
 
-namespace ArrayPress\WPFlyout\Components;
+namespace ArrayPress\WPFlyout\Parts;
 
 use ArrayPress\WPFlyout\Interfaces\Renderable;
 use ArrayPress\WPFlyout\Traits\HtmlAttributes;

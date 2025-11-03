@@ -16,7 +16,7 @@ declare( strict_types=1 );
 namespace ArrayPress\WPFlyout;
 
 use ArrayPress\WPFlyout\Components\FormField;
-use ArrayPress\WPFlyout\Components\ActionBar;
+use ArrayPress\WPFlyout\Parts\ActionBar;
 use Exception;
 
 /**
@@ -242,7 +242,11 @@ class Manager {
 			wp_send_json_error( __( 'Save not configured', 'wp-flyout' ), 501 );
 		}
 
-		parse_str( $request['form_data'], $form_data );
+		parse_str( $request['form_data'], $raw_data );
+
+		// Use the Sanitizer class
+		$form_data = Sanitizer::sanitize_form_data( $raw_data, $config['fields'] );
+
 		$id = $form_data['id'] ?? $request['id'] ?? null;
 
 		$result = call_user_func( $config['save'], $id, $form_data );

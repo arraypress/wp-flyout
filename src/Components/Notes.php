@@ -54,7 +54,7 @@ class Notes implements Renderable {
             $this->config['id'] = 'notes-' . wp_generate_uuid4();
         }
 
-        // Ensure items is array
+        // Ensure items is arrayed
         if ( ! is_array( $this->config['items'] ) ) {
             $this->config['items'] = [];
         }
