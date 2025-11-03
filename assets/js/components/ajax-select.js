@@ -52,6 +52,7 @@
             this.$container = $('<div class="wp-ajax-select">');
             this.$wrapper = $('<div class="wp-ajax-select-wrapper">');
             this.$input = $('<input type="text" class="regular-text">');
+            this.$input = $('<input type="text">');
             this.$chevron = $('<span class="dashicons dashicons-arrow-down-alt2"></span>');
             this.$clear = $('<span class="wp-ajax-select-clear" style="display:none">×</span>');
             this.$results = $('<div class="wp-ajax-select-results" style="display:none">');

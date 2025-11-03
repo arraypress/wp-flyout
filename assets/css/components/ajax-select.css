@@ -1,49 +1,62 @@
 /**
- * WP Flyout - AJAX Select Component
- * Complete styling matching WordPress admin
+ * WP Flyout - AJAX Select Component (Minimal)
  */
 
+/* Container */
 .wp-ajax-select {
     position: relative;
     width: 100%;
 }
 
+/* Wrapper */
 .wp-ajax-select-wrapper {
     position: relative;
-    display: flex;
-    align-items: center;
 }
 
-/* Input field - uses WordPress regular-text class */
+/* Input field */
 .wp-ajax-select input[type="text"] {
-    flex: 1;
-    padding-right: 55px; /* Room for clear button + chevron */
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0 50px 0 8px; /* Right padding for clear + chevron */
+    height: 30px;
+    border: 1px solid #8c8f94;
+    border-radius: 4px;
+    font-size: 14px;
+    line-height: normal;
+    background-color: #fff;
 }
 
-/* Clear button (× symbol) */
+.wp-ajax-select input[type="text"]:focus {
+    border-color: #2271b1;
+    outline: 0;
+    box-shadow: 0 0 0 1px #2271b1;
+}
+
+.wp-ajax-select.has-value input[type="text"] {
+    background-color: #f6f7f7;
+    cursor: default;
+}
+
+/* Clear button */
 .wp-ajax-select-clear {
     position: absolute;
-    right: 30px;
+    right: 26px;
     top: 50%;
     transform: translateY(-50%);
     width: 20px;
     height: 20px;
-    font-size: 20px;
-    line-height: 1;
+    line-height: 20px;
+    text-align: center;
     color: #646970;
     cursor: pointer;
-    user-select: none;
-    text-align: center;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    font-size: 18px;
 }
 
 .wp-ajax-select-clear:hover {
     color: #d63638;
 }
 
-/* Chevron arrow */
+/* Chevron */
 .wp-ajax-select .dashicons-arrow-down-alt2 {
     position: absolute;
     right: 8px;
@@ -51,21 +64,7 @@
     transform: translateY(-50%);
     color: #646970;
     cursor: pointer;
-    transition: transform 0.2s;
-}
-
-.wp-ajax-select .dashicons-arrow-down-alt2:hover {
-    color: #2271b1;
-}
-
-/* Rotate chevron when dropdown is open */
-.wp-ajax-select.dropdown-open .dashicons-arrow-down-alt2 {
-    transform: translateY(-50%) rotate(180deg);
-}
-
-/* When has value - make input look readonly */
-.wp-ajax-select.has-value input[type="text"] {
-    cursor: default;
+    font-size: 16px;
 }
 
 /* Results dropdown */
@@ -75,13 +74,13 @@
     left: 0;
     right: 0;
     margin-top: 4px;
-    max-height: 200px;
-    overflow-y: auto;
     background: #fff;
     border: 1px solid #8c8f94;
     border-radius: 4px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    z-index: 100001; /* Above flyout */
+    z-index: 100001;
+    max-height: 200px;
+    overflow-y: auto;
 }
 
 /* Result items */
@@ -89,7 +88,6 @@
     padding: 8px 12px;
     cursor: pointer;
     border-bottom: 1px solid #f0f0f1;
-    font-size: 14px;
 }
 
 .wp-ajax-select-item:last-child {
@@ -102,58 +100,14 @@
     color: #fff;
 }
 
-/* Empty state */
-.wp-ajax-select-empty {
-    padding: 12px;
-    color: #646970;
-    text-align: center;
-    font-style: italic;
-}
-
-/* Loading state */
+/* Empty/Loading states */
+.wp-ajax-select-empty,
 .wp-ajax-select-loading {
     padding: 12px;
     color: #646970;
     text-align: center;
 }
 
-/* Loading spinner */
-.wp-ajax-select-loading:before {
-    content: '';
-    display: inline-block;
-    width: 14px;
-    height: 14px;
-    margin-right: 8px;
-    border: 2px solid #dcdcde;
-    border-radius: 50%;
-    border-top-color: #2271b1;
-    animation: wp-ajax-select-spin 0.8s linear infinite;
-    vertical-align: middle;
-}
-
-.wp-ajax-select input[type="text"] {
-    flex: 1;
-    padding-right: 55px !important;
-    padding-left: 8px !important; /* Force consistent left padding */
-    text-indent: 0 !important; /* Remove any text indent */
-}
-
-/* Also check if regular-text class is adding weird styles */
-.wp-ajax-select input.regular-text {
-    padding-left: 8px !important;
-    text-indent: 0 !important;
-}
-
-@keyframes wp-ajax-select-spin {
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-/* Responsive */
-@media screen and (max-width: 782px) {
-    .wp-ajax-select-item {
-        padding: 10px 12px;
-        font-size: 16px;
-    }
+.wp-ajax-select-empty {
+    font-style: italic;
 }
