@@ -391,6 +391,22 @@ class Manager {
 
 			$type = $field['type'] ?? 'text';
 
+			// Special handling for ajax_select fields - resolve options for saved values
+			if ( $type === 'ajax_select' ) {
+				// Resolve value if not set
+				if ( ! isset( $field['value'] ) && $data ) {
+					$field['value'] = Components::resolve_value( $field_key, $data );
+				}
+
+				// If we have a value but no options, try to resolve them
+				if ( ! empty( $field['value'] ) && empty( $field['options'] ) ) {
+					// Check for options_callback in the field configuration
+					if ( ! empty( $field['options_callback'] ) && is_callable( $field['options_callback'] ) ) {
+						$field['options'] = call_user_func( $field['options_callback'], $field['value'], $data );
+					}
+				}
+			}
+
 			// Check if this is a component type
 			if ( Components::is_component( $type ) ) {
 				// Resolve data for component
