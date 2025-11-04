@@ -58,7 +58,7 @@ class Alert implements Renderable {
     private static function get_defaults(): array {
         return [
                 'id'          => '',
-                'type'        => 'info',
+                'style'       => 'info',
                 'message'     => '',
                 'title'       => '',
                 'dismissible' => true,
@@ -78,7 +78,7 @@ class Alert implements Renderable {
 
         $classes = [
                 'wp-flyout-alert',
-                'alert-' . $this->config['type']
+                'alert-' . $this->config['style']
         ];
 
         if ( $this->config['dismissible'] ) {
@@ -89,7 +89,7 @@ class Alert implements Renderable {
             $classes[] = $this->config['class'];
         }
 
-        $icon = self::ICONS[ $this->config['type'] ] ?? 'info-outline';
+        $icon = self::ICONS[ $this->config['style'] ] ?? 'info-outline';
 
         ob_start();
         ?>

@@ -493,18 +493,8 @@
          */
         clearAjaxSelect: function ($select) {
             const instance = $select.data('wpAjaxSelect');
-
             if (instance && instance.clear) {
                 instance.clear();
-            } else {
-                // Manual fallback
-                const $wrapper = $select.next('.wp-ajax-select');
-                if ($wrapper.length) {
-                    $wrapper.find('.wp-ajax-select-input').val('').prop('readonly', false);
-                    $wrapper.find('.wp-ajax-select-clear').hide();
-                    $wrapper.removeClass('wp-ajax-select-has-value');
-                }
-                $select.val('').trigger('change');
             }
         },
 

@@ -98,7 +98,7 @@ class Manager {
 	public function register_flyout( string $id, array $config ): self {
 		$defaults = [
 			'title'       => '',
-			'width'       => 'medium',
+			'size'        => 'medium',
 			'panels'      => [],
 			'fields'      => [],
 			'actions'     => [],
@@ -308,7 +308,7 @@ class Manager {
 		$flyout             = new Flyout( $flyout_instance_id );
 
 		$flyout->set_title( $config['title'] );
-		$flyout->set_width( $config['width'] );
+		$flyout->set_size( $config['size'] );
 
 		// Build interface with panels or single view
 		if ( ! empty( $config['panels'] ) ) {
