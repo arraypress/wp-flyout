@@ -1,13 +1,13 @@
 <?php
 /**
- * DataTable Component
+ * DataTable Component - Simplified
  *
- * Renders structured data in a table format with optional features.
+ * Renders structured data in a clean table format.
  *
  * @package     ArrayPress\WPFlyout\Components\Data
  * @copyright   Copyright (c) 2025, ArrayPress Limited
  * @license     GPL2+
- * @version     2.0.0
+ * @version     3.0.0
  */
 
 declare( strict_types=1 );
@@ -35,7 +35,6 @@ class DataTable implements Renderable {
     public function __construct( array $config = [] ) {
         $this->config = wp_parse_args( $config, self::get_defaults() );
 
-        // Auto-generate ID if not provided
         if ( empty( $this->config['id'] ) ) {
             $this->config['id'] = 'datatable-' . wp_generate_uuid4();
         }
@@ -49,18 +48,10 @@ class DataTable implements Renderable {
     private static function get_defaults(): array {
         return [
                 'id'          => '',
-                'class'       => 'wp-list-table widefat fixed striped',
+                'class'       => '',
                 'columns'     => [],
                 'data'        => [],
-                'empty_text'  => __( 'No data found.', 'arraypress' ),
-                'sortable'    => false,
-                'responsive'  => true,
-                'hover'       => true,
-                'striped'     => true,
-                'bordered'    => false,
-                'condensed'   => false,
-                'footer'      => false,
-                'caption'     => '',
+                'empty_text'  => __( 'No data found.', 'wp-flyout' ),
                 'empty_value' => '—'
         ];
     }
@@ -75,18 +66,16 @@ class DataTable implements Renderable {
             return '';
         }
 
-        $classes = $this->get_classes();
+        $classes = [ 'wp-flyout-data-table' ];
+        if ( ! empty( $this->config['class'] ) ) {
+            $classes[] = $this->config['class'];
+        }
 
         ob_start();
         ?>
-        <div class="datatable-wrapper<?php echo $this->config['responsive'] ? ' table-responsive' : ''; ?>">
-            <?php if ( ! empty( $this->config['caption'] ) ) : ?>
-                <caption class="screen-reader-text"><?php echo esc_html( $this->config['caption'] ); ?></caption>
-            <?php endif; ?>
-
+        <div class="datatable-wrapper">
             <table id="<?php echo esc_attr( $this->config['id'] ); ?>"
-                   class="<?php echo esc_attr( $classes ); ?>"
-                    <?php echo $this->config['sortable'] ? 'data-sortable="true"' : ''; ?>>
+                   class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>">
 
                 <thead>
                 <tr>
@@ -107,49 +96,16 @@ class DataTable implements Renderable {
                     <?php endforeach; ?>
                 <?php else : ?>
                     <tr>
-                        <td colspan="<?php echo count( $this->config['columns'] ); ?>" class="text-center">
+                        <td colspan="<?php echo count( $this->config['columns'] ); ?>" class="empty-row">
                             <?php echo esc_html( $this->config['empty_text'] ); ?>
                         </td>
                     </tr>
                 <?php endif; ?>
                 </tbody>
-
-                <?php if ( $this->config['footer'] ) : ?>
-                    <tfoot>
-                    <tr>
-                        <?php foreach ( $this->config['columns'] as $key => $column ) : ?>
-                            <?php $this->render_footer_cell( $key, $column ); ?>
-                        <?php endforeach; ?>
-                    </tr>
-                    </tfoot>
-                <?php endif; ?>
             </table>
         </div>
         <?php
         return ob_get_clean();
-    }
-
-    /**
-     * Get table classes
-     *
-     * @return string
-     */
-    private function get_classes(): string {
-        $classes = [ $this->config['class'] ];
-
-        if ( $this->config['hover'] && ! str_contains( $this->config['class'], 'hover' ) ) {
-            $classes[] = 'hover';
-        }
-
-        if ( $this->config['bordered'] && ! str_contains( $this->config['class'], 'bordered' ) ) {
-            $classes[] = 'bordered';
-        }
-
-        if ( $this->config['condensed'] ) {
-            $classes[] = 'condensed';
-        }
-
-        return implode( ' ', array_filter( $classes ) );
     }
 
     /**
@@ -159,10 +115,9 @@ class DataTable implements Renderable {
      * @param mixed  $column Column config
      */
     private function render_header_cell( string $key, $column ): void {
-        $label    = is_array( $column ) ? ( $column['label'] ?? $key ) : $column;
-        $sortable = is_array( $column ) && ( $column['sortable'] ?? false );
-        $class    = is_array( $column ) ? ( $column['class'] ?? '' ) : '';
-        $width    = is_array( $column ) ? ( $column['width'] ?? '' ) : '';
+        $label = is_array( $column ) ? ( $column['label'] ?? $key ) : $column;
+        $class = is_array( $column ) ? ( $column['class'] ?? '' ) : '';
+        $width = is_array( $column ) ? ( $column['width'] ?? '' ) : '';
 
         $attrs = [];
         if ( $class ) {
@@ -171,15 +126,9 @@ class DataTable implements Renderable {
         if ( $width ) {
             $attrs[] = 'style="width: ' . esc_attr( $width ) . '"';
         }
-        if ( $sortable && $this->config['sortable'] ) {
-            $attrs[] = 'data-sortable="true"';
-        }
         ?>
         <th <?php echo implode( ' ', $attrs ); ?>>
             <?php echo esc_html( $label ); ?>
-            <?php if ( $sortable && $this->config['sortable'] ) : ?>
-                <span class="sorting-indicator" aria-hidden="true"></span>
-            <?php endif; ?>
         </th>
         <?php
     }
@@ -207,22 +156,6 @@ class DataTable implements Renderable {
         <td <?php echo $class ? 'class="' . esc_attr( $class ) . '"' : ''; ?>>
             <?php echo $value; ?>
         </td>
-        <?php
-    }
-
-    /**
-     * Render footer cell
-     *
-     * @param string $key    Column key
-     * @param mixed  $column Column config
-     */
-    private function render_footer_cell( string $key, $column ): void {
-        $footer_text = '';
-        if ( is_array( $column ) && isset( $column['footer'] ) ) {
-            $footer_text = $column['footer'];
-        }
-        ?>
-        <td><?php echo esc_html( $footer_text ); ?></td>
         <?php
     }
 

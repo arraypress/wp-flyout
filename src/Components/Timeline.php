@@ -41,7 +41,7 @@ class Timeline implements Renderable {
      *                       Configuration options
      *
      * @type string $id      Component ID (auto-generated if empty)
-     * @type array  $events  Array of timeline events
+     * @type array  $items   Array of timeline items (was 'events')
      * @type bool   $compact Use compact display mode
      * @type string $class   Additional CSS classes
      *                       }
@@ -54,6 +54,11 @@ class Timeline implements Renderable {
         if ( empty( $this->config['id'] ) ) {
             $this->config['id'] = 'timeline-' . wp_generate_uuid4();
         }
+
+        // Ensure items is array
+        if ( ! is_array( $this->config['items'] ) ) {
+            $this->config['items'] = [];
+        }
     }
 
     /**
@@ -64,7 +69,7 @@ class Timeline implements Renderable {
     private static function get_defaults(): array {
         return [
                 'id'      => '',
-                'events'  => [],
+                'items'   => [],  // Changed from 'events' to 'items'
                 'compact' => false,
                 'class'   => ''
         ];
@@ -78,10 +83,7 @@ class Timeline implements Renderable {
      *
      */
     public function render(): string {
-        // Get events array properly
-        $events = $this->config['events'] ?? [];
-
-        if ( empty( $events ) ) {
+        if ( empty( $this->config['items'] ) ) {
             return '';
         }
 
@@ -98,10 +100,10 @@ class Timeline implements Renderable {
         <div id="<?php echo esc_attr( $this->config['id'] ); ?>"
              class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>">
             <?php
-            $total = count( $events );
+            $total = count( $this->config['items'] );
             $index = 0;
-            foreach ( $events as $event ) :
-                $this->render_event( $event, $index, $total );
+            foreach ( $this->config['items'] as $item ) :
+                $this->render_item( $item, $index, $total );
                 $index++;
             endforeach;
             ?>
@@ -111,28 +113,28 @@ class Timeline implements Renderable {
     }
 
     /**
-     * Render single timeline event
+     * Render single timeline item
      *
-     * @param array $event Event data
-     * @param int   $index Event index
-     * @param int   $total Total events count
+     * @param array $item  Item data
+     * @param int   $index Item index
+     * @param int   $total Total items count
      *
      * @return void
      * @since  3.0.0
      * @access private
      *
      */
-    private function render_event( array $event, int $index, int $total ): void {
-        // Normalize event data
-        if ( is_string( $event ) ) {
-            $event = [ 'title' => $event ];
+    private function render_item( array $item, int $index, int $total ): void {
+        // Normalize item data
+        if ( is_string( $item ) ) {
+            $item = [ 'title' => $item ];
         }
 
-        $title       = $event['title'] ?? '';
-        $description = $event['description'] ?? '';
-        $date        = $event['date'] ?? '';
-        $type        = $event['type'] ?? 'default';
-        $icon        = $event['icon'] ?? 'marker';
+        $title       = $item['title'] ?? '';
+        $description = $item['description'] ?? '';
+        $date        = $item['date'] ?? '';
+        $type        = $item['type'] ?? 'default';
+        $icon        = $item['icon'] ?? 'marker';
 
         if ( empty( $title ) ) {
             return;

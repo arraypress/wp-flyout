@@ -572,7 +572,10 @@
    DATA DISPLAY COMPONENTS
    ======================================== */
 
-/* Info Grid */
+/* ========================================
+   INFO GRID (simplified)
+   ======================================== */
+
 .wp-flyout-info-grid {
     display: grid;
     gap: 16px;
@@ -600,37 +603,46 @@
 .wp-flyout-info-label {
     font-size: 11px;
     font-weight: 600;
-    color: var(--wp-flyout-text-muted);
+    color: #646970;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
 .wp-flyout-info-value {
     font-size: 14px;
-    color: var(--wp-flyout-text);
+    color: #1e1e1e;
 }
 
-/* Data Table */
+/* ========================================
+   DATA TABLE (simplified)
+   ======================================== */
+
+.datatable-wrapper {
+    overflow-x: auto;
+    margin: 20px 0;
+}
+
 .wp-flyout-data-table {
-    margin-bottom: 20px;
-    background: #fff;
-    border: 1px solid var(--wp-flyout-border);
     width: 100%;
     border-collapse: collapse;
+    background: #fff;
+    border: 1px solid #dcdcde;
 }
 
 .wp-flyout-data-table th,
 .wp-flyout-data-table td {
     padding: 12px;
     text-align: left;
-    border-bottom: 1px solid var(--wp-flyout-border);
+    border-bottom: 1px solid #f0f0f1;
 }
 
 .wp-flyout-data-table thead th {
     font-weight: 600;
     background: #f6f7f7;
     font-size: 13px;
-    color: var(--wp-flyout-text);
+    color: #1e1e1e;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .wp-flyout-data-table tbody tr:last-child td {
@@ -639,6 +651,12 @@
 
 .wp-flyout-data-table tbody tr:hover {
     background: #f9f9f9;
+}
+
+.wp-flyout-data-table .empty-row {
+    text-align: center;
+    font-style: italic;
+    color: #646970;
 }
 
 /* Entity Header */
@@ -716,6 +734,10 @@
  * Enhanced with SVG icon support
  */
 
+/* ========================================
+   PAYMENT METHOD (with risk indicators)
+   ======================================== */
+
 .wp-flyout-payment-method {
     display: flex;
     align-items: center;
@@ -725,15 +747,8 @@
     border: 1px solid #e5e7eb;
     border-radius: 8px;
     margin-bottom: 10px;
-    transition: all 0.2s;
 }
 
-.wp-flyout-payment-method:hover {
-    border-color: #d1d5db;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-}
-
-/* Payment icon container */
 .payment-icon {
     flex-shrink: 0;
     width: 48px;
@@ -742,12 +757,10 @@
     align-items: center;
     justify-content: center;
     border-radius: 6px;
-    overflow: hidden;
     background: #f9fafb;
     padding: 4px;
 }
 
-/* SVG icon styling */
 .payment-icon svg {
     max-width: 100%;
     max-height: 100%;
@@ -755,7 +768,6 @@
     height: auto;
 }
 
-/* Dashicon fallback */
 .payment-icon .dashicons {
     font-size: 24px;
     width: 24px;
@@ -763,23 +775,19 @@
     color: #6b7280;
 }
 
-/* Payment details */
 .payment-details {
     flex: 1;
     min-width: 0;
-}
-
-.payment-primary {
     display: flex;
     align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
-    font-size: 14px;
+    justify-content: space-between;
+    gap: 12px;
 }
 
 .payment-brand {
     font-weight: 600;
     color: #111827;
+    font-size: 14px;
 }
 
 .payment-last4 {
@@ -788,16 +796,16 @@
     font-size: 13px;
 }
 
-.payment-bank,
-.payment-paypal,
 .payment-type {
     color: #374151;
+    font-size: 14px;
 }
 
-/* Badges */
-.payment-badge {
+/* Risk indicators */
+.payment-risk {
     display: inline-flex;
     align-items: center;
+    gap: 6px;
     padding: 2px 8px;
     border-radius: 12px;
     font-size: 11px;
@@ -806,88 +814,28 @@
     letter-spacing: 0.5px;
 }
 
-.payment-badge.default {
-    background: #dbeafe;
-    color: #1e40af;
+.payment-risk.risk-low {
+    background: #d4f4dd;
+    color: #007017;
 }
 
-.payment-badge.expired {
+.payment-risk.risk-normal {
+    background: #e0f2ff;
+    color: #0a4b78;
+}
+
+.payment-risk.risk-elevated {
+    background: #fff5eb;
+    color: #8a6116;
+}
+
+.payment-risk.risk-high {
     background: #fee2e2;
     color: #991b1b;
 }
 
-/* Format variations */
-.wp-flyout-payment-method.format-compact {
-    padding: 8px 12px;
-    border-radius: 6px;
-}
-
-.wp-flyout-payment-method.format-compact .payment-icon {
-    width: 40px;
-    height: 28px;
-}
-
-.wp-flyout-payment-method.format-compact .payment-primary {
-    font-size: 13px;
-}
-
-.wp-flyout-payment-method.format-detailed {
-    padding: 16px;
-    background: linear-gradient(135deg, #f9fafb 0%, #fff 100%);
-}
-
-/* Brand-specific colors (subtle backgrounds) */
-.wp-flyout-payment-method.brand-visa .payment-icon {
-    background: #f0f4ff;
-}
-
-.wp-flyout-payment-method.brand-mastercard .payment-icon {
-    background: #fff5f0;
-}
-
-.wp-flyout-payment-method.brand-amex .payment-icon {
-    background: #f0f9ff;
-}
-
-.wp-flyout-payment-method.brand-discover .payment-icon {
-    background: #fffbf0;
-}
-
-/* Payment method specific styles */
-.wp-flyout-payment-method.method-paypal .payment-icon {
-    background: #fef3c7;
-}
-
-.wp-flyout-payment-method.method-bank .payment-icon {
-    background: #f0fdf4;
-}
-
-/* Responsive */
-@media screen and (max-width: 480px) {
-    .wp-flyout-payment-method {
-        padding: 10px;
-    }
-
-    .payment-icon {
-        width: 40px;
-        height: 28px;
-    }
-
-    .payment-primary {
-        font-size: 13px;
-    }
-}
-
-/* Print styles */
-@media print {
-    .wp-flyout-payment-method {
-        border: 1px solid #000 !important;
-        background: #fff !important;
-    }
-
-    .payment-icon svg {
-        max-width: 40px;
-    }
+.risk-score {
+    font-weight: 700;
 }
 
 /* ========================================
@@ -1019,5 +967,137 @@
 
     .wp-flyout-field-group {
         flex-direction: column !important;
+    }
+}
+
+/* ========================================
+   ALERT (simplified)
+   ======================================== */
+
+.wp-flyout-alert {
+    position: relative;
+    padding: 12px 40px 12px 12px;
+    margin: 15px 0;
+    border-left: 4px solid;
+    border-radius: 4px;
+    background: #fff;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.alert-content-wrapper {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.alert-icon {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    margin-top: 2px;
+}
+
+.alert-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.alert-title {
+    margin: 0 0 4px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e1e1e;
+}
+
+.alert-message {
+    line-height: 1.5;
+    color: #1e1e1e;
+    font-size: 14px;
+}
+
+.alert-dismiss {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    padding: 4px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: inherit;
+    opacity: 0.5;
+    transition: opacity 0.2s;
+}
+
+.wp-flyout-alert.is-dismissible .alert-dismiss {
+    display: block;
+}
+
+.alert-dismiss:hover {
+    opacity: 1;
+}
+
+/* Alert Types */
+.wp-flyout-alert.alert-success {
+    border-color: #00a32a;
+    background: #edfaef;
+}
+
+.wp-flyout-alert.alert-info {
+    border-color: #2271b1;
+    background: #f0f6fc;
+}
+
+.wp-flyout-alert.alert-warning {
+    border-color: #dba617;
+    background: #fcf9e8;
+}
+
+.wp-flyout-alert.alert-error {
+    border-color: #d63638;
+    background: #fef2f2;
+}
+
+/* ========================================
+   RESPONSIVE ADJUSTMENTS
+   ======================================== */
+
+@media screen and (max-width: 782px) {
+    .wp-flyout-info-grid[data-columns="2"],
+    .wp-flyout-info-grid[data-columns="3"] {
+        grid-template-columns: 1fr;
+    }
+
+    .price-summary-table td,
+    .wp-flyout-data-table th,
+    .wp-flyout-data-table td {
+        padding: 10px;
+    }
+
+    .price-summary-total .amount {
+        font-size: 16px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .wp-flyout-payment-method {
+        padding: 10px;
+    }
+
+    .payment-icon {
+        width: 40px;
+        height: 28px;
+    }
+
+    .payment-details {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+
+    .payment-risk {
+        margin-top: 4px;
     }
 }

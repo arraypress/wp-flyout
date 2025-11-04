@@ -3,11 +3,12 @@
  * Component Registry
  *
  * Central registry for all flyout components.
+ * Updated with Timeline using 'items' field for consistency.
  *
  * @package     ArrayPress\WPFlyout
  * @copyright   Copyright (c) 2025, ArrayPress Limited
  * @license     GPL2+
- * @version     2.0.0
+ * @version     2.1.0
  * @author      David Sherlock
  */
 
@@ -17,7 +18,7 @@ namespace ArrayPress\WPFlyout;
 
 use ArrayPress\WPFlyout\Components\EntityHeader;
 use ArrayPress\WPFlyout\Components\PaymentMethod;
-use ArrayPress\WPFlyout\Components\PriceBreakdown;
+use ArrayPress\WPFlyout\Components\PriceSummary;
 use ArrayPress\WPFlyout\Components\CardChoice;
 use ArrayPress\WPFlyout\Components\FormField;
 use ArrayPress\WPFlyout\Components\FileManager;
@@ -67,21 +68,27 @@ class Components {
 		// Domain Components
 		self::register( 'payment_method', [
 			'class'       => PaymentMethod::class,
-			'fields'      => [ 'payment_method', 'payment_brand', 'payment_last4' ],
+			'data_fields' => [
+				'payment_method',
+				'payment_brand',
+				'payment_last4',
+				'stripe_risk_score',
+				'stripe_risk_level'
+			],
 			'asset'       => 'payment-method',
-			'description' => 'Displays payment method with card brand icons'
+			'description' => 'Displays payment method with card brand icons and risk indicators'
 		] );
 
-		self::register( 'price_breakdown', [
-			'class'       => PriceBreakdown::class,
-			'fields'      => [ 'items', 'subtotal', 'tax', 'discount', 'shipping', 'total', 'currency' ],
-			'asset'       => 'price-breakdown',
-			'description' => 'Detailed price breakdown with line items and totals'
+		self::register( 'price_summary', [
+			'class'       => PriceSummary::class,
+			'data_fields' => [ 'items', 'subtotal', 'tax', 'discount', 'shipping', 'total', 'currency' ],
+			'asset'       => 'price-summary',
+			'description' => 'Price summary with line items and totals'
 		] );
 
 		self::register( 'entity_header', [
 			'class'       => EntityHeader::class,
-			'fields'      => [ 'title', 'subtitle', 'image', 'icon', 'badges', 'meta', 'description' ],
+			'data_fields' => [ 'title', 'subtitle', 'image', 'icon', 'badges', 'meta', 'description' ],
 			'asset'       => null,
 			'description' => 'Unified header for any entity'
 		] );
@@ -89,21 +96,21 @@ class Components {
 		// Interactive Components
 		self::register( 'line_items', [
 			'class'       => LineItems::class,
-			'fields'      => 'items',
+			'data_fields' => 'items',
 			'asset'       => 'line-items',
 			'description' => 'Order line items with quantities and pricing'
 		] );
 
 		self::register( 'notes', [
 			'class'       => Notes::class,
-			'fields'      => 'items',
+			'data_fields' => 'items',
 			'asset'       => 'notes',
 			'description' => 'Notes/comments with add/delete functionality'
 		] );
 
 		self::register( 'files', [
 			'class'       => FileManager::class,
-			'fields'      => 'items',
+			'data_fields' => 'items',
 			'asset'       => 'file-manager',
 			'description' => 'File attachments with drag-drop sorting'
 		] );
@@ -111,7 +118,7 @@ class Components {
 		// Form Components
 		self::register( 'card_choice', [
 			'class'       => CardChoice::class,
-			'fields'      => [ 'options', 'value' ],
+			'data_fields' => [ 'options', 'value' ],
 			'asset'       => 'card-choice',
 			'description' => 'Card-style radio/checkbox selections'
 		] );
@@ -119,14 +126,14 @@ class Components {
 		// Layout Components
 		self::register( 'accordion', [
 			'class'       => Accordion::class,
-			'fields'      => 'items',
+			'data_fields' => 'items',
 			'asset'       => 'accordion',
 			'description' => 'Collapsible content sections'
 		] );
 
 		self::register( 'timeline', [
 			'class'       => Timeline::class,
-			'fields'      => 'events',
+			'data_fields' => 'items',
 			'asset'       => 'timeline',
 			'description' => 'Chronological event timeline'
 		] );
@@ -134,56 +141,57 @@ class Components {
 		// Special form field types that need assets
 		self::register( 'tags', [
 			'class'       => FormField::class,
-			'fields'      => 'value',
+			'data_fields' => 'value',
 			'asset'       => 'tags',
 			'description' => 'Tag input field'
 		] );
 
 		self::register( 'ajax_select', [
 			'class'       => FormField::class,
-			'fields'      => 'value',
+			'data_fields' => 'value',
 			'asset'       => 'ajax-select',
 			'description' => 'AJAX-powered select field'
 		] );
 
+		// Display Components
 		self::register( 'section_header', [
 			'class'       => SectionHeader::class,
-			'fields'      => [ 'title', 'description', 'icon', 'actions' ],
-			'asset'       => null, // No JS/CSS needed
+			'data_fields' => [ 'title', 'description', 'icon' ],
+			'asset'       => null,
 			'description' => 'Section headers with optional descriptions'
 		] );
 
 		self::register( 'separator', [
 			'class'       => Separator::class,
-			'fields'      => [ 'text', 'icon' ],
+			'data_fields' => [ 'text', 'icon' ],
 			'asset'       => null,
 			'description' => 'Visual dividers with optional text'
 		] );
 
 		self::register( 'empty_state', [
 			'class'       => EmptyState::class,
-			'fields'      => [ 'icon', 'title', 'description', 'action_text' ],
+			'data_fields' => [ 'icon', 'title', 'description', 'action_text' ],
 			'asset'       => null,
-			'description' => 'Empty state messages with actions'
+			'description' => 'Empty state messages'
 		] );
 
 		self::register( 'data_table', [
 			'class'       => DataTable::class,
-			'fields'      => [ 'columns', 'data' ],
+			'data_fields' => [ 'columns', 'data' ],
 			'asset'       => null,
 			'description' => 'Structured data table display'
 		] );
 
 		self::register( 'info_grid', [
 			'class'       => InfoGrid::class,
-			'fields'      => [ 'items' ],
+			'data_fields' => 'items',
 			'asset'       => null,
 			'description' => 'Information grid layout'
 		] );
 
 		self::register( 'alert', [
 			'class'       => Alert::class,
-			'fields'      => [ 'type', 'message', 'title' ],
+			'data_fields' => [ 'type', 'message', 'title' ],
 			'asset'       => null,
 			'description' => 'Alert messages with various styles'
 		] );
@@ -311,7 +319,7 @@ class Components {
 		$component = self::get( $type );
 
 		// For non-components, just resolve as simple value
-		if ( ! $component || ! isset( $component['fields'] ) ) {
+		if ( ! $component || ! isset( $component['data_fields'] ) ) {
 			return [ 'value' => self::resolve_value( $field_key, $data ) ];
 		}
 
@@ -321,8 +329,8 @@ class Components {
 		// If we found an array at field_key, check if it has the fields we need
 		if ( is_array( $resolved ) ) {
 			// For string fields (like 'items'), check if it exists in resolved data
-			if ( is_string( $component['fields'] ) ) {
-				$field_name = $component['fields'];
+			if ( is_string( $component['data_fields'] ) ) {
+				$field_name = $component['data_fields'];
 				// If the resolved array has the field we need, return the whole array
 				if ( isset( $resolved[ $field_name ] ) ) {
 					return $resolved;
@@ -333,9 +341,9 @@ class Components {
 			}
 
 			// For array fields, check if resolved has all/most required fields
-			if ( is_array( $component['fields'] ) ) {
+			if ( is_array( $component['data_fields'] ) ) {
 				$has_any_field = false;
-				foreach ( $component['fields'] as $field ) {
+				foreach ( $component['data_fields'] as $field ) {
 					if ( isset( $resolved[ $field ] ) ) {
 						$has_any_field = true;
 						break;
@@ -348,9 +356,9 @@ class Components {
 			}
 		}
 
-		// Handle single field components (like 'items' for notes)
-		if ( is_string( $component['fields'] ) ) {
-			$field_name = $component['fields'];
+		// Handle single field components (like 'items' for notes, timeline, etc.)
+		if ( is_string( $component['data_fields'] ) ) {
+			$field_name = $component['data_fields'];
 			// Try to resolve the value
 			$value = self::resolve_value( $field_key, $data );
 
@@ -360,7 +368,7 @@ class Components {
 
 		// Otherwise resolve each field individually (fallback for scattered fields)
 		$result = [];
-		foreach ( $component['fields'] as $field ) {
+		foreach ( $component['data_fields'] as $field ) {
 			// Special case: 'value' should use the field_key
 			if ( $field === 'value' ) {
 				$result[ $field ] = self::resolve_value( $field_key, $data );

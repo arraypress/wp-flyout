@@ -1,13 +1,13 @@
 <?php
 /**
- * Header Component
+ * EntityHeader Component - Simplified
  *
- * Displays a unified header for any entity (customer, product, order, etc).
+ * Displays a unified header for any entity without action buttons.
  *
- * @package     ArrayPress\WPFlyout\Components\Domain
+ * @package     ArrayPress\WPFlyout\Components\Display
  * @copyright   Copyright (c) 2025, ArrayPress Limited
  * @license     GPL2+
- * @version     2.0.0
+ * @version     3.0.0
  */
 
 declare( strict_types=1 );
@@ -33,7 +33,6 @@ class EntityHeader implements Renderable {
     public function __construct( array $config = [] ) {
         $this->config = wp_parse_args( $config, self::get_defaults() );
 
-        // Auto-generate ID if not provided
         if ( empty( $this->config['id'] ) ) {
             $this->config['id'] = 'entity-header-' . wp_generate_uuid4();
         }
@@ -53,7 +52,6 @@ class EntityHeader implements Renderable {
                 'icon'        => '',
                 'badges'      => [],
                 'meta'        => [],
-                'actions'     => [],
                 'description' => '',
                 'class'       => ''
         ];
@@ -92,24 +90,22 @@ class EntityHeader implements Renderable {
             <?php endif; ?>
 
             <div class="entity-header-content">
-                <div class="entity-header-main">
-                    <h2 class="entity-header-title">
-                        <?php echo esc_html( $this->config['title'] ); ?>
-                        <?php $this->render_badges(); ?>
-                    </h2>
+                <h2 class="entity-header-title">
+                    <?php echo esc_html( $this->config['title'] ); ?>
+                    <?php $this->render_badges(); ?>
+                </h2>
 
-                    <?php if ( $this->config['subtitle'] ) : ?>
-                        <div class="entity-header-subtitle">
-                            <?php echo esc_html( $this->config['subtitle'] ); ?>
-                        </div>
-                    <?php endif; ?>
+                <?php if ( $this->config['subtitle'] ) : ?>
+                    <div class="entity-header-subtitle">
+                        <?php echo esc_html( $this->config['subtitle'] ); ?>
+                    </div>
+                <?php endif; ?>
 
-                    <?php if ( ! empty( $this->config['meta'] ) ) : ?>
-                        <div class="entity-header-meta">
-                            <?php $this->render_meta(); ?>
-                        </div>
-                    <?php endif; ?>
-                </div>
+                <?php if ( ! empty( $this->config['meta'] ) ) : ?>
+                    <div class="entity-header-meta">
+                        <?php $this->render_meta(); ?>
+                    </div>
+                <?php endif; ?>
 
                 <?php if ( $this->config['description'] ) : ?>
                     <div class="entity-header-description">
@@ -117,12 +113,6 @@ class EntityHeader implements Renderable {
                     </div>
                 <?php endif; ?>
             </div>
-
-            <?php if ( ! empty( $this->config['actions'] ) ) : ?>
-                <div class="entity-header-actions">
-                    <?php $this->render_actions(); ?>
-                </div>
-            <?php endif; ?>
         </div>
         <?php
         return ob_get_clean();
@@ -146,8 +136,8 @@ class EntityHeader implements Renderable {
             }
             ?>
             <span class="badge badge-<?php echo esc_attr( $type ); ?>">
-				<?php echo esc_html( $text ); ?>
-			</span>
+                <?php echo esc_html( $text ); ?>
+            </span>
             <?php
         }
     }
@@ -166,39 +156,14 @@ class EntityHeader implements Renderable {
             }
             ?>
             <span class="entity-header-meta-item">
-				<?php if ( $icon ) : ?>
+                <?php if ( $icon ) : ?>
                     <span class="dashicons dashicons-<?php echo esc_attr( $icon ); ?>"></span>
                 <?php endif; ?>
                 <?php if ( $label ) : ?>
                     <span class="meta-label"><?php echo esc_html( $label ); ?>:</span>
                 <?php endif; ?>
-				<span class="meta-value"><?php echo esc_html( $value ); ?></span>
-			</span>
-            <?php
-        }
-    }
-
-    /**
-     * Render action buttons
-     */
-    private function render_actions(): void {
-        foreach ( $this->config['actions'] as $action ) {
-            $label = $action['label'] ?? '';
-            $url   = $action['url'] ?? '#';
-            $class = $action['class'] ?? 'button-secondary';
-            $icon  = $action['icon'] ?? '';
-
-            if ( empty( $label ) ) {
-                continue;
-            }
-            ?>
-            <a href="<?php echo esc_url( $url ); ?>"
-               class="button <?php echo esc_attr( $class ); ?>">
-                <?php if ( $icon ) : ?>
-                    <span class="dashicons dashicons-<?php echo esc_attr( $icon ); ?>"></span>
-                <?php endif; ?>
-                <?php echo esc_html( $label ); ?>
-            </a>
+                <span class="meta-value"><?php echo esc_html( $value ); ?></span>
+            </span>
             <?php
         }
     }
