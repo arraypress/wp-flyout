@@ -75,9 +75,9 @@ class Assets {
 			'style'  => 'css/components/timeline.css',
 			'deps'   => []
 		],
-		'price-breakdown' => [
-			'script' => 'js/components/price-breakdown.js',
-			'style'  => 'css/components/price-breakdown.css',
+		'price-summary' => [
+			'script' => 'js/components/price-summary.js',
+			'style'  => 'css/components/price-summary.css',
 			'deps'   => []
 		],
 	];
