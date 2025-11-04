@@ -15,6 +15,16 @@ namespace ArrayPress\WPFlyout;
 class Assets {
 
 	/**
+	 * Core CSS files to always load
+	 */
+	private static array $core_styles = [
+		'css/flyout/core.css',              // Core flyout mechanics
+		'css/flyout/form-fields.css',       // Basic form elements
+		'css/flyout/ui-elements.css',       // UI components
+		'css/flyout/data-display.css'       // Data display components
+	];
+
+	/**
 	 * Core JavaScript files
 	 *
 	 * @var array
@@ -33,12 +43,12 @@ class Assets {
 	 */
 	private static array $components = [
 		// Interactive Components (always separate)
-		'file-manager'    => [
+		'file-manager'   => [
 			'script' => 'js/components/file-manager.js',
 			'style'  => 'css/components/file-manager.css',
 			'deps'   => [ 'jquery-ui-sortable' ]
 		],
-		'notes'           => [
+		'notes'          => [
 			'script' => 'js/components/notes.js',
 			'style'  => 'css/components/notes.css',
 			'deps'   => []
@@ -50,34 +60,39 @@ class Assets {
 		],
 
 		// Optional Components (loaded on demand)
-		'ajax-select'     => [
+		'ajax-select'    => [
 			'script' => 'js/components/ajax-select.js',
 			'style'  => 'css/components/ajax-select.css',
 			'deps'   => []
 		],
-		'tags'            => [
+		'tags'           => [
 			'script' => 'js/components/tags.js',
 			'style'  => 'css/components/tags.css',
 			'deps'   => []
 		],
-		'accordion'       => [
+		'accordion'      => [
 			'script' => 'js/components/accordion.js',
 			'style'  => 'css/components/accordion.css',
 			'deps'   => []
 		],
-		'card-choice'     => [
+		'card-choice'    => [
 			'script' => '', // No JS for this component
 			'style'  => 'css/components/card-choice.css',
 			'deps'   => []
 		],
-		'timeline'        => [
+		'timeline'       => [
 			'script' => '', // No JS for this component
 			'style'  => 'css/components/timeline.css',
 			'deps'   => []
 		],
-		'price-summary' => [
+		'price-summary'  => [
 			'script' => 'js/components/price-summary.js',
 			'style'  => 'css/components/price-summary.css',
+			'deps'   => []
+		],
+		'payment-method' => [
+			'script' => '',
+			'style'  => 'css/components/payment-method.css',
 			'deps'   => []
 		],
 	];
@@ -100,14 +115,22 @@ class Assets {
 		$base_file = __FILE__;
 		$version   = defined( 'WP_DEBUG' ) && WP_DEBUG ? time() : '3.0.0';
 
-		// Register core CSS (single consolidated file)
-		wp_register_composer_style(
-			'wp-flyout',
-			$base_file,
-			'css/flyout/core.css', // The consolidated CSS file
-			[ 'dashicons' ],
-			$version
-		);
+		// Register each core CSS file
+		$css_deps = [ 'dashicons' ];
+		foreach ( self::$core_styles as $css_file ) {
+			$handle = self::get_handle_from_path( $css_file );
+			wp_register_composer_style(
+				$handle,
+				$base_file,
+				$css_file,
+				$css_deps,
+				$version
+			);
+			$css_deps[] = $handle; // Each depends on the previous
+		}
+
+		// Create virtual 'wp-flyout' style handle
+		wp_register_style( 'wp-flyout', false, $css_deps, $version );
 
 		// Register core JavaScript files
 		$js_deps        = [ 'jquery' ];
