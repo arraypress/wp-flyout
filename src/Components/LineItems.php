@@ -254,7 +254,7 @@ class LineItems implements Renderable {
                     <input type="text"
                            name="<?php echo esc_attr( $this->config['name'] ); ?>[<?php echo $index; ?>][price]"
                            value="<?php echo esc_attr( number_format( $price / 100, 2, '.', '' ) ); ?>"
-                           class="price-input small-text"
+                           class="price-input regular-text"
                            data-cents="<?php echo esc_attr( (string) $price ); ?>"
                            data-action="update-price">
                 <?php else : ?>
