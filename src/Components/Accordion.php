@@ -36,20 +36,6 @@ class Accordion implements Renderable {
     private array $config;
 
     /**
-     * Default configuration
-     *
-     * @since 3.0.0
-     * @var array
-     */
-    private const DEFAULTS = [
-            'id'           => '',
-            'items'        => [],
-            'multiple'     => false,  // Allow multiple sections open
-            'default_open' => null,   // Index or array of indices
-            'class'        => ''
-    ];
-
-    /**
      * Constructor
      *
      * @param array    $config       {
@@ -65,12 +51,28 @@ class Accordion implements Renderable {
      *
      */
     public function __construct( array $config = [] ) {
-        $this->config = wp_parse_args( $config, self::DEFAULTS );
+        $this->config = wp_parse_args( $config, self::get_defaults() );
 
         // Auto-generate ID if not provided
         if ( empty( $this->config['id'] ) ) {
             $this->config['id'] = 'accordion-' . wp_generate_uuid4();
         }
+    }
+
+    /**
+     * Get default configuration
+     *
+     * @return array
+     * @since 3.0.0
+     */
+    private static function get_defaults(): array {
+        return [
+                'id'           => '',
+                'items'        => [],
+                'multiple'     => false,  // Allow multiple sections open
+                'default_open' => null,   // Index or array of indices
+                'class'        => ''
+        ];
     }
 
     /**

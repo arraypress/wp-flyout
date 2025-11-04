@@ -26,35 +26,37 @@ class EntityHeader implements Renderable {
     private array $config;
 
     /**
-     * Default configuration
-     *
-     * @var array
-     */
-    private const DEFAULTS = [
-            'id'          => '',
-            'title'       => '',
-            'subtitle'    => '',
-            'image'       => '',
-            'icon'        => '',
-            'badges'      => [],
-            'meta'        => [],
-            'actions'     => [],
-            'description' => '',
-            'class'       => ''
-    ];
-
-    /**
      * Constructor
      *
      * @param array $config Configuration options
      */
     public function __construct( array $config = [] ) {
-        $this->config = wp_parse_args( $config, self::DEFAULTS );
+        $this->config = wp_parse_args( $config, self::get_defaults() );
 
         // Auto-generate ID if not provided
         if ( empty( $this->config['id'] ) ) {
             $this->config['id'] = 'entity-header-' . wp_generate_uuid4();
         }
+    }
+
+    /**
+     * Get default configuration
+     *
+     * @return array
+     */
+    private static function get_defaults(): array {
+        return [
+                'id'          => '',
+                'title'       => '',
+                'subtitle'    => '',
+                'image'       => '',
+                'icon'        => '',
+                'badges'      => [],
+                'meta'        => [],
+                'actions'     => [],
+                'description' => '',
+                'class'       => ''
+        ];
     }
 
     /**

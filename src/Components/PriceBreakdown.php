@@ -29,35 +29,12 @@ class PriceBreakdown implements Renderable {
     private array $config;
 
     /**
-     * Default configuration
-     *
-     * @var array
-     */
-    private const DEFAULTS = [
-            'id'              => '',
-            'items'           => [],
-            'subtotal'        => null,
-            'tax'             => null,
-            'discount'        => null,
-            'total'           => 0,
-            'currency'        => 'USD',
-            'show_zero'       => false,
-            'class'           => '',
-            'highlight_total' => true,
-            // Refund functionality
-            'refundable'      => false,
-            'refund_ajax'     => '',
-            'refund_nonce'    => '',
-            'order_id'        => '',
-    ];
-
-    /**
      * Constructor
      *
      * @param array $config Configuration options
      */
     public function __construct( array $config = [] ) {
-        $this->config = wp_parse_args( $config, self::DEFAULTS );
+        $this->config = wp_parse_args( $config, self::get_defaults() );
 
         // Auto-generate ID if not provided
         if ( empty( $this->config['id'] ) ) {
@@ -68,6 +45,32 @@ class PriceBreakdown implements Renderable {
         if ( $this->config['refundable'] && empty( $this->config['refund_nonce'] ) ) {
             $this->config['refund_nonce'] = wp_create_nonce( 'price_breakdown_refund' );
         }
+    }
+
+    /**
+     * Get default configuration
+     *
+     * @return array
+     */
+    private static function get_defaults(): array {
+        return [
+                'id'              => '',
+                'items'           => [],
+                'subtotal'        => null,
+                'tax'             => null,
+                'discount'        => null,
+                'total'           => 0,
+                'currency'        => 'USD',
+                'show_zero'       => false,
+                'class'           => '',
+                'highlight_total' => true,
+
+            // Refund functionality
+                'refundable'      => false,
+                'refund_ajax'     => '',
+                'refund_nonce'    => '',
+                'order_id'        => '',
+        ];
     }
 
     /**

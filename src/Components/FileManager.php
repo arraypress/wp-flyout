@@ -24,30 +24,12 @@ class FileManager implements Renderable {
     private array $config;
 
     /**
-     * Default configuration
-     *
-     * @var array
-     */
-    private const DEFAULTS = [
-            'id'          => '',
-            'name'        => 'files',
-            'items'       => [],
-            'max_files'   => 0,  // 0 = unlimited
-            'reorderable' => true,
-            'browseable'  => true,
-            'add_text'    => 'Add File',
-            'empty_text'  => 'No files attached yet',
-            'file_types'  => [], // Empty = all types allowed
-            'class'       => ''
-    ];
-
-    /**
      * Constructor
      *
      * @param array $config Configuration options
      */
     public function __construct( array $config = [] ) {
-        $this->config = wp_parse_args( $config, self::DEFAULTS );
+        $this->config = wp_parse_args( $config, self::get_defaults() );
 
         // Auto-generate ID if not provided
         if ( empty( $this->config['id'] ) ) {
@@ -58,6 +40,26 @@ class FileManager implements Renderable {
         if ( ! is_array( $this->config['items'] ) ) {
             $this->config['items'] = [];
         }
+    }
+
+    /**
+     * Get default configuration
+     *
+     * @return array
+     */
+    private static function get_defaults(): array {
+        return [
+                'id'          => '',
+                'name'        => 'files',
+                'items'       => [],
+                'max_files'   => 0,  // 0 = unlimited
+                'reorderable' => true,
+                'browseable'  => true,
+                'add_text'    => 'Add File',
+                'empty_text'  => 'No files attached yet',
+                'file_types'  => [], // Empty = all types allowed
+                'class'       => ''
+        ];
     }
 
     /**
@@ -228,13 +230,13 @@ class FileManager implements Renderable {
      */
     private function get_file_icon( string $extension ): string {
         $icons = [
-            // Documents
+                // Documents
                 'pdf'  => 'pdf',
                 'doc'  => 'media-document',
                 'docx' => 'media-document',
                 'txt'  => 'media-text',
 
-            // Images
+                // Images
                 'jpg'  => 'format-image',
                 'jpeg' => 'format-image',
                 'png'  => 'format-image',
@@ -242,7 +244,7 @@ class FileManager implements Renderable {
                 'svg'  => 'format-image',
                 'webp' => 'format-image',
 
-            // Media
+                // Media
                 'mp3'  => 'format-audio',
                 'wav'  => 'format-audio',
                 'ogg'  => 'format-audio',
@@ -251,14 +253,14 @@ class FileManager implements Renderable {
                 'avi'  => 'format-video',
                 'webm' => 'format-video',
 
-            // Archives
+                // Archives
                 'zip'  => 'media-archive',
                 'rar'  => 'media-archive',
                 '7z'   => 'media-archive',
                 'tar'  => 'media-archive',
                 'gz'   => 'media-archive',
 
-            // Code
+                // Code
                 'js'   => 'media-code',
                 'css'  => 'media-code',
                 'php'  => 'media-code',
@@ -266,7 +268,7 @@ class FileManager implements Renderable {
                 'json' => 'media-code',
                 'xml'  => 'media-code',
 
-            // Spreadsheets
+                // Spreadsheets
                 'xls'  => 'media-spreadsheet',
                 'xlsx' => 'media-spreadsheet',
                 'csv'  => 'media-spreadsheet',

@@ -98,19 +98,10 @@ class Sanitizer {
 	 */
 	private static function register_component_sanitizers(): void {
 		self::$component_sanitizers = [
-			// Form data components
 			'order_items' => [ self::class, 'sanitize_order_items' ],
 			'files'       => [ self::class, 'sanitize_files' ],
 			'tags'        => [ self::class, 'sanitize_tags' ],
 			'card_choice' => [ self::class, 'sanitize_card_choice' ],
-
-			// NOT included (handled elsewhere or display-only):
-			// - notes: AJAX endpoints handle own sanitization
-			// - price_breakdown: display + AJAX refunds
-			// - timeline: display only
-			// - accordion: display only
-			// - entity_header: display only
-			// - payment_method: display only
 		];
 	}
 

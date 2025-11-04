@@ -27,23 +27,6 @@ class PaymentMethod implements Renderable {
     private array $config;
 
     /**
-     * Default configuration
-     *
-     * @var array
-     */
-    private const DEFAULTS = [
-            'id'             => '',
-            'payment_method' => '', // From DB: payment_method field
-            'payment_brand'  => '', // From DB: payment_brand field (visa, mastercard, etc)
-            'payment_last4'  => '', // From DB: payment_last4 field
-            'is_default'     => false,
-            'status'         => 'active',
-            'show_icon'      => true,
-            'format'         => 'default', // default, compact, detailed
-            'class'          => ''
-    ];
-
-    /**
      * SVG file mappings for card brands
      *
      * @var array
@@ -83,12 +66,31 @@ class PaymentMethod implements Renderable {
      * @param array $config Configuration options
      */
     public function __construct( array $config = [] ) {
-        $this->config = wp_parse_args( $config, self::DEFAULTS );
+        $this->config = wp_parse_args( $config, self::get_defaults() );
 
         // Auto-generate ID if not provided
         if ( empty( $this->config['id'] ) ) {
             $this->config['id'] = 'payment-method-' . wp_generate_uuid4();
         }
+    }
+
+    /**
+     * Get default configuration
+     *
+     * @return array
+     */
+    private static function get_defaults(): array {
+        return [
+                'id'             => '',
+                'payment_method' => '',
+                'payment_brand'  => '',
+                'payment_last4'  => '',
+                'is_default'     => false,
+                'status'         => 'active',
+                'show_icon'      => true,
+                'format'         => 'default', // default, compact, detailed
+                'class'          => ''
+        ];
     }
 
     /**

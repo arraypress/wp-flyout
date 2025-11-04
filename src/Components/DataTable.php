@@ -28,39 +28,41 @@ class DataTable implements Renderable {
     private array $config;
 
     /**
-     * Default configuration
-     *
-     * @var array
-     */
-    private const DEFAULTS = [
-            'id'          => '',
-            'class'       => 'wp-list-table widefat fixed striped',
-            'columns'     => [],
-            'data'        => [],
-            'empty_text'  => 'No data found.',
-            'sortable'    => false,
-            'responsive'  => true,
-            'hover'       => true,
-            'striped'     => true,
-            'bordered'    => false,
-            'condensed'   => false,
-            'footer'      => false,
-            'caption'     => '',
-            'empty_value' => '—'
-    ];
-
-    /**
      * Constructor
      *
      * @param array $config Configuration options
      */
     public function __construct( array $config = [] ) {
-        $this->config = wp_parse_args( $config, self::DEFAULTS );
+        $this->config = wp_parse_args( $config, self::get_defaults() );
 
         // Auto-generate ID if not provided
         if ( empty( $this->config['id'] ) ) {
             $this->config['id'] = 'datatable-' . wp_generate_uuid4();
         }
+    }
+
+    /**
+     * Get default configuration
+     *
+     * @return array
+     */
+    private static function get_defaults(): array {
+        return [
+                'id'          => '',
+                'class'       => 'wp-list-table widefat fixed striped',
+                'columns'     => [],
+                'data'        => [],
+                'empty_text'  => __( 'No data found.', 'arraypress' ),
+                'sortable'    => false,
+                'responsive'  => true,
+                'hover'       => true,
+                'striped'     => true,
+                'bordered'    => false,
+                'condensed'   => false,
+                'footer'      => false,
+                'caption'     => '',
+                'empty_value' => '—'
+        ];
     }
 
     /**

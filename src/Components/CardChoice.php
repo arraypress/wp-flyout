@@ -35,22 +35,6 @@ class CardChoice implements Renderable {
     private array $config;
 
     /**
-     * Default configuration
-     *
-     * @since 3.0.0
-     * @var array
-     */
-    private const DEFAULTS = [
-            'id'      => '',
-            'name'    => '',
-            'mode'    => 'radio', // Changed from 'type' to 'mode'
-            'options' => [],
-            'value'   => null,
-            'columns' => 2,
-            'class'   => ''
-    ];
-
-    /**
      * Constructor
      *
      * @param array $config Configuration options
@@ -59,7 +43,7 @@ class CardChoice implements Renderable {
      *
      */
     public function __construct( array $config = [] ) {
-        $this->config = wp_parse_args( $config, self::DEFAULTS );
+        $this->config = wp_parse_args( $config, self::get_defaults() );
 
         if ( empty( $this->config['id'] ) ) {
             $this->config['id'] = 'card-choice-' . wp_generate_uuid4();
@@ -69,6 +53,23 @@ class CardChoice implements Renderable {
         if ( $this->config['mode'] === 'checkbox' && ! is_array( $this->config['value'] ) ) {
             $this->config['value'] = $this->config['value'] ? [ $this->config['value'] ] : [];
         }
+    }
+
+    /**
+     * Get default configuration
+     *
+     * @return array
+     */
+    private static function get_defaults(): array {
+        return [
+                'id'      => '',
+                'name'    => '',
+                'mode'    => 'radio', // Changed from 'type' to 'mode'
+                'options' => [],
+                'value'   => null,
+                'columns' => 2,
+                'class'   => ''
+        ];
     }
 
     /**

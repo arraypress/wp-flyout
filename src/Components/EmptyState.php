@@ -28,34 +28,36 @@ class EmptyState implements Renderable {
     private array $config;
 
     /**
-     * Default configuration
-     *
-     * @var array
-     */
-    private const DEFAULTS = [
-            'id'           => '',
-            'icon'         => 'admin-page',
-            'title'        => '',
-            'description'  => '',
-            'action_text'  => '',
-            'action_url'   => '',
-            'action_class' => 'button',
-            'action_attrs' => [],
-            'class'        => ''
-    ];
-
-    /**
      * Constructor
      *
      * @param array $config Configuration options
      */
     public function __construct( array $config = [] ) {
-        $this->config = wp_parse_args( $config, self::DEFAULTS );
+        $this->config = wp_parse_args( $config, self::get_defaults() );
 
         // Auto-generate ID if not provided
         if ( empty( $this->config['id'] ) ) {
             $this->config['id'] = 'empty-state-' . wp_generate_uuid4();
         }
+    }
+
+    /**
+     * Get default configuration
+     *
+     * @return array
+     */
+    private static function get_defaults(): array {
+        return [
+                'id'           => '',
+                'icon'         => 'admin-page',
+                'title'        => '',
+                'description'  => '',
+                'action_text'  => '',
+                'action_url'   => '',
+                'action_class' => 'button',
+                'action_attrs' => [],
+                'class'        => ''
+        ];
     }
 
     /**

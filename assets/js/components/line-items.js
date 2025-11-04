@@ -99,10 +99,10 @@
             const $button = $(e.currentTarget);
             const $component = $button.closest('.wp-flyout-line-items');
             const $select = $component.find('.product-ajax-select');
-            const productId = $select.val();
+            const itemId = $select.val();
 
             // Validate selection
-            if (!productId) {
+            if (!itemId) {
                 $component.trigger('lineitems:error', {
                     type: 'no_selection',
                     message: 'Please select a product first'
@@ -113,14 +113,14 @@
 
             // Fire before add event (cancellable)
             const beforeAddEvent = $.Event('lineitems:beforeadd');
-            $component.trigger(beforeAddEvent, {productId: productId});
+            $component.trigger(beforeAddEvent, {itemId: itemId});
 
             if (beforeAddEvent.isDefaultPrevented()) {
                 return;
             }
 
             // Check for existing item
-            const existingItem = this.findExistingItem($component, productId);
+            const existingItem = this.findExistingItem($component, itemId);
             if (existingItem.length) {
                 // Increment quantity instead
                 const $qtyInput = existingItem.find('.quantity-input');
@@ -131,7 +131,7 @@
                 this.clearAjaxSelect($select);
 
                 $component.trigger('lineitems:quantityincremented', {
-                    productId: productId,
+                    itemId: itemId,
                     oldQuantity: currentQty,
                     newQuantity: newQty,
                     row: existingItem[0]
@@ -140,13 +140,13 @@
             }
 
             // Fetch product details
-            this.fetchProductDetails($component, productId);
+            this.fetchProductDetails($component, itemId);
         },
 
         /**
          * Fetch product details via AJAX
          */
-        fetchProductDetails: function ($component, productId) {
+        fetchProductDetails: function ($component, itemId) {
             const self = this;
             const $button = $component.find('[data-action="add-item"]');
             const originalHtml = $button.html();
@@ -159,7 +159,7 @@
             const $select = $component.find('.product-ajax-select');
             const nonce = $select.data('nonce') || '';
 
-            $component.trigger('lineitems:fetchstart', {productId: productId});
+            $component.trigger('lineitems:fetchstart', {itemId: itemId});
 
             $.ajax({
                 url: ajaxUrl,
@@ -167,7 +167,7 @@
                 dataType: 'json',
                 data: {
                     action: detailsAction,
-                    product_id: String(productId),
+                    item_id: String(itemId),
                     _wpnonce: nonce
                 },
                 success: function (response) {
@@ -176,13 +176,13 @@
                         self.clearAjaxSelect($select);
 
                         $component.trigger('lineitems:fetchsuccess', {
-                            productId: productId,
+                            itemId: itemId,
                             product: response.data
                         });
                     } else {
                         const errorMsg = response.data || 'Product details not found';
                         $component.trigger('lineitems:fetcherror', {
-                            productId: productId,
+                            itemId: itemId,
                             error: errorMsg
                         });
                         alert('Error: ' + errorMsg);
@@ -191,7 +191,7 @@
                 error: function (xhr, status, error) {
                     console.error('AJAX Error:', error);
                     $component.trigger('lineitems:fetcherror', {
-                        productId: productId,
+                        itemId: itemId,
                         error: error,
                         xhr: xhr
                     });
@@ -469,9 +469,9 @@
         },
 
         /**
-         * Find existing item by product ID
+         * Find existing item by item ID
          */
-        findExistingItem: function ($component, productId) {
+        findExistingItem: function ($component, itemId) {
             let $found = null;
 
             $component.find('.line-item').each(function () {
@@ -479,7 +479,7 @@
                 const rowItemId = $row.data('item-id') ||
                     $row.find('[name*="[id]"]').val();
 
-                if (rowItemId == productId) {
+                if (rowItemId == itemId) {
                     $found = $row;
                     return false; // Break loop
                 }

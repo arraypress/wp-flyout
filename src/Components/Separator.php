@@ -26,32 +26,34 @@ class Separator implements Renderable {
     private array $config;
 
     /**
-     * Default configuration
-     *
-     * @var array
-     */
-    private const DEFAULTS = [
-            'id'     => '',
-            'text'   => '',
-            'icon'   => '',
-            'class'  => '',
-            'margin' => '20px',
-            'style'  => 'line', // line, dotted, dashed, double
-            'align'  => 'center' // left, center, right (for text)
-    ];
-
-    /**
      * Constructor
      *
      * @param array $config Configuration options
      */
     public function __construct( array $config = [] ) {
-        $this->config = wp_parse_args( $config, self::DEFAULTS );
+        $this->config = wp_parse_args( $config, self::get_defaults() );
 
         // Auto-generate ID if not provided
         if ( empty( $this->config['id'] ) ) {
             $this->config['id'] = 'separator-' . wp_generate_uuid4();
         }
+    }
+
+    /**
+     * Get default configuration
+     *
+     * @return array
+     */
+    private static function get_defaults(): array {
+        return [
+                'id'     => '',
+                'text'   => '',
+                'icon'   => '',
+                'class'  => '',
+                'margin' => '20px',
+                'style'  => 'line', // line, dotted, dashed, double
+                'align'  => 'center' // left, center, right (for text)
+        ];
     }
 
     /**

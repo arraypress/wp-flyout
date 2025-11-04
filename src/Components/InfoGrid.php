@@ -30,34 +30,36 @@ class InfoGrid implements Renderable {
     private array $config;
 
     /**
-     * Default configuration
-     *
-     * @var array
-     */
-    private const DEFAULTS = [
-            'id'          => '',
-            'class'       => '',
-            'items'       => [],
-            'columns'     => 2,
-            'gap'         => 'medium',
-            'label_width' => 'auto',
-            'separator'   => true,
-            'empty_value' => '—',
-            'responsive'  => true
-    ];
-
-    /**
      * Constructor
      *
      * @param array $config Configuration options
      */
     public function __construct( array $config = [] ) {
-        $this->config = wp_parse_args( $config, self::DEFAULTS );
+        $this->config = wp_parse_args( $config, self::get_defaults() );
 
         // Auto-generate ID if not provided
         if ( empty( $this->config['id'] ) ) {
             $this->config['id'] = 'info-grid-' . wp_generate_uuid4();
         }
+    }
+
+    /**
+     * Get default configuration
+     *
+     * @return array
+     */
+    private static function get_defaults(): array {
+        return [
+                'id'          => '',
+                'class'       => '',
+                'items'       => [],
+                'columns'     => 2,
+                'gap'         => 'medium',
+                'label_width' => 'auto',
+                'separator'   => true,
+                'empty_value' => '—',
+                'responsive'  => true
+        ];
     }
 
     /**

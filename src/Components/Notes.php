@@ -24,30 +24,12 @@ class Notes implements Renderable {
     private array $config;
 
     /**
-     * Default configuration
-     *
-     * @var array
-     */
-    private const DEFAULTS = [
-            'id'          => '',
-            'name'        => 'notes',
-            'items'       => [],
-            'editable'    => true,
-            'placeholder' => 'Add a note...',
-            'empty_text'  => 'No notes yet.',
-            'object_type' => '',        // Just the type for context
-            'ajax_add'    => '',         // AJAX action for adding notes
-            'ajax_delete' => '',         // AJAX action for deleting notes
-            'class'       => ''
-    ];
-
-    /**
      * Constructor
      *
      * @param array $config Configuration options
      */
     public function __construct( array $config = [] ) {
-        $this->config = wp_parse_args( $config, self::DEFAULTS );
+        $this->config = wp_parse_args( $config, self::get_defaults() );
 
         // Auto-generate ID if not provided
         if ( empty( $this->config['id'] ) ) {
@@ -58,6 +40,26 @@ class Notes implements Renderable {
         if ( ! is_array( $this->config['items'] ) ) {
             $this->config['items'] = [];
         }
+    }
+
+    /**
+     * Get default configuration
+     *
+     * @return array
+     */
+    private static function get_defaults(): array {
+        return [
+                'id'          => '',
+                'name'        => 'notes',
+                'items'       => [],
+                'editable'    => true,
+                'placeholder' => __( 'Add a note...', 'arraypress' ),
+                'empty_text'  => __( 'No notes yet.', 'arraypress' ),
+                'object_type' => '',
+                'ajax_add'    => '',
+                'ajax_delete' => '',
+                'class'       => ''
+        ];
     }
 
     /**
