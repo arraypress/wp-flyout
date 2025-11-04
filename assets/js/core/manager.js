@@ -5,7 +5,7 @@
  * Always reloads page after successful save/delete operations.
  *
  * @package     ArrayPress\WPFlyout
- * @version     3.0.0
+ * @version     1.0.0
  */
 (function ($) {
     'use strict';
@@ -202,7 +202,7 @@
          * Validates form, sends save request, and always reloads page on success.
          *
          * @since 1.0.0
-         * @since 3.0.0 Removed conditional reload - always reloads on success
+         * @since 1.0.0 Removed conditional reload - always reloads on success
          * @param {jQuery} $flyout  Flyout element
          * @param {string} flyoutId Flyout ID
          * @param {Object} config   Flyout configuration
@@ -261,7 +261,7 @@
          * Sends delete request and always reloads page on success.
          *
          * @since 1.0.0
-         * @since 3.0.0 Removed conditional reload - always reloads on success
+         * @since 1.0.0 Removed conditional reload - always reloads on success
          * @param {jQuery} $flyout  Flyout element
          * @param {string} flyoutId Flyout ID
          * @param {Object} config   Flyout configuration

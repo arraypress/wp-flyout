@@ -9,7 +9,7 @@
  * @package     ArrayPress\WPFlyout
  * @copyright   Copyright (c) 2025, ArrayPress Limited
  * @license     GPL2+
- * @version     3.0.0
+ * @version     1.0.0
  * @author      David Sherlock
  */
 
@@ -40,14 +40,14 @@ class Flyout {
      * @since 1.0.0
      * @var array{
      *     title: string,
-     *     width: string,
+     *     size: string,
      *     position: string,
      *     classes: array<string>
      * }
      */
     private array $config = [
             'title'    => '',
-            'width'    => 'medium', // small, medium, large, full
+            'size'     => 'medium', // small, medium, large, full
             'position' => 'right',  // right or left
             'classes'  => [],
     ];
@@ -117,7 +117,7 @@ class Flyout {
      * Get flyout title
      *
      * @return string Current title
-     * @since 3.0.0
+     * @since 1.0.0
      *
      */
     public function get_title(): string {
@@ -125,33 +125,30 @@ class Flyout {
     }
 
     /**
-     * Set flyout width
+     * Set flyout size
      *
-     * @param string $width Width size: 'small', 'medium', 'large', or 'full'
+     * @param string $size Flyout size: 'small', 'medium', 'large', or 'full'
      *
      * @return self Returns instance for method chaining
      * @since 1.0.0
-     *
      */
-    public function set_width( string $width ): self {
-        $valid_widths = [ 'small', 'medium', 'large', 'full' ];
-
-        if ( in_array( $width, $valid_widths, true ) ) {
-            $this->config['width'] = $width;
+    public function set_size( string $size ): self {
+        $valid_sizes = [ 'small', 'medium', 'large', 'full' ];
+        if ( in_array( $size, $valid_sizes, true ) ) {
+            $this->config['size'] = $size;
         }
 
         return $this;
     }
 
     /**
-     * Get flyout width
+     * Get flyout size
      *
-     * @return string Current width setting
-     * @since 3.0.0
-     *
+     * @return string Current size setting
+     * @since 1.0.0
      */
-    public function get_width(): string {
-        return $this->config['width'];
+    public function get_size(): string {
+        return $this->config['size'];
     }
 
     /**
@@ -160,7 +157,7 @@ class Flyout {
      * @param string $position Position: 'left' or 'right'
      *
      * @return self Returns instance for method chaining
-     * @since 3.0.0
+     * @since 1.0.0
      *
      */
     public function set_position( string $position ): self {
@@ -265,7 +262,7 @@ class Flyout {
      * Clear all content
      *
      * @return self Returns instance for method chaining
-     * @since 3.0.0
+     * @since 1.0.0
      *
      */
     public function clear_content(): self {
@@ -303,7 +300,7 @@ class Flyout {
      * Get footer content
      *
      * @return string Current footer HTML
-     * @since 3.0.0
+     * @since 1.0.0
      *
      */
     public function get_footer(): string {
@@ -316,7 +313,7 @@ class Flyout {
      * @param string $class CSS class name to add
      *
      * @return self Returns instance for method chaining
-     * @since 3.0.0
+     * @since 1.0.0
      *
      */
     public function add_class( string $class ): self {
@@ -331,7 +328,7 @@ class Flyout {
      * Check if flyout has tabs
      *
      * @return bool True if tabs are configured
-     * @since 3.0.0
+     * @since 1.0.0
      *
      */
     public function has_tabs(): bool {
@@ -342,7 +339,7 @@ class Flyout {
      * Check if flyout has footer
      *
      * @return bool True if footer content exists
-     * @since 3.0.0
+     * @since 1.0.0
      *
      */
     public function has_footer(): bool {
@@ -361,7 +358,7 @@ class Flyout {
     public function render(): string {
         $classes = [
                 'wp-flyout',
-                'wp-flyout-' . $this->config['width'],
+                'wp-flyout-' . $this->config['size'],  // Changed from 'width' to 'size'
                 'wp-flyout-' . $this->config['position'],
                 ...$this->config['classes']
         ];
@@ -389,7 +386,7 @@ class Flyout {
      * Render flyout header
      *
      * @return void
-     * @since  3.0.0
+     * @since  1.0.0
      * @access private
      *
      */
@@ -408,7 +405,7 @@ class Flyout {
      * Render tab navigation
      *
      * @return void
-     * @since  3.0.0
+     * @since  1.0.0
      * @access private
      *
      */
@@ -441,7 +438,7 @@ class Flyout {
      * Render flyout body and footer
      *
      * @return void
-     * @since  3.0.0
+     * @since  1.0.0
      * @access private
      *
      */
@@ -467,7 +464,7 @@ class Flyout {
      * Render tabbed content panels
      *
      * @return void
-     * @since  3.0.0
+     * @since  1.0.0
      * @access private
      *
      */
@@ -492,7 +489,7 @@ class Flyout {
      * Render single content panel (no tabs)
      *
      * @return void
-     * @since  3.0.0
+     * @since  1.0.0
      * @access private
      *
      */

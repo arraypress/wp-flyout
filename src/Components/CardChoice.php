@@ -7,7 +7,7 @@
  * @package     ArrayPress\WPFlyout\Components\Form
  * @copyright   Copyright (c) 2025, ArrayPress Limited
  * @license     GPL2+
- * @version     3.0.0
+ * @version     1.0.0
  * @author      David Sherlock
  */
 
@@ -22,14 +22,14 @@ use ArrayPress\WPFlyout\Interfaces\Renderable;
  *
  * Renders card-based selection interface.
  *
- * @since 3.0.0
+ * @since 1.0.0
  */
 class CardChoice implements Renderable {
 
     /**
      * Component configuration
      *
-     * @since 3.0.0
+     * @since 1.0.0
      * @var array
      */
     private array $config;
@@ -39,7 +39,7 @@ class CardChoice implements Renderable {
      *
      * @param array $config Configuration options
      *
-     * @since 3.0.0
+     * @since 1.0.0
      *
      */
     public function __construct( array $config = [] ) {
@@ -76,7 +76,7 @@ class CardChoice implements Renderable {
      * Render the component
      *
      * @return string Generated HTML
-     * @since 3.0.0
+     * @since 1.0.0
      *
      */
     public function render(): string {
@@ -113,7 +113,7 @@ class CardChoice implements Renderable {
      * @param mixed  $option Option config (string or array)
      *
      * @return void
-     * @since  3.0.0
+     * @since  1.0.0
      * @access private
      *
      */
@@ -183,7 +183,7 @@ class CardChoice implements Renderable {
      * @param string $value Option value
      *
      * @return bool True if checked
-     * @since  3.0.0
+     * @since  1.0.0
      * @access private
      *
      */

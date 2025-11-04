@@ -2,7 +2,7 @@
  * WP Flyout Core Styles
  * Core flyout mechanics and base components only
  *
- * @version 3.0.0
+ * @version 1.0.0
  */
 
 /* ========================================
@@ -74,7 +74,7 @@
     transform: translateX(0);
 }
 
-/* Width Variants */
+/* Size Variants */
 .wp-flyout-small {
     width: var(--wp-flyout-width-small);
 }

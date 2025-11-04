@@ -98,7 +98,7 @@ class Sanitizer {
 	 */
 	private static function register_component_sanitizers(): void {
 		self::$component_sanitizers = [
-			'order_items' => [ self::class, 'sanitize_order_items' ],
+			'line_items'  => [ self::class, 'sanitize_line_items' ],
 			'files'       => [ self::class, 'sanitize_files' ],
 			'tags'        => [ self::class, 'sanitize_tags' ],
 			'card_choice' => [ self::class, 'sanitize_card_choice' ],
@@ -201,12 +201,13 @@ class Sanitizer {
 	/**
 	 * Sanitize password field
 	 *
+	 * Don't use sanitize_text_field as it strips some valid password chars
+	 *
 	 * @param mixed $value Raw value
 	 *
 	 * @return string Sanitized password
 	 */
 	public static function sanitize_password( $value ): string {
-		// Don't use sanitize_text_field as it strips some valid password chars
 		return trim( (string) $value );
 	}
 
@@ -270,29 +271,42 @@ class Sanitizer {
 	}
 
 	/**
-	 * Sanitize order items array
+	 * Sanitize line items array
+	 * Only keeps items with valid item ID
 	 *
 	 * @param mixed $items Raw items
 	 *
 	 * @return array Sanitized items
 	 */
-	public static function sanitize_order_items( $items ): array {
+	public static function sanitize_line_items( $items ): array {
 		if ( ! is_array( $items ) ) {
 			return [];
 		}
 
-		return array_map( function ( $item ) {
-			return [
-				'product_id' => absint( $item['product_id'] ?? 0 ),
-				'name'       => sanitize_text_field( $item['name'] ?? '' ),
-				'quantity'   => max( 1, absint( $item['quantity'] ?? 1 ) ),
-				'price'      => absint( $item['price'] ?? 0 ), // Stored as cents
+		$sanitized = [];
+
+		foreach ( $items as $item ) {
+			$item_id = absint( $item['id'] ?? 0 );
+
+			// Skip items without valid ID
+			if ( $item_id <= 0 ) {
+				continue;
+			}
+
+			$sanitized[] = [
+				'id'       => $item_id,
+				'name'     => sanitize_text_field( $item['name'] ?? '' ),
+				'quantity' => max( 1, absint( $item['quantity'] ?? 1 ) ),
+				'price'    => absint( $item['price'] ?? 0 ), // Stored as cents
 			];
-		}, $items );
+		}
+
+		return $sanitized;
 	}
 
 	/**
 	 * Sanitize files array
+	 * Only keeps files with either URL or attachment ID
 	 *
 	 * @param mixed $files Raw files
 	 *
@@ -303,14 +317,26 @@ class Sanitizer {
 			return [];
 		}
 
-		return array_map( function ( $file ) {
-			return [
+		$sanitized = [];
+
+		foreach ( $files as $file ) {
+			$url           = esc_url_raw( $file['url'] ?? '' );
+			$attachment_id = absint( $file['attachment_id'] ?? 0 );
+
+			// Skip files without URL or attachment ID
+			if ( empty( $url ) && $attachment_id <= 0 ) {
+				continue;
+			}
+
+			$sanitized[] = [
 				'name'          => sanitize_text_field( $file['name'] ?? '' ),
-				'url'           => esc_url_raw( $file['url'] ?? '' ),
-				'attachment_id' => absint( $file['attachment_id'] ?? 0 ),
+				'url'           => $url,
+				'attachment_id' => $attachment_id,
 				'lookup_key'    => sanitize_key( $file['lookup_key'] ?? '' ),
 			];
-		}, $files );
+		}
+
+		return $sanitized;
 	}
 
 	// ========================================

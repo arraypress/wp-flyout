@@ -2,7 +2,7 @@
  * Tag Input Component - Simplified
  *
  * @package     ArrayPress\WPFlyout
- * @version     3.0.0
+ * @version     1.0.0
  */
 
 (function ($) {
@@ -12,13 +12,13 @@
      * Tag Input Handler
      *
      * @namespace WPFlyoutTagInput
-     * @since 3.0.0
+     * @since 1.0.0
      */
     const TagInput = {
         /**
          * Initialize tag inputs
          *
-         * @since 3.0.0
+         * @since 1.0.0
          * @return {void}
          */
         init: function () {
@@ -33,7 +33,7 @@
         /**
          * Handle container click to focus input
          *
-         * @since 3.0.0
+         * @since 1.0.0
          * @param {Event} e Click event
          * @return {void}
          */
@@ -46,7 +46,7 @@
         /**
          * Handle keyboard input
          *
-         * @since 3.0.0
+         * @since 1.0.0
          * @param {Event} e Keydown event
          * @return {void}
          */
@@ -81,7 +81,7 @@
         /**
          * Handle paste event
          *
-         * @since 3.0.0
+         * @since 1.0.0
          * @param {Event} e Paste event
          * @return {void}
          */
@@ -101,7 +101,7 @@
         /**
          * Handle tag removal
          *
-         * @since 3.0.0
+         * @since 1.0.0
          * @param {Event} e Click event
          * @return {void}
          */
@@ -114,7 +114,7 @@
         /**
          * Add a tag
          *
-         * @since 3.0.0
+         * @since 1.0.0
          * @param {jQuery} $container Container element
          * @param {string} value      Tag value
          * @return {boolean} True if added successfully
@@ -162,7 +162,7 @@
         /**
          * Remove a tag
          *
-         * @since 3.0.0
+         * @since 1.0.0
          * @param {jQuery} $tag Tag element
          * @return {void}
          */
@@ -179,7 +179,7 @@
         /**
          * Remove last tag
          *
-         * @since 3.0.0
+         * @since 1.0.0
          * @param {jQuery} $container Container element
          * @return {void}
          */

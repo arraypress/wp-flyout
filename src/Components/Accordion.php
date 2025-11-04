@@ -8,7 +8,7 @@
  * @package     ArrayPress\WPFlyout\Components\Layout
  * @copyright   Copyright (c) 2025, ArrayPress Limited
  * @license     GPL2+
- * @version     3.0.0
+ * @version     1.0.0
  * @author      David Sherlock
  */
 
@@ -23,14 +23,14 @@ use ArrayPress\WPFlyout\Interfaces\Renderable;
  *
  * Renders expandable/collapsible content sections.
  *
- * @since 3.0.0
+ * @since 1.0.0
  */
 class Accordion implements Renderable {
 
     /**
      * Component configuration
      *
-     * @since 3.0.0
+     * @since 1.0.0
      * @var array
      */
     private array $config;
@@ -47,7 +47,7 @@ class Accordion implements Renderable {
      * @type int|int[] $default_open Index or array of indices to open by default
      * @type string    $class        Additional CSS classes
      *                               }
-     * @since 3.0.0
+     * @since 1.0.0
      *
      */
     public function __construct( array $config = [] ) {
@@ -63,7 +63,7 @@ class Accordion implements Renderable {
      * Get default configuration
      *
      * @return array
-     * @since 3.0.0
+     * @since 1.0.0
      */
     private static function get_defaults(): array {
         return [
@@ -79,7 +79,7 @@ class Accordion implements Renderable {
      * Render the component
      *
      * @return string Generated HTML
-     * @since 3.0.0
+     * @since 1.0.0
      *
      */
     public function render(): string {
@@ -119,7 +119,7 @@ class Accordion implements Renderable {
      * @param int   $index   Item index for default open state
      *
      * @return void
-     * @since  3.0.0
+     * @since  1.0.0
      * @access private
      *
      */

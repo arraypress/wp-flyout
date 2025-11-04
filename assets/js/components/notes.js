@@ -2,7 +2,7 @@
  * WP Flyout Notes Component
  *
  * @package WPFlyout
- * @version 3.0.0
+ * @version 1.0.0
  */
 (function ($) {
     'use strict';

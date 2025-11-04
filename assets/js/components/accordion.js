@@ -5,7 +5,7 @@
  * Simplified version using event delegation for better performance.
  *
  * @package     ArrayPress\WPFlyout
- * @version     3.0.0
+ * @version     1.0.0
  * @author      David Sherlock
  */
 
@@ -16,7 +16,7 @@
      * Accordion Handler
      *
      * @namespace WPFlyoutAccordion
-     * @since 3.0.0
+     * @since 1.0.0
      */
     const Accordion = {
 
@@ -25,7 +25,7 @@
          *
          * Uses event delegation for better performance and dynamic content support.
          *
-         * @since 3.0.0
+         * @since 1.0.0
          * @return {void}
          */
         init: function () {
@@ -36,7 +36,7 @@
         /**
          * Handle accordion header click
          *
-         * @since 3.0.0
+         * @since 1.0.0
          * @param {Event} e Click event
          * @return {void}
          */
@@ -75,7 +75,7 @@
         /**
          * Open an accordion section
          *
-         * @since 3.0.0
+         * @since 1.0.0
          * @param {jQuery} $section Section element
          * @param {jQuery} $content Content element
          * @param {jQuery} $header  Header button element
@@ -92,7 +92,7 @@
         /**
          * Close an accordion section
          *
-         * @since 3.0.0
+         * @since 1.0.0
          * @param {jQuery} $section Section element
          * @param {jQuery} $content Content element
          * @param {jQuery} $header  Header button element
@@ -109,7 +109,7 @@
         /**
          * Close all other sections in accordion
          *
-         * @since 3.0.0
+         * @since 1.0.0
          * @param {jQuery} $accordion Accordion container
          * @param {jQuery} $current   Current section to keep open
          * @return {void}

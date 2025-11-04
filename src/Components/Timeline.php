@@ -7,7 +7,7 @@
  * @package     ArrayPress\WPFlyout\Components\Data
  * @copyright   Copyright (c) 2025, ArrayPress Limited
  * @license     GPL2+
- * @version     3.0.0
+ * @version     1.0.0
  * @author      David Sherlock
  */
 
@@ -22,14 +22,14 @@ use ArrayPress\WPFlyout\Interfaces\Renderable;
  *
  * Renders a vertical timeline of events.
  *
- * @since 3.0.0
+ * @since 1.0.0
  */
 class Timeline implements Renderable {
 
     /**
      * Component configuration
      *
-     * @since 3.0.0
+     * @since 1.0.0
      * @var array
      */
     private array $config;
@@ -45,7 +45,7 @@ class Timeline implements Renderable {
      * @type bool   $compact Use compact display mode
      * @type string $class   Additional CSS classes
      *                       }
-     * @since 3.0.0
+     * @since 1.0.0
      *
      */
     public function __construct( array $config = [] ) {
@@ -79,7 +79,7 @@ class Timeline implements Renderable {
      * Render the component
      *
      * @return string Generated HTML
-     * @since 3.0.0
+     * @since 1.0.0
      *
      */
     public function render(): string {
@@ -120,16 +120,11 @@ class Timeline implements Renderable {
      * @param int   $total Total items count
      *
      * @return void
-     * @since  3.0.0
+     * @since  1.0.0
      * @access private
      *
      */
     private function render_item( array $item, int $index, int $total ): void {
-        // Normalize item data
-        if ( is_string( $item ) ) {
-            $item = [ 'title' => $item ];
-        }
-
         $title       = $item['title'] ?? '';
         $description = $item['description'] ?? '';
         $date        = $item['date'] ?? '';
