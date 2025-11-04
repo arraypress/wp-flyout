@@ -291,6 +291,12 @@
     margin-bottom: 15px;
 }
 
+.line-item .column-quantity,
+.line-item .column-price,
+.line-item .column-total {
+    text-align: left;
+}
+
 /* Total section */
 .line-items-total {
     background: linear-gradient(135deg, #f9f9fa 0%, #fff 100%);
