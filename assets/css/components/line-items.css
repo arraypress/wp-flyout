@@ -344,6 +344,10 @@
     animation: spinner 0.6s linear infinite;
 }
 
+.line-items-selector .regular-text {
+    width: 100%;
+}
+
 @keyframes spinner {
     to {
         transform: rotate(360deg);
