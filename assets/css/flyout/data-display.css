@@ -12,6 +12,7 @@
 .wp-flyout-info-grid {
     display: grid;
     gap: 16px;
+    margin-top: 20px;
     margin-bottom: 20px;
 }
 
