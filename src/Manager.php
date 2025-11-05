@@ -131,6 +131,28 @@ class Manager {
 	}
 
 	/**
+	 * Normalize field configurations
+	 * Ensures all fields have proper 'name' attributes
+	 */
+	private function normalize_fields( array $fields ): array {
+		$normalized = [];
+
+		foreach ( $fields as $field_key => $field ) {
+			if ( is_numeric( $field_key ) ) {
+				$field_key = $field['name'] ?? 'field_' . $field_key;
+			}
+
+			if ( ! isset( $field['name'] ) ) {
+				$field['name'] = $field_key;
+			}
+
+			$normalized[ $field_key ] = $field;
+		}
+
+		return $normalized;
+	}
+
+	/**
 	 * Central AJAX handler with security checks
 	 *
 	 * @return void Sends JSON response and exits
@@ -244,8 +266,11 @@ class Manager {
 
 		parse_str( $request['form_data'], $raw_data );
 
-		// Use the Sanitizer class
-		$form_data = Sanitizer::sanitize_form_data( $raw_data, $config['fields'] );
+		// Normalize fields to ensure all have 'name' attributes
+		$normalized_fields = $this->normalize_fields( $config['fields'] );
+
+		// Use the Sanitizer class with normalized fields
+		$form_data = Sanitizer::sanitize_form_data( $raw_data, $normalized_fields );
 
 		$id = $form_data['id'] ?? $request['id'] ?? null;
 
@@ -383,16 +408,10 @@ class Manager {
 	private function render_fields( array $fields, $data ): string {
 		$output = '';
 
-		foreach ( $fields as $field_key => $field ) {
-			// Normalize field key and name
-			if ( is_numeric( $field_key ) ) {
-				$field_key = $field['name'] ?? 'field_' . $field_key;
-			}
+		// Normalize fields to ensure all have 'name' attributes
+		$normalized_fields = $this->normalize_fields( $fields );
 
-			if ( ! isset( $field['name'] ) ) {
-				$field['name'] = $field_key;
-			}
-
+		foreach ( $normalized_fields as $field_key => $field ) {
 			$type = $field['type'] ?? 'text';
 
 			// Special handling for ajax_select fields - resolve options for saved values
