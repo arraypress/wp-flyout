@@ -272,6 +272,22 @@ class Manager {
 		// Use the Sanitizer class with normalized fields
 		$form_data = Sanitizer::sanitize_form_data( $raw_data, $normalized_fields );
 
+		// Run validation if configured
+		if ( ! empty( $config['validate'] ) && is_callable( $config['validate'] ) ) {
+			$validation = call_user_func( $config['validate'], $form_data );
+
+			if ( is_wp_error( $validation ) ) {
+				wp_send_json_error(
+					$validation->get_error_message(),
+					400
+				);
+			}
+
+			if ( $validation === false ) {
+				wp_send_json_error( __( 'Validation failed', 'wp-flyout' ), 400 );
+			}
+		}
+
 		$id = $form_data['id'] ?? $request['id'] ?? null;
 
 		$result = call_user_func( $config['save'], $id, $form_data );

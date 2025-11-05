@@ -211,10 +211,12 @@
         handleSave: function ($flyout, flyoutId, config) {
             const $form = $flyout.find('form').first();
             const $saveBtn = $flyout.find('.wp-flyout-save');
+            const $body = $flyout.find('.wp-flyout-body');
 
             // Validate
             const validation = this.validateForm($form);
             if (!validation.isValid) {
+                $body.animate({scrollTop: 0}, 300);
                 this.showAlert($flyout, 'Please fill in all required fields.', 'error');
                 if (validation.firstInvalid) {
                     validation.firstInvalid.focus();
@@ -237,6 +239,7 @@
                     this.setButtonState($saveBtn, false);
 
                     if (response.success) {
+                        $body.animate({scrollTop: 0}, 300);
                         const message = response.data?.message || 'Saved successfully!';
                         this.showAlert($flyout, message, 'success');
 
@@ -246,11 +249,13 @@
                             location.reload();
                         }, 1500);
                     } else {
+                        $body.animate({scrollTop: 0}, 300);
                         this.showAlert($flyout, response.data || 'An error occurred', 'error');
                     }
                 })
                 .fail(() => {
                     this.setButtonState($saveBtn, false);
+                    $body.animate({scrollTop: 0}, 300);
                     this.showAlert($flyout, 'Connection error', 'error');
                 });
         },
@@ -270,6 +275,7 @@
         handleDelete: function ($flyout, flyoutId, config) {
             const $deleteBtn = $flyout.find('.wp-flyout-delete');
             const deleteId = $flyout.find('input[name="id"]').val() || config.data.id;
+            const $body = $flyout.find('.wp-flyout-body');
 
             this.setButtonState($deleteBtn, true, 'Deleting...');
 
@@ -285,6 +291,7 @@
                     if (response.success) {
                         const message = response.data?.message || 'Deleted successfully!';
                         this.showAlert($flyout, message, 'success');
+                        $body.animate({scrollTop: 0}, 300);
 
                         // Always close and reload after delay
                         setTimeout(() => {
@@ -294,11 +301,13 @@
                     } else {
                         this.setButtonState($deleteBtn, false);
                         this.showAlert($flyout, response.data || 'Failed to delete', 'error');
+                        $body.animate({scrollTop: 0}, 300);
                     }
                 })
                 .fail(() => {
                     this.setButtonState($deleteBtn, false);
                     this.showAlert($flyout, 'Connection error', 'error');
+                    $body.animate({scrollTop: 0}, 300);
                 });
         },
 
