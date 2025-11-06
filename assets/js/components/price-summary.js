@@ -162,8 +162,6 @@
         },
 
         updateFormattedAmount: function($element, amount, $breakdown) {
-            // This is a simplified currency formatter
-            // In production, you'd want to use the proper currency formatter
             const currency = $breakdown.data('currency') || 'USD';
             const formatter = new Intl.NumberFormat('en-US', {
                 style: 'currency',
