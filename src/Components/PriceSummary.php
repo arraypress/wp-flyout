@@ -51,7 +51,6 @@ class PriceSummary implements Renderable {
                 'items'    => [],
                 'subtotal' => null,
                 'tax'      => null,
-                'shipping' => null,
                 'discount' => null,
                 'total'    => 0,
                 'currency' => 'USD',
@@ -114,7 +113,6 @@ class PriceSummary implements Renderable {
     private function has_summary_lines(): bool {
         return $this->config['subtotal'] !== null ||
                $this->config['tax'] !== null ||
-               $this->config['shipping'] !== null ||
                $this->config['discount'] !== null;
     }
 
@@ -154,7 +152,6 @@ class PriceSummary implements Renderable {
         $lines = [
                 'subtotal' => __( 'Subtotal', 'wp-flyout' ),
                 'discount' => __( 'Discount', 'wp-flyout' ),
-                'shipping' => __( 'Shipping', 'wp-flyout' ),
                 'tax'      => __( 'Tax', 'wp-flyout' ),
         ];
 

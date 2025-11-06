@@ -66,7 +66,7 @@ class LineItems implements Renderable {
                 'items'             => [],
                 'currency'          => 'USD',
                 'editable_price'    => false,
-                'editable_quantity' => true,
+                'editable_quantity' => false,
                 'show_quantity'     => true,
                 'ajax_search'       => '',
                 'ajax_details'      => '',
