@@ -81,7 +81,7 @@ class Components {
 
 		self::register( 'price_summary', [
 			'class'       => PriceSummary::class,
-			'data_fields' => [ 'items', 'subtotal', 'tax', 'discount', 'shipping', 'total', 'currency' ],
+			'data_fields' => [ 'items', 'subtotal', 'tax', 'discount', 'total', 'currency' ],
 			'asset'       => 'price-summary',
 			'description' => 'Price summary with line items and totals'
 		] );
