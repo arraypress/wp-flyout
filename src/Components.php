@@ -18,7 +18,6 @@ namespace ArrayPress\WPFlyout;
 
 use ArrayPress\WPFlyout\Components\ActionButtons;
 use ArrayPress\WPFlyout\Components\ActionMenu;
-use ArrayPress\WPFlyout\Components\EntityHeader;
 use ArrayPress\WPFlyout\Components\PaymentMethod;
 use ArrayPress\WPFlyout\Components\PriceSummary;
 use ArrayPress\WPFlyout\Components\CardChoice;
