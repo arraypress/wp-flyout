@@ -104,6 +104,35 @@
     border-color: #c49615;
 }
 
+/* Fix icon alignment in buttons */
+.wp-flyout-action-btn .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    line-height: 1;
+    vertical-align: middle;
+    margin-top: -2px; /* Fine-tune vertical alignment */
+}
+
+/* Ensure proper flex alignment */
+.wp-flyout-action-btn {
+    position: relative;
+    min-width: 100px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    line-height: 1.5; /* Normalize line height */
+}
+
+/* Fix text alignment when icon is present */
+.wp-flyout-action-btn .button-text {
+    transition: opacity 0.2s;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+}
+
 /* Spinner animation */
 @keyframes wp-flyout-spin {
     to {

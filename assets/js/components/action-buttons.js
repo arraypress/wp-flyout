@@ -88,31 +88,41 @@
             const $body = $flyout.find('.wp-flyout-body');
 
             if (response.success) {
-                // Success - show message if provided
                 const message = response.data?.message || 'Action completed successfully';
                 this.showAlert($flyout, message, 'success');
+                $body.animate({scrollTop: 0}, 300);
 
-                // Scroll to top to show message
-                $body.animate({ scrollTop: 0 }, 300);
+                // Only reload if explicitly requested
+                if (response.data?.reload === true) {
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500);
+                } else if (response.data?.refresh_flyout === true) {
+                    // Optional: refresh just this flyout's content
+                    setTimeout(() => {
+                        this.reloadFlyout($flyout);
+                    }, 1500);
+                }
 
-                // Always reload the flyout after successful action
-                // This ensures data is refreshed
-                setTimeout(() => {
-                    this.reloadFlyout($flyout);
-                }, 1500);
+                // Update UI elements if data provided
+                if (response.data?.updates) {
+                    this.updateUI(response.data.updates);
+                }
 
-                // Trigger custom event
                 $button.trigger('actionbuttons:success', response.data);
-
             } else {
-                // Error - show message
                 const errorMsg = response.data || 'An error occurred';
                 this.showAlert($flyout, errorMsg, 'error');
-                $body.animate({ scrollTop: 0 }, 300);
-
-                // Trigger custom event
+                $body.animate({scrollTop: 0}, 300);
                 $button.trigger('actionbuttons:error', errorMsg);
             }
+        },
+
+        // New method to update specific UI elements
+        updateUI: function (updates) {
+            Object.keys(updates).forEach(selector => {
+                $(selector).html(updates[selector]);
+            });
         },
 
         /**
@@ -126,7 +136,7 @@
             const $body = $flyout.find('.wp-flyout-body');
 
             this.showAlert($flyout, message, 'error');
-            $body.animate({ scrollTop: 0 }, 300);
+            $body.animate({scrollTop: 0}, 300);
 
             $button.trigger('actionbuttons:error', message);
         },
@@ -140,11 +150,11 @@
         setButtonState: function ($button, loading) {
             if (loading) {
                 $button.prop('disabled', true).addClass('loading');
-                $button.find('.button-text').hide();
+                $button.find('.button-text, .dashicons:not(.spin)').hide(); // Hide icon too
                 $button.find('.button-spinner').show();
             } else {
                 $button.prop('disabled', false).removeClass('loading');
-                $button.find('.button-text').show();
+                $button.find('.button-text, .dashicons:not(.spin)').show(); // Show icon again
                 $button.find('.button-spinner').hide();
             }
         },
