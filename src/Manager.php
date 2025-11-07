@@ -548,27 +548,36 @@ class Manager {
 	}
 
 	/**
-	 * Register AJAX endpoints for action buttons
+	 * Register AJAX endpoints for action components (buttons and menus)
 	 *
 	 * @param string $flyout_id Flyout identifier
 	 * @param array  $config    Flyout configuration
 	 */
 	private function register_action_button_endpoints( string $flyout_id, array $config ): void {
 		foreach ( $config['fields'] as $field ) {
-			if ( ( $field['type'] ?? '' ) !== 'action_buttons' ) {
+			$type = $field['type'] ?? '';
+
+			// Get items array based on component type
+			$items = [];
+			if ( $type === 'action_buttons' ) {
+				$items = $field['buttons'] ?? [];
+			} elseif ( $type === 'action_menu' ) {
+				$items = $field['items'] ?? [];
+			} else {
 				continue;
 			}
 
-			if ( empty( $field['buttons'] ) ) {
-				continue;
-			}
-
-			foreach ( $field['buttons'] as $button ) {
-				if ( empty( $button['action'] ) || empty( $button['callback'] ) ) {
+			foreach ( $items as $item ) {
+				// Skip separators (action_menu only)
+				if ( isset( $item['type'] ) && $item['type'] === 'separator' ) {
 					continue;
 				}
 
-				$action = 'wp_flyout_action_' . $button['action'];
+				if ( empty( $item['action'] ) || empty( $item['callback'] ) ) {
+					continue;
+				}
+
+				$action = 'wp_flyout_action_' . $item['action'];
 
 				// Check if already registered to avoid duplicates
 				if ( has_action( 'wp_ajax_' . $action ) ) {
@@ -576,9 +585,9 @@ class Manager {
 				}
 
 				// Register the AJAX handler
-				add_action( 'wp_ajax_' . $action, function () use ( $button, $config ) {
+				add_action( 'wp_ajax_' . $action, function () use ( $item, $config ) {
 					// Check nonce
-					if ( ! check_ajax_referer( 'wp_flyout_action_' . $button['action'], '_wpnonce', false ) ) {
+					if ( ! check_ajax_referer( 'wp_flyout_action_' . $item['action'], '_wpnonce', false ) ) {
 						wp_send_json_error( 'Security check failed', 403 );
 					}
 
@@ -588,8 +597,8 @@ class Manager {
 					}
 
 					// Call the callback
-					if ( is_callable( $button['callback'] ) ) {
-						$result = call_user_func( $button['callback'], $_POST );
+					if ( is_callable( $item['callback'] ) ) {
+						$result = call_user_func( $item['callback'], $_POST );
 
 						if ( is_wp_error( $result ) ) {
 							wp_send_json_error( $result->get_error_message() );

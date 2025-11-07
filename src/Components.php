@@ -17,6 +17,7 @@ declare( strict_types=1 );
 namespace ArrayPress\WPFlyout;
 
 use ArrayPress\WPFlyout\Components\ActionButtons;
+use ArrayPress\WPFlyout\Components\ActionMenu;
 use ArrayPress\WPFlyout\Components\EntityHeader;
 use ArrayPress\WPFlyout\Components\PaymentMethod;
 use ArrayPress\WPFlyout\Components\PriceSummary;
@@ -202,6 +203,13 @@ class Components {
 			'data_fields' => 'buttons',
 			'asset'       => 'action-buttons',
 			'description' => 'Action buttons with AJAX callbacks for operations like refunds'
+		] );
+
+		self::register( 'action_menu', [
+			'class'       => ActionMenu::class,
+			'data_fields' => 'items',
+			'asset'       => 'action-menu',
+			'description' => 'Dropdown menu for multiple actions with AJAX support'
 		] );
 
 		self::$initialized = true;

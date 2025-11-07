@@ -100,6 +100,11 @@ class Assets {
 			'style'  => 'css/components/action-buttons.css',
 			'deps'   => []
 		],
+		'action-menu'    => [
+			'script' => 'js/components/action-menu.js',
+			'style'  => 'css/components/action-menu.css',
+			'deps'   => []
+		],
 	];
 
 	/**
