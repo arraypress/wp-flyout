@@ -199,8 +199,8 @@ class Manager {
 
 				// Register the AJAX handler
 				add_action( 'wp_ajax_' . $action_name, function () use ( $field, $callback_key, $nonce_key, $config ) {
-					// Check nonce
-					if ( ! check_ajax_referer( $nonce_key, 'nonce', false ) ) {
+					// All components now use _wpnonce for consistency
+					if ( ! check_ajax_referer( $nonce_key, '_wpnonce', false ) ) {
 						wp_send_json_error( 'Security check failed', 403 );
 					}
 
