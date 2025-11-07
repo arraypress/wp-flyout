@@ -363,13 +363,20 @@ class Flyout {
                 ...$this->config['classes']
         ];
 
+        // Allow filtering classes
+        $classes = apply_filters( 'wp_flyout_classes', $classes, $this->id, $this->config );
+
         ob_start();
         ?>
         <div id="<?php echo esc_attr( $this->id ); ?>"
              class="<?php echo esc_attr( implode( ' ', array_filter( $classes ) ) ); ?>"
              data-flyout-id="<?php echo esc_attr( $this->id ); ?>">
 
+            <?php do_action( 'wp_flyout_before_header', $this->id, $this->config ); ?>
+
             <?php $this->render_header(); ?>
+
+            <?php do_action( 'wp_flyout_after_header', $this->id, $this->config ); ?>
 
             <?php if ( $this->has_tabs() ) : ?>
                 <?php $this->render_tabs(); ?>

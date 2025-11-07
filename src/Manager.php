@@ -392,6 +392,16 @@ class Manager {
 
 		$flyout->set_footer( $this->render_actions( $actions ) );
 
+		// In build_flyout method
+		$actions = ! empty( $config['actions'] )
+			? $config['actions']
+			: $this->get_default_actions( $config );
+
+		// Only set footer if there are actions
+		if ( ! empty( $actions ) ) {
+			$flyout->set_footer( $this->render_actions( $actions ) );
+		}
+
 		return $flyout;
 	}
 
@@ -560,6 +570,11 @@ class Manager {
 
 				$action = 'wp_flyout_action_' . $button['action'];
 
+				// Check if already registered to avoid duplicates
+				if ( has_action( 'wp_ajax_' . $action ) ) {
+					continue;
+				}
+
 				// Register the AJAX handler
 				add_action( 'wp_ajax_' . $action, function () use ( $button, $config ) {
 					// Check nonce
@@ -635,11 +650,6 @@ class Manager {
 				'class' => 'wp-flyout-delete'
 			];
 		}
-
-		$actions[] = [
-			'text'  => __( 'Cancel', 'wp-flyout' ),
-			'class' => 'wp-flyout-close'
-		];
 
 		return $actions;
 	}

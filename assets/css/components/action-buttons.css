@@ -74,6 +74,7 @@
 .wp-flyout-action-btn.button-danger:hover {
     background: #c02a2c;
     border-color: #c02a2c;
+    color: #fff;
 }
 
 .wp-flyout-action-btn.button-danger:focus {
