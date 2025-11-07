@@ -94,7 +94,7 @@ class PriceSummary implements Renderable {
                     <tr class="price-summary-total">
                         <td class="label"><?php esc_html_e( 'Total', 'wp-flyout' ); ?></td>
                         <td class="amount">
-                            <?php echo esc_html( $this->format_currency( $this->config['total'], $this->config['currency'] ) ); ?>
+                            <?php echo esc_html( format_currency( $this->config['total'], $this->config['currency'] ) ); ?>
                         </td>
                     </tr>
                     </tfoot>
@@ -139,7 +139,7 @@ class PriceSummary implements Renderable {
                 <?php endif; ?>
             </td>
             <td class="item-amount">
-                <?php echo esc_html( $this->format_currency( $amount, $this->config['currency'] ) ); ?>
+                <?php echo esc_html( format_currency( $amount, $this->config['currency'] ) ); ?>
             </td>
         </tr>
         <?php

@@ -16,11 +16,9 @@ declare( strict_types=1 );
 namespace ArrayPress\WPFlyout\Components;
 
 use ArrayPress\WPFlyout\Interfaces\Renderable;
-use ArrayPress\WPFlyout\Traits\CurrencyFormatter;
 use ArrayPress\WPFlyout\Traits\HtmlAttributes;
 
 class LineItems implements Renderable {
-    use CurrencyFormatter;
     use HtmlAttributes;
 
     /**
@@ -291,7 +289,7 @@ class LineItems implements Renderable {
         <div class="line-items-total">
             <span class="total-label"><?php esc_html_e( 'Total:', 'wp-flyout' ); ?></span>
             <span class="total-amount" data-value="<?php echo esc_attr( (string) $total ); ?>">
-                <?php echo esc_html( $this->format_currency( $total, $this->config['currency'] ) ); ?>
+                <?php echo esc_html( format_currency( $total, $this->config['currency'] ) ); ?>
             </span>
         </div>
         <?php
