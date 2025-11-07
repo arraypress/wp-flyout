@@ -29,7 +29,6 @@ class CardChoice implements Renderable {
     /**
      * Component configuration
      *
-     * @since 1.0.0
      * @var array
      */
     private array $config;
@@ -38,9 +37,6 @@ class CardChoice implements Renderable {
      * Constructor
      *
      * @param array $config Configuration options
-     *
-     * @since 1.0.0
-     *
      */
     public function __construct( array $config = [] ) {
         $this->config = wp_parse_args( $config, self::get_defaults() );
@@ -76,8 +72,6 @@ class CardChoice implements Renderable {
      * Render the component
      *
      * @return string Generated HTML
-     * @since 1.0.0
-     *
      */
     public function render(): string {
         if ( empty( $this->config['options'] ) || empty( $this->config['name'] ) ) {
@@ -113,9 +107,6 @@ class CardChoice implements Renderable {
      * @param mixed  $option Option config (string or array)
      *
      * @return void
-     * @since  1.0.0
-     * @access private
-     *
      */
     private function render_option( string $value, $option ): void {
         // Handle simple string format
@@ -183,12 +174,8 @@ class CardChoice implements Renderable {
      * @param string $value Option value
      *
      * @return bool True if checked
-     * @since  1.0.0
-     * @access private
-     *
      */
     private function is_checked( string $value ): bool {
-        // FIXED: Check using 'mode' instead of 'type'
         if ( $this->config['mode'] === 'checkbox' ) {
             return is_array( $this->config['value'] ) &&
                    in_array( $value, $this->config['value'], true );

@@ -213,6 +213,7 @@
     display: block;
     margin-bottom: 15px;
     color: var(--wp-flyout-text-muted);
+    width: 100%;
 }
 
 .wp-flyout-empty-state .empty-state-icon .dashicons {

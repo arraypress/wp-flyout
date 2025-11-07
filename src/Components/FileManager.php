@@ -54,9 +54,8 @@ class FileManager implements Renderable {
                 'items'       => [],
                 'max_files'   => 0,  // 0 = unlimited
                 'reorderable' => true,
-                'browseable'  => true,
-                'add_text'    => 'Add File',
-                'empty_text'  => 'No files attached yet',
+                'add_text'    => __( 'Add File', 'wp-flyout' ),
+                'empty_text'  => __( 'No files attached yet', 'wp-flyout' ),
                 'file_types'  => [], // Empty = all types allowed
                 'class'       => ''
         ];
@@ -84,7 +83,6 @@ class FileManager implements Renderable {
              class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>"
              data-prefix="<?php echo esc_attr( $this->config['name'] ); ?>"
              data-max-files="<?php echo esc_attr( $this->config['max_files'] ); ?>"
-             data-browseable="<?php echo esc_attr( $this->config['browseable'] ? '1' : '0' ); ?>"
              data-template='<?php echo $this->get_template(); ?>'>
 
             <div class="file-manager-header">
@@ -179,14 +177,12 @@ class FileManager implements Renderable {
             </div>
 
             <div class="file-actions">
-                <?php if ( $this->config['browseable'] ) : ?>
-                    <button type="button"
-                            class="file-action-btn"
-                            data-action="browse"
-                            title="<?php esc_attr_e( 'Browse media library', 'wp-flyout' ); ?>">
-                        <span class="dashicons dashicons-admin-media"></span>
-                    </button>
-                <?php endif; ?>
+                <button type="button"
+                        class="file-action-btn"
+                        data-action="browse"
+                        title="<?php esc_attr_e( 'Browse media library', 'wp-flyout' ); ?>">
+                    <span class="dashicons dashicons-admin-media"></span>
+                </button>
 
                 <button type="button"
                         class="file-action-btn file-remove"
@@ -230,13 +226,13 @@ class FileManager implements Renderable {
      */
     private function get_file_icon( string $extension ): string {
         $icons = [
-                // Documents
+            // Documents
                 'pdf'  => 'pdf',
                 'doc'  => 'media-document',
                 'docx' => 'media-document',
                 'txt'  => 'media-text',
 
-                // Images
+            // Images
                 'jpg'  => 'format-image',
                 'jpeg' => 'format-image',
                 'png'  => 'format-image',
@@ -244,7 +240,7 @@ class FileManager implements Renderable {
                 'svg'  => 'format-image',
                 'webp' => 'format-image',
 
-                // Media
+            // Media
                 'mp3'  => 'format-audio',
                 'wav'  => 'format-audio',
                 'ogg'  => 'format-audio',
@@ -253,14 +249,14 @@ class FileManager implements Renderable {
                 'avi'  => 'format-video',
                 'webm' => 'format-video',
 
-                // Archives
+            // Archives
                 'zip'  => 'media-archive',
                 'rar'  => 'media-archive',
                 '7z'   => 'media-archive',
                 'tar'  => 'media-archive',
                 'gz'   => 'media-archive',
 
-                // Code
+            // Code
                 'js'   => 'media-code',
                 'css'  => 'media-code',
                 'php'  => 'media-code',
@@ -268,7 +264,7 @@ class FileManager implements Renderable {
                 'json' => 'media-code',
                 'xml'  => 'media-code',
 
-                // Spreadsheets
+            // Spreadsheets
                 'xls'  => 'media-spreadsheet',
                 'xlsx' => 'media-spreadsheet',
                 'csv'  => 'media-spreadsheet',
@@ -304,10 +300,8 @@ class FileManager implements Renderable {
                    data-field="lookup_key">
         </div>
         <div class="file-actions">
-            <?php if ( $this->config['browseable'] ) : ?>
-                <button type="button" class="file-action-btn" data-action="browse" title="Browse media library"><span
-                            class="dashicons dashicons-admin-media"></span></button>
-            <?php endif; ?>
+            <button type="button" class="file-action-btn" data-action="browse" title="Browse media library"><span
+                        class="dashicons dashicons-admin-media"></span></button>
             <button type="button" class="file-action-btn file-remove" data-action="remove" title="Remove file"><span
                         class="dashicons dashicons-trash"></span></button>
         </div>
