@@ -158,16 +158,18 @@ class PriceSummary implements Renderable {
                 continue;
             }
 
-            $amount = $this->config[ $key ];
+            $amount      = $this->config[ $key ];
+            $is_negative = false;
 
             // Show discounts as negative
             if ( $key === 'discount' && $amount > 0 ) {
-                $amount = -$amount;
+                $amount      = - $amount;
+                $is_negative = true;
             }
             ?>
             <tr class="price-summary-<?php echo esc_attr( $key ); ?>">
                 <td class="label"><?php echo esc_html( $label ); ?></td>
-                <td class="amount <?php echo $amount < 0 ? 'negative' : ''; ?>">
+                <td class="amount <?php echo $is_negative ? 'negative' : ''; ?>">
                     <?php echo esc_html( format_currency( $amount, $this->config['currency'] ) ); ?>
                 </td>
             </tr>
