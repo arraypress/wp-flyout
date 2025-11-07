@@ -15,10 +15,8 @@ declare( strict_types=1 );
 namespace ArrayPress\WPFlyout\Components;
 
 use ArrayPress\WPFlyout\Interfaces\Renderable;
-use ArrayPress\WPFlyout\Traits\CurrencyFormatter;
 
 class PriceSummary implements Renderable {
-    use CurrencyFormatter;
 
     /**
      * Component configuration
@@ -170,7 +168,7 @@ class PriceSummary implements Renderable {
             <tr class="price-summary-<?php echo esc_attr( $key ); ?>">
                 <td class="label"><?php echo esc_html( $label ); ?></td>
                 <td class="amount <?php echo $amount < 0 ? 'negative' : ''; ?>">
-                    <?php echo esc_html( $this->format_currency( $amount, $this->config['currency'] ) ); ?>
+                    <?php echo esc_html( format_currency( $amount, $this->config['currency'] ) ); ?>
                 </td>
             </tr>
             <?php
