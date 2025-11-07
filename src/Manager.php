@@ -141,6 +141,7 @@ class Manager {
 	 * Generate a consistent nonce key for any AJAX action
 	 *
 	 * @param string $action_name The AJAX action name
+	 *
 	 * @return string The nonce key
 	 */
 	private function get_nonce_key( string $action_name ): string {
@@ -169,6 +170,7 @@ class Manager {
 
 		foreach ( $config['fields'] as $field_key => &$field ) {
 			$field_name = $field['name'] ?? $field_key;
+			$type       = $field['type'] ?? '';
 
 			foreach ( $callback_mappings as $callback_key => $ajax_key ) {
 				if ( ! isset( $field[ $callback_key ] ) || ! is_callable( $field[ $callback_key ] ) ) {
@@ -176,19 +178,29 @@ class Manager {
 				}
 
 				// Generate unique action name
-				$action_name = 'wp_flyout_' . $this->prefix . '_' . $flyout_id . '_' . sanitize_key( $field_name ) . '_' . str_replace('ajax_', '', $ajax_key);
+				$action_name = 'wp_flyout_' . $this->prefix . '_' . $flyout_id . '_' . sanitize_key( $field_name ) . '_' . str_replace( 'ajax_', '', $ajax_key );
 
 				// Store action name in field config for frontend use
 				$field[ $ajax_key ] = $action_name;
 
-				// Store the nonce key for this action (for later nonce generation)
-				$field[ $ajax_key . '_nonce_key' ] = $this->get_nonce_key( $action_name );
+				// Determine nonce key based on component type - this must match what the JS expects!
+				$nonce_key = '';
+				if ( $type === 'notes' && ( $callback_key === 'add_callback' || $callback_key === 'delete_callback' ) ) {
+					// Notes component expects 'notes_[object_type]' as nonce key
+					$object_type = $field['object_type'] ?? '';
+					$nonce_key   = 'notes' . ( $object_type ? '_' . $object_type : '' );
+				} else {
+					// Other components use the action name
+					$nonce_key = $action_name;
+				}
+
+				// Store the nonce key for later nonce generation
+				$field[ $ajax_key . '_nonce_key' ] = $nonce_key;
 
 				// Register the AJAX handler
-				add_action( 'wp_ajax_' . $action_name, function() use ( $field, $callback_key, $action_name, $config ) {
-					// Check nonce using consistent key
-					$nonce_key = $this->get_nonce_key( $action_name );
-					if ( ! check_ajax_referer( $nonce_key, '_wpnonce', false ) ) {
+				add_action( 'wp_ajax_' . $action_name, function () use ( $field, $callback_key, $nonce_key, $config ) {
+					// Check nonce
+					if ( ! check_ajax_referer( $nonce_key, 'nonce', false ) ) {
 						wp_send_json_error( 'Security check failed', 403 );
 					}
 
@@ -205,7 +217,7 @@ class Manager {
 					}
 
 					wp_send_json_success( $result );
-				});
+				} );
 			}
 		}
 	}
@@ -242,7 +254,7 @@ class Manager {
 				}
 
 				// Generate action name if not provided
-				$action = $item['action'] ?? uniqid( 'action_' );
+				$action      = $item['action'] ?? uniqid( 'action_' );
 				$action_name = 'wp_flyout_action_' . $action;
 
 				// Check if already registered to avoid duplicates
