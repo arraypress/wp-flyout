@@ -16,6 +16,7 @@ declare( strict_types=1 );
 
 namespace ArrayPress\WPFlyout;
 
+use ArrayPress\WPFlyout\Components\ActionButtons;
 use ArrayPress\WPFlyout\Components\EntityHeader;
 use ArrayPress\WPFlyout\Components\PaymentMethod;
 use ArrayPress\WPFlyout\Components\PriceSummary;
@@ -194,6 +195,13 @@ class Components {
 			'data_fields' => [ 'type', 'message', 'title' ],
 			'asset'       => null,
 			'description' => 'Alert messages with various styles'
+		] );
+
+		self::register( 'action_buttons', [
+			'class'       => ActionButtons::class,
+			'data_fields' => 'buttons',
+			'asset'       => 'action-buttons',
+			'description' => 'Action buttons with AJAX callbacks for operations like refunds'
 		] );
 
 		self::$initialized = true;

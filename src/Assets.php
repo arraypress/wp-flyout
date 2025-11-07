@@ -95,6 +95,11 @@ class Assets {
 			'style'  => 'css/components/payment-method.css',
 			'deps'   => []
 		],
+		'action-buttons' => [
+			'script' => 'js/components/action-buttons.js',
+			'style'  => 'css/components/action-buttons.css',
+			'deps'   => []
+		],
 	];
 
 	/**

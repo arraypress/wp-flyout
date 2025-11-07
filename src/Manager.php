@@ -111,6 +111,10 @@ class Manager {
 
 		$config = wp_parse_args( $config, $defaults );
 
+		// Apply filters for extensibility
+		$config = apply_filters( 'wp_flyout_register_config', $config, $id, $this->prefix );
+		$config = apply_filters( "wp_flyout_{$this->prefix}_{$id}_config", $config );
+
 		// Auto-detect required components
 		$this->detect_components( $config );
 
@@ -127,6 +131,9 @@ class Manager {
 		// Register AJAX endpoints for components if needed
 		$this->register_component_endpoints( $id, $config );
 
+		$this->register_action_button_endpoints( $id, $config );
+
+
 		return $this;
 	}
 
@@ -135,6 +142,9 @@ class Manager {
 	 * Ensures all fields have proper 'name' attributes
 	 */
 	private function normalize_fields( array $fields ): array {
+		// Apply pre-normalization filter
+		$fields = apply_filters( 'wp_flyout_before_normalize_fields', $fields, $this->prefix );
+
 		$normalized = [];
 
 		foreach ( $fields as $field_key => $field ) {
@@ -149,7 +159,8 @@ class Manager {
 			$normalized[ $field_key ] = $field;
 		}
 
-		return $normalized;
+		// Apply post-normalization filter
+		return apply_filters( 'wp_flyout_after_normalize_fields', $normalized, $this->prefix );
 	}
 
 	/**
@@ -266,13 +277,12 @@ class Manager {
 
 		parse_str( $request['form_data'], $raw_data );
 
-		// Normalize fields to ensure all have 'name' attributes
 		$normalized_fields = $this->normalize_fields( $config['fields'] );
+		$form_data         = Sanitizer::sanitize_form_data( $raw_data, $normalized_fields );
 
-		// Use the Sanitizer class with normalized fields
-		$form_data = Sanitizer::sanitize_form_data( $raw_data, $normalized_fields );
+		// Apply filter after sanitization
+		$form_data = apply_filters( 'wp_flyout_before_save', $form_data, $config, $this->prefix );
 
-		// Run validation if configured
 		if ( ! empty( $config['validate'] ) && is_callable( $config['validate'] ) ) {
 			$validation = call_user_func( $config['validate'], $form_data );
 
@@ -288,9 +298,11 @@ class Manager {
 			}
 		}
 
-		$id = $form_data['id'] ?? $request['id'] ?? null;
-
+		$id     = $form_data['id'] ?? $request['id'] ?? null;
 		$result = call_user_func( $config['save'], $id, $form_data );
+
+		// Apply filter after save
+		do_action( 'wp_flyout_after_save', $result, $id, $form_data, $config, $this->prefix );
 
 		if ( is_wp_error( $result ) ) {
 			wp_send_json_error( $result->get_error_message(), 400 );
@@ -319,7 +331,13 @@ class Manager {
 			wp_send_json_error( __( 'Delete not configured', 'wp-flyout' ), 501 );
 		}
 
-		$result = call_user_func( $config['delete'], $request['id'] );
+		// Apply filter before delete
+		$id = apply_filters( 'wp_flyout_before_delete', $request['id'], $config, $this->prefix );
+
+		$result = call_user_func( $config['delete'], $id );
+
+		// Apply action after delete
+		do_action( 'wp_flyout_after_delete', $result, $id, $config, $this->prefix );
 
 		if ( is_wp_error( $result ) ) {
 			wp_send_json_error( $result->get_error_message(), 400 );
@@ -351,7 +369,9 @@ class Manager {
 		$flyout->set_title( $config['title'] );
 		$flyout->set_size( $config['size'] );
 
-		// Build interface with panels or single view
+		// Apply filter to modify flyout instance
+		$flyout = apply_filters( 'wp_flyout_build_flyout', $flyout, $config, $data, $this->prefix );
+
 		if ( ! empty( $config['panels'] ) ) {
 			$this->build_panel_interface( $flyout, $config['panels'], $config['fields'], $data );
 		} else {
@@ -359,7 +379,6 @@ class Manager {
 			$flyout->add_content( '', $content );
 		}
 
-		// Add hidden ID field if editing
 		if ( $id ) {
 			$flyout->add_content( '', sprintf(
 				'<input type="hidden" name="id" value="%s">',
@@ -367,7 +386,6 @@ class Manager {
 			) );
 		}
 
-		// Add footer actions
 		$actions = ! empty( $config['actions'] )
 			? $config['actions']
 			: $this->get_default_actions( $config );
@@ -424,34 +442,33 @@ class Manager {
 	private function render_fields( array $fields, $data ): string {
 		$output = '';
 
-		// Normalize fields to ensure all have 'name' attributes
+		// Apply filter before rendering
+		$fields = apply_filters( 'wp_flyout_before_render_fields', $fields, $data, $this->prefix );
+
 		$normalized_fields = $this->normalize_fields( $fields );
 
 		foreach ( $normalized_fields as $field_key => $field ) {
+			// Apply field-specific filter
+			$field = apply_filters( 'wp_flyout_render_field', $field, $field_key, $data, $this->prefix );
+			$field = apply_filters( "wp_flyout_render_field_{$field_key}", $field, $data, $this->prefix );
+
 			$type = $field['type'] ?? 'text';
 
-			// Special handling for ajax_select fields - resolve options for saved values
 			if ( $type === 'ajax_select' ) {
-				// Resolve value if not set
 				if ( ! isset( $field['value'] ) && $data ) {
 					$field['value'] = Components::resolve_value( $field_key, $data );
 				}
 
-				// If we have a value but no options, try to resolve them
 				if ( ! empty( $field['value'] ) && empty( $field['options'] ) ) {
-					// Check for options_callback in the field configuration
 					if ( ! empty( $field['options_callback'] ) && is_callable( $field['options_callback'] ) ) {
 						$field['options'] = call_user_func( $field['options_callback'], $field['value'], $data );
 					}
 				}
 			}
 
-			// Check if this is a component type
 			if ( Components::is_component( $type ) ) {
-				// Resolve data for component
 				$resolved_data = Components::resolve_data( $type, $field_key, $data );
 
-				// Merge resolved data with field config (don't override explicit values)
 				foreach ( $resolved_data as $key => $value ) {
 					if ( ! isset( $field[ $key ] ) && $value !== null ) {
 						$field[ $key ] = $value;
@@ -461,7 +478,6 @@ class Manager {
 				$component = Components::create( $type, $field );
 				$output    .= $component ? $component->render() : '';
 			} else {
-				// Standard field - resolve value if not set
 				if ( ! isset( $field['value'] ) && $data ) {
 					$field['value'] = Components::resolve_value( $field_key, $data );
 				}
@@ -471,7 +487,8 @@ class Manager {
 			}
 		}
 
-		return $output;
+		// Apply filter after rendering
+		return apply_filters( 'wp_flyout_after_render_fields', $output, $fields, $data, $this->prefix );
 	}
 
 	/**
@@ -516,6 +533,64 @@ class Manager {
 						}
 					}
 				}
+			}
+		}
+	}
+
+	/**
+	 * Register AJAX endpoints for action buttons
+	 *
+	 * @param string $flyout_id Flyout identifier
+	 * @param array  $config    Flyout configuration
+	 */
+	private function register_action_button_endpoints( string $flyout_id, array $config ): void {
+		foreach ( $config['fields'] as $field ) {
+			if ( ( $field['type'] ?? '' ) !== 'action_buttons' ) {
+				continue;
+			}
+
+			if ( empty( $field['buttons'] ) ) {
+				continue;
+			}
+
+			foreach ( $field['buttons'] as $button ) {
+				if ( empty( $button['action'] ) || empty( $button['callback'] ) ) {
+					continue;
+				}
+
+				$action = 'wp_flyout_action_' . $button['action'];
+
+				// Register the AJAX handler
+				add_action( 'wp_ajax_' . $action, function () use ( $button, $config ) {
+					// Check nonce
+					if ( ! check_ajax_referer( 'wp_flyout_action_' . $button['action'], '_wpnonce', false ) ) {
+						wp_send_json_error( 'Security check failed', 403 );
+					}
+
+					// Check capability
+					if ( ! current_user_can( $config['capability'] ) ) {
+						wp_send_json_error( 'Insufficient permissions', 403 );
+					}
+
+					// Call the callback
+					if ( is_callable( $button['callback'] ) ) {
+						$result = call_user_func( $button['callback'], $_POST );
+
+						if ( is_wp_error( $result ) ) {
+							wp_send_json_error( $result->get_error_message() );
+						}
+
+						// If result is array with message, send as success
+						if ( is_array( $result ) && isset( $result['message'] ) ) {
+							wp_send_json_success( $result );
+						}
+
+						// Default success
+						wp_send_json_success( [ 'message' => 'Action completed successfully' ] );
+					}
+
+					wp_send_json_error( 'Invalid callback' );
+				} );
 			}
 		}
 	}

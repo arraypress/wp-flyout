@@ -1,13 +1,13 @@
 <?php
 /**
- * Field and Component Sanitizer
+ * Field and Component Sanitizer - Enhanced
  *
- * Centralized sanitization logic for form fields and data-submitting components.
+ * Centralized sanitization logic with filterable sanitizers for extensibility.
  *
  * @package     ArrayPress\WPFlyout
  * @copyright   Copyright (c) 2025, ArrayPress Limited
  * @license     GPL2+
- * @version     1.0.0
+ * @version     2.0.0
  */
 
 declare( strict_types=1 );
@@ -16,11 +16,6 @@ namespace ArrayPress\WPFlyout;
 
 use DateTime;
 
-/**
- * Class Sanitizer
- *
- * Provides sanitization methods for form fields and data-submitting components.
- */
 class Sanitizer {
 
 	/**
@@ -55,6 +50,10 @@ class Sanitizer {
 		self::register_field_sanitizers();
 		self::register_component_sanitizers();
 
+		// Apply filters to allow customization
+		self::$field_sanitizers     = apply_filters( 'wp_flyout_field_sanitizers', self::$field_sanitizers );
+		self::$component_sanitizers = apply_filters( 'wp_flyout_component_sanitizers', self::$component_sanitizers );
+
 		self::$initialized = true;
 	}
 
@@ -62,7 +61,7 @@ class Sanitizer {
 	 * Register field type sanitizers
 	 */
 	private static function register_field_sanitizers(): void {
-		self::$field_sanitizers = [
+		$sanitizers = [
 			// Text inputs
 			'text'        => 'sanitize_text_field',
 			'textarea'    => 'sanitize_textarea_field',
@@ -87,22 +86,26 @@ class Sanitizer {
 			'color'       => 'sanitize_hex_color',
 			'hidden'      => 'sanitize_text_field',
 		];
+
+		// Allow early filtering before assignment
+		self::$field_sanitizers = apply_filters( 'wp_flyout_register_field_sanitizers', $sanitizers );
 	}
 
 	/**
 	 * Register component sanitizers
 	 *
 	 * Only includes components that actually submit data with the form.
-	 * Components that work via AJAX (notes, price_breakdown) or are
-	 * display-only (timeline, accordion, entity_header) are NOT included.
 	 */
 	private static function register_component_sanitizers(): void {
-		self::$component_sanitizers = [
+		$sanitizers = [
 			'line_items'  => [ self::class, 'sanitize_line_items' ],
 			'files'       => [ self::class, 'sanitize_files' ],
 			'tags'        => [ self::class, 'sanitize_tags' ],
 			'card_choice' => [ self::class, 'sanitize_card_choice' ],
 		];
+
+		// Allow early filtering before assignment
+		self::$component_sanitizers = apply_filters( 'wp_flyout_register_component_sanitizers', $sanitizers );
 	}
 
 	/**
@@ -123,20 +126,46 @@ class Sanitizer {
 
 		$type = $field_config['type'] ?? 'text';
 
+		// Apply per-type filter
+		$value = apply_filters( "wp_flyout_sanitize_field_{$type}", $value, $field_config );
+
 		// Check if it's a data-submitting component
 		if ( isset( self::$component_sanitizers[ $type ] ) ) {
-			return call_user_func( self::$component_sanitizers[ $type ], $value );
+			$sanitizer = apply_filters( "wp_flyout_component_sanitizer_{$type}", self::$component_sanitizers[ $type ] );
+
+			return call_user_func( $sanitizer, $value );
 		}
 
 		// Check field sanitizers
 		if ( isset( self::$field_sanitizers[ $type ] ) ) {
-			return call_user_func( self::$field_sanitizers[ $type ], $value );
+			$sanitizer = apply_filters( "wp_flyout_field_sanitizer_{$type}", self::$field_sanitizers[ $type ] );
+
+			return call_user_func( $sanitizer, $value );
 		}
 
-		// Default fallback
-		return is_array( $value )
-			? array_map( 'sanitize_text_field', $value )
-			: sanitize_text_field( $value );
+		// Default fallback with filter
+		$default_sanitizer = is_array( $value )
+			? [ self::class, 'sanitize_array' ]
+			: 'sanitize_text_field';
+
+		$default_sanitizer = apply_filters( 'wp_flyout_default_sanitizer', $default_sanitizer, $value, $field_config );
+
+		return call_user_func( $default_sanitizer, $value );
+	}
+
+	/**
+	 * Sanitize array values
+	 *
+	 * @param array $value Array to sanitize
+	 *
+	 * @return array Sanitized array
+	 */
+	public static function sanitize_array( $value ): array {
+		if ( ! is_array( $value ) ) {
+			return [];
+		}
+
+		return array_map( 'sanitize_text_field', $value );
 	}
 
 	/**
@@ -149,6 +178,9 @@ class Sanitizer {
 	 */
 	public static function sanitize_form_data( array $raw_data, array $fields ): array {
 		self::ensure_initialized();
+
+		// Apply pre-sanitization filter
+		$raw_data = apply_filters( 'wp_flyout_before_sanitize', $raw_data, $fields );
 
 		$sanitized = [];
 
@@ -175,7 +207,8 @@ class Sanitizer {
 			}
 		}
 
-		return $sanitized;
+		// Apply post-sanitization filter
+		return apply_filters( 'wp_flyout_after_sanitize', $sanitized, $raw_data, $fields );
 	}
 
 	// ========================================
@@ -184,13 +217,8 @@ class Sanitizer {
 
 	/**
 	 * Sanitize number field
-	 *
-	 * @param mixed $value Raw value
-	 *
-	 * @return int|float Sanitized number
 	 */
 	public static function sanitize_number( $value ) {
-		// Check if it's a float/decimal
 		if ( str_contains( (string) $value, '.' ) ) {
 			return floatval( $value );
 		}
@@ -200,12 +228,6 @@ class Sanitizer {
 
 	/**
 	 * Sanitize password field
-	 *
-	 * Don't use sanitize_text_field as it strips some valid password chars
-	 *
-	 * @param mixed $value Raw value
-	 *
-	 * @return string Sanitized password
 	 */
 	public static function sanitize_password( $value ): string {
 		return trim( (string) $value );
@@ -213,10 +235,6 @@ class Sanitizer {
 
 	/**
 	 * Sanitize date field
-	 *
-	 * @param mixed $value Raw value
-	 *
-	 * @return string Sanitized date or empty string
 	 */
 	public static function sanitize_date( $value ): string {
 		$date = DateTime::createFromFormat( 'Y-m-d', $value );
@@ -226,10 +244,6 @@ class Sanitizer {
 
 	/**
 	 * Sanitize toggle/checkbox field
-	 *
-	 * @param mixed $value Raw value
-	 *
-	 * @return string '1' or '0'
 	 */
 	public static function sanitize_toggle( $value ): string {
 		return $value ? '1' : '0';
@@ -241,10 +255,6 @@ class Sanitizer {
 
 	/**
 	 * Sanitize tags array
-	 *
-	 * @param mixed $value Raw value
-	 *
-	 * @return array Sanitized tags
 	 */
 	public static function sanitize_tags( $value ): array {
 		if ( ! is_array( $value ) ) {
@@ -256,13 +266,8 @@ class Sanitizer {
 
 	/**
 	 * Sanitize card choice selection
-	 *
-	 * @param mixed $value Raw value
-	 *
-	 * @return string|array Sanitized selection
 	 */
 	public static function sanitize_card_choice( $value ) {
-		// Can be single value or array for multi-select
 		if ( is_array( $value ) ) {
 			return array_map( 'sanitize_text_field', $value );
 		}
@@ -272,11 +277,6 @@ class Sanitizer {
 
 	/**
 	 * Sanitize line items array
-	 * Only keeps items with valid item ID
-	 *
-	 * @param mixed $items Raw items
-	 *
-	 * @return array Sanitized items
 	 */
 	public static function sanitize_line_items( $items ): array {
 		if ( ! is_array( $items ) ) {
@@ -288,7 +288,6 @@ class Sanitizer {
 		foreach ( $items as $item ) {
 			$item_id = absint( $item['id'] ?? 0 );
 
-			// Skip items without valid ID
 			if ( $item_id <= 0 ) {
 				continue;
 			}
@@ -297,7 +296,7 @@ class Sanitizer {
 				'id'       => $item_id,
 				'name'     => sanitize_text_field( $item['name'] ?? '' ),
 				'quantity' => max( 1, absint( $item['quantity'] ?? 1 ) ),
-				'price'    => absint( $item['price'] ?? 0 ), // Stored as cents
+				'price'    => absint( $item['price'] ?? 0 ),
 			];
 		}
 
@@ -306,11 +305,6 @@ class Sanitizer {
 
 	/**
 	 * Sanitize files array
-	 * Only keeps files with either URL or attachment ID
-	 *
-	 * @param mixed $files Raw files
-	 *
-	 * @return array Sanitized files
 	 */
 	public static function sanitize_files( $files ): array {
 		if ( ! is_array( $files ) ) {
@@ -323,7 +317,6 @@ class Sanitizer {
 			$url           = esc_url_raw( $file['url'] ?? '' );
 			$attachment_id = absint( $file['attachment_id'] ?? 0 );
 
-			// Skip files without URL or attachment ID
 			if ( empty( $url ) && $attachment_id <= 0 ) {
 				continue;
 			}
@@ -345,24 +338,68 @@ class Sanitizer {
 
 	/**
 	 * Register custom field sanitizer
-	 *
-	 * @param string   $type      Field type
-	 * @param callable $sanitizer Sanitizer callback
 	 */
 	public static function register_field_sanitizer( string $type, callable $sanitizer ): void {
 		self::ensure_initialized();
 		self::$field_sanitizers[ $type ] = $sanitizer;
+
+		// Trigger action for tracking
+		do_action( 'wp_flyout_registered_field_sanitizer', $type, $sanitizer );
 	}
 
 	/**
 	 * Register custom component sanitizer
-	 *
-	 * @param string   $type      Component type
-	 * @param callable $sanitizer Sanitizer callback
 	 */
 	public static function register_component_sanitizer( string $type, callable $sanitizer ): void {
 		self::ensure_initialized();
 		self::$component_sanitizers[ $type ] = $sanitizer;
+
+		// Trigger action for tracking
+		do_action( 'wp_flyout_registered_component_sanitizer', $type, $sanitizer );
+	}
+
+	/**
+	 * Unregister field sanitizer
+	 */
+	public static function unregister_field_sanitizer( string $type ): bool {
+		if ( isset( self::$field_sanitizers[ $type ] ) ) {
+			unset( self::$field_sanitizers[ $type ] );
+
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Unregister component sanitizer
+	 */
+	public static function unregister_component_sanitizer( string $type ): bool {
+		if ( isset( self::$component_sanitizers[ $type ] ) ) {
+			unset( self::$component_sanitizers[ $type ] );
+
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Get all registered field sanitizers
+	 */
+	public static function get_field_sanitizers(): array {
+		self::ensure_initialized();
+
+		return self::$field_sanitizers;
+	}
+
+	/**
+	 * Get all registered component sanitizers
+	 */
+	public static function get_component_sanitizers(): array {
+		self::ensure_initialized();
+
+		return self::$component_sanitizers;
 	}
 
 	/**
