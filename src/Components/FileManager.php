@@ -5,7 +5,10 @@
  * Enhanced file management with drag-and-drop sorting and media library integration
  *
  * @package     ArrayPress\WPFlyout\Components\Interactive
- * @version     5.1.0
+ * @copyright   Copyright (c) 2025, ArrayPress Limited
+ * @license     GPL2+
+ * @version     6.0.0
+ * @author      David Sherlock
  */
 
 declare( strict_types=1 );
@@ -13,18 +16,30 @@ declare( strict_types=1 );
 namespace ArrayPress\WPFlyout\Components;
 
 use ArrayPress\WPFlyout\Interfaces\Renderable;
+use ArrayPress\WPFlyout\Traits\FileUtilities;
 
+/**
+ * Class FileManager
+ *
+ * Manages file attachments with media library integration and drag-drop sorting.
+ *
+ * @since 6.0.0
+ */
 class FileManager implements Renderable {
+    use FileUtilities;
 
     /**
      * Component configuration
      *
+     * @since 6.0.0
      * @var array
      */
     private array $config;
 
     /**
      * Constructor
+     *
+     * @since 6.0.0
      *
      * @param array $config Configuration options
      */
@@ -45,7 +60,9 @@ class FileManager implements Renderable {
     /**
      * Get default configuration
      *
-     * @return array
+     * @since 6.0.0
+     *
+     * @return array Default configuration values
      */
     private static function get_defaults(): array {
         return [
@@ -56,7 +73,6 @@ class FileManager implements Renderable {
                 'reorderable' => true,
                 'add_text'    => __( 'Add File', 'wp-flyout' ),
                 'empty_text'  => __( 'No files attached yet', 'wp-flyout' ),
-                'file_types'  => [], // Empty = all types allowed
                 'class'       => ''
         ];
     }
@@ -64,7 +80,9 @@ class FileManager implements Renderable {
     /**
      * Render the component
      *
-     * @return string
+     * @since 6.0.0
+     *
+     * @return string Generated HTML
      */
     public function render(): string {
         $classes = [ 'wp-flyout-file-manager' ];
@@ -86,15 +104,15 @@ class FileManager implements Renderable {
              data-template='<?php echo $this->get_template(); ?>'>
 
             <div class="file-manager-header">
-                <span class="file-manager-title">
-                    <span class="dashicons dashicons-paperclip"></span>
-                    <?php esc_html_e( 'Attachments', 'wp-flyout' ); ?>
+				<span class="file-manager-title">
+					<span class="dashicons dashicons-paperclip"></span>
+					<?php esc_html_e( 'Attachments', 'wp-flyout' ); ?>
                     <?php if ( $this->config['max_files'] > 0 ) : ?>
                         <span class="file-count">
-                            (<span class="current-count"><?php echo count( $this->config['items'] ); ?></span>/<?php echo $this->config['max_files']; ?>)
-                        </span>
+							(<span class="current-count"><?php echo count( $this->config['items'] ); ?></span>/<?php echo $this->config['max_files']; ?>)
+						</span>
                     <?php endif; ?>
-                </span>
+				</span>
 
                 <button type="button"
                         class="button button-small file-manager-add"
@@ -127,8 +145,13 @@ class FileManager implements Renderable {
     /**
      * Render single file item
      *
+     * @since 6.0.0
+     * @access private
+     *
      * @param array $file  File data
      * @param int   $index Item index
+     *
+     * @return void
      */
     private function render_file_item( array $file, int $index ): void {
         $file_extension = $this->get_file_extension( $file['url'] ?? '' );
@@ -138,8 +161,8 @@ class FileManager implements Renderable {
         <div class="file-manager-item" data-index="<?php echo $index; ?>">
             <?php if ( $this->config['reorderable'] ) : ?>
                 <span class="file-handle" title="<?php esc_attr_e( 'Drag to reorder', 'wp-flyout' ); ?>">
-                <span class="dashicons dashicons-menu"></span>
-            </span>
+				<span class="dashicons dashicons-menu"></span>
+			</span>
             <?php endif; ?>
 
             <div class="file-icon" data-extension="<?php echo esc_attr( $file_extension ); ?>">
@@ -169,7 +192,6 @@ class FileManager implements Renderable {
                        value="<?php echo esc_attr( $file['attachment_id'] ?? $file['id'] ?? '' ); ?>"
                        data-field="attachment_id">
 
-                <!-- Add lookup_key field -->
                 <input type="hidden"
                        name="<?php echo esc_attr( $this->config['name'] ); ?>[<?php echo $index; ?>][lookup_key]"
                        value="<?php echo esc_attr( $lookup_key ); ?>"
@@ -196,87 +218,12 @@ class FileManager implements Renderable {
     }
 
     /**
-     * Get file extension from URL
-     *
-     * @param string $url File URL
-     *
-     * @return string File extension
-     */
-    private function get_file_extension( string $url ): string {
-        if ( empty( $url ) ) {
-            return '';
-        }
-
-        $path = parse_url( $url, PHP_URL_PATH );
-        if ( ! $path ) {
-            return '';
-        }
-
-        $extension = pathinfo( $path, PATHINFO_EXTENSION );
-
-        return strtolower( $extension );
-    }
-
-    /**
-     * Get appropriate icon for file type
-     *
-     * @param string $extension File extension
-     *
-     * @return string Dashicon name
-     */
-    private function get_file_icon( string $extension ): string {
-        $icons = [
-            // Documents
-                'pdf'  => 'pdf',
-                'doc'  => 'media-document',
-                'docx' => 'media-document',
-                'txt'  => 'media-text',
-
-            // Images
-                'jpg'  => 'format-image',
-                'jpeg' => 'format-image',
-                'png'  => 'format-image',
-                'gif'  => 'format-image',
-                'svg'  => 'format-image',
-                'webp' => 'format-image',
-
-            // Media
-                'mp3'  => 'format-audio',
-                'wav'  => 'format-audio',
-                'ogg'  => 'format-audio',
-                'mp4'  => 'format-video',
-                'mov'  => 'format-video',
-                'avi'  => 'format-video',
-                'webm' => 'format-video',
-
-            // Archives
-                'zip'  => 'media-archive',
-                'rar'  => 'media-archive',
-                '7z'   => 'media-archive',
-                'tar'  => 'media-archive',
-                'gz'   => 'media-archive',
-
-            // Code
-                'js'   => 'media-code',
-                'css'  => 'media-code',
-                'php'  => 'media-code',
-                'html' => 'media-code',
-                'json' => 'media-code',
-                'xml'  => 'media-code',
-
-            // Spreadsheets
-                'xls'  => 'media-spreadsheet',
-                'xlsx' => 'media-spreadsheet',
-                'csv'  => 'media-spreadsheet',
-        ];
-
-        return $icons[ $extension ] ?? 'media-default';
-    }
-
-    /**
      * Get item template for JavaScript
      *
-     * @return string
+     * @since 6.0.0
+     * @access private
+     *
+     * @return string JavaScript template HTML
      */
     private function get_template(): string {
         ob_start();

@@ -35,6 +35,22 @@ class Flyout {
     private string $id;
 
     /**
+     * Valid flyout size options
+     *
+     * @since 1.0.0
+     * @var array<string>
+     */
+    const VALID_SIZES = ['small', 'medium', 'large', 'full'];
+
+    /**
+     * Valid flyout position options
+     *
+     * @since 1.0.0
+     * @var array<string>
+     */
+    const VALID_POSITIONS = ['left', 'right'];
+
+    /**
      * Flyout configuration
      *
      * @since 1.0.0
@@ -127,14 +143,13 @@ class Flyout {
     /**
      * Set flyout size
      *
-     * @param string $size Flyout size: 'small', 'medium', 'large', or 'full'
-     *
-     * @return self Returns instance for method chaining
      * @since 1.0.0
+     *
+     * @param string $size Flyout size: 'small', 'medium', 'large', or 'full'
+     * @return self Returns instance for method chaining
      */
     public function set_size( string $size ): self {
-        $valid_sizes = [ 'small', 'medium', 'large', 'full' ];
-        if ( in_array( $size, $valid_sizes, true ) ) {
+        if ( in_array( $size, self::VALID_SIZES, true ) ) {
             $this->config['size'] = $size;
         }
 
@@ -154,14 +169,13 @@ class Flyout {
     /**
      * Set flyout position
      *
-     * @param string $position Position: 'left' or 'right'
-     *
-     * @return self Returns instance for method chaining
      * @since 1.0.0
      *
+     * @param string $position Position: 'left' or 'right'
+     * @return self Returns instance for method chaining
      */
     public function set_position( string $position ): self {
-        if ( in_array( $position, [ 'left', 'right' ], true ) ) {
+        if ( in_array( $position, self::VALID_POSITIONS, true ) ) {
             $this->config['position'] = $position;
         }
 

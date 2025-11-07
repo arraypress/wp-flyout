@@ -76,12 +76,12 @@ class Assets {
 			'deps'   => []
 		],
 		'card-choice'    => [
-			'script' => '', // No JS for this component
+			'script' => '',
 			'style'  => 'css/components/card-choice.css',
 			'deps'   => []
 		],
 		'timeline'       => [
-			'script' => '', // No JS for this component
+			'script' => '',
 			'style'  => 'css/components/timeline.css',
 			'deps'   => []
 		],

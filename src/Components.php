@@ -362,7 +362,7 @@ class Components {
 		// Multiple field component - resolve each
 		$result = [];
 		foreach ( $data_fields as $field ) {
-			$key = ( $field === 'value' ) ? $field_key : $field;
+			$key              = ( $field === 'value' ) ? $field_key : $field;
 			$result[ $field ] = self::resolve_value( $key, $data );
 		}
 
