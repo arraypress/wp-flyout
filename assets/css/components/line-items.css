@@ -31,12 +31,6 @@
 
 /* Add item button */
 .line-items-selector button[data-action="add-item"] {
-    background: #2271b1;
-    color: #fff;
-    border: 1px solid #2271b1;
-    border-radius: 4px;
-    font-size: 14px;
-    font-weight: 500;
     cursor: pointer;
     transition: all 0.2s;
     white-space: nowrap;

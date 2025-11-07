@@ -146,7 +146,7 @@ class LineItems implements Renderable {
                     data-placeholder="<?php echo esc_attr( $this->config['placeholder'] ); ?>"
                     data-nonce="<?php echo esc_attr( $nonce ); ?>">
             </select>
-            <button type="button" class="button" data-action="add-item">
+            <button type="button" class="button button-primary" data-action="add-item">
                 <span class="dashicons dashicons-plus-alt"></span>
                 <?php echo esc_html( $this->config['add_text'] ); ?>
             </button>
