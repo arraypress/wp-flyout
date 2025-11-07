@@ -28,7 +28,7 @@ use ArrayPress\WPFlyout\Components\Notes;
 use ArrayPress\WPFlyout\Components\LineItems;
 use ArrayPress\WPFlyout\Components\Accordion;
 use ArrayPress\WPFlyout\Components\Timeline;
-use ArrayPress\WPFlyout\Components\SectionHeader;
+use ArrayPress\WPFlyout\Components\Header;
 use ArrayPress\WPFlyout\Components\Separator;
 use ArrayPress\WPFlyout\Components\EmptyState;
 use ArrayPress\WPFlyout\Components\DataTable;
@@ -88,8 +88,8 @@ class Components {
 			'description' => 'Price summary with line items and totals'
 		] );
 
-		self::register( 'entity_header', [
-			'class'       => EntityHeader::class,
+		self::register( 'header', [
+			'class'       => Header::class,
 			'data_fields' => [ 'title', 'subtitle', 'image', 'icon', 'badges', 'meta', 'description' ],
 			'asset'       => null,
 			'description' => 'Unified header for any entity'
@@ -153,14 +153,6 @@ class Components {
 			'data_fields' => 'value',
 			'asset'       => 'ajax-select',
 			'description' => 'AJAX-powered select field'
-		] );
-
-		// Display Components
-		self::register( 'section_header', [
-			'class'       => SectionHeader::class,
-			'data_fields' => [ 'title', 'description', 'icon' ],
-			'asset'       => null,
-			'description' => 'Section headers with optional descriptions'
 		] );
 
 		self::register( 'separator', [
