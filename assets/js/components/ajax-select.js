@@ -1,10 +1,10 @@
 /**
- * WordPress AJAX Select Component - Fixed
+ * WordPress AJAX Select Component - Updated for Callbacks
  *
  * Dynamic select dropdown with AJAX search functionality
  *
  * @package ArrayPress\WPFlyout
- * @version 2.1.0
+ * @version 3.0.0
  */
 (function ($) {
     'use strict';
@@ -95,7 +95,7 @@
                 if ($(this).prop('readonly')) return;
 
                 clearTimeout(self.searchTimeout);
-                const term = $(this).val();
+                const term = $(this).val().trim();
 
                 if (term.length < self.options.minLength) {
                     self.$results.hide();

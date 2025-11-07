@@ -1,13 +1,13 @@
 <?php
 /**
- * WP Flyout Manager
+ * WP Flyout Manager - Updated with Callback Support
  *
  * Manages flyout registration, AJAX handling, and automatic data mapping.
  *
  * @package     ArrayPress\WPFlyout
  * @copyright   Copyright (c) 2025, ArrayPress Limited
  * @license     GPL2+
- * @version     9.0.0
+ * @version     10.0.0
  * @author      David Sherlock
  */
 
@@ -128,13 +128,145 @@ class Manager {
 		// Store flyout configuration
 		$this->flyouts[ $id ] = $config;
 
-		// Register AJAX endpoints for components if needed
-		$this->register_component_endpoints( $id, $config );
+		// Register AJAX endpoints for components with callbacks
+		$this->register_component_endpoints( $id, $this->flyouts[ $id ] );
 
+		// Register action button endpoints
 		$this->register_action_button_endpoints( $id, $config );
 
-
 		return $this;
+	}
+
+	/**
+	 * Register AJAX endpoints for components
+	 *
+	 * @param string $flyout_id Flyout identifier
+	 * @param array  $config    Flyout configuration (passed by reference to update)
+	 *
+	 * @return void
+	 * @since 10.0.0
+	 */
+	private function register_component_endpoints( string $flyout_id, array &$config ): void {
+		// Define callback to AJAX field mappings
+		$callback_mappings = [
+			'search_callback'  => 'ajax_search',
+			'details_callback' => 'ajax_details',
+			'add_callback'     => 'ajax_add',
+			'delete_callback'  => 'ajax_delete',
+			'options_callback' => 'ajax_options'
+		];
+
+		foreach ( $config['fields'] as $field_key => &$field ) {
+			$field_name = $field['name'] ?? $field_key;
+
+			foreach ( $callback_mappings as $callback_key => $ajax_key ) {
+				if ( ! isset( $field[ $callback_key ] ) || ! is_callable( $field[ $callback_key ] ) ) {
+					continue;
+				}
+
+				// Generate unique action name
+				$action_name = 'wp_flyout_' . $this->prefix . '_' . $flyout_id . '_' . sanitize_key( $field_name ) . '_' . str_replace( 'ajax_', '', $ajax_key );
+
+				// Store action name in field config for frontend use
+				$field[ $ajax_key ] = $action_name;
+
+				// Create nonce for this specific component
+				$nonce_action = 'wp_flyout_component_' . sanitize_key( $field_name ) . '_' . str_replace( 'ajax_', '', $ajax_key );
+
+				// Register the AJAX handler
+				add_action( 'wp_ajax_' . $action_name, function () use ( $field, $callback_key, $nonce_action, $config ) {
+					// Check nonce
+					if ( ! check_ajax_referer( $nonce_action, '_wpnonce', false ) ) {
+						wp_send_json_error( 'Security check failed', 403 );
+					}
+
+					// Check capability
+					if ( ! current_user_can( $config['capability'] ) ) {
+						wp_send_json_error( 'Insufficient permissions', 403 );
+					}
+
+					// Call the callback
+					$result = call_user_func( $field[ $callback_key ], $_POST );
+
+					if ( is_wp_error( $result ) ) {
+						wp_send_json_error( $result->get_error_message() );
+					}
+
+					wp_send_json_success( $result );
+				} );
+			}
+		}
+	}
+
+	/**
+	 * Register AJAX endpoints for action components (buttons and menus)
+	 *
+	 * @param string $flyout_id Flyout identifier
+	 * @param array  $config    Flyout configuration
+	 */
+	private function register_action_button_endpoints( string $flyout_id, array $config ): void {
+		foreach ( $config['fields'] as $field ) {
+			$type = $field['type'] ?? '';
+
+			// Get items array based on component type
+			$items = [];
+			if ( $type === 'action_buttons' ) {
+				$items = $field['buttons'] ?? [];
+			} elseif ( $type === 'action_menu' ) {
+				$items = $field['items'] ?? [];
+			} else {
+				continue;
+			}
+
+			foreach ( $items as $item ) {
+				// Skip separators (action_menu only)
+				if ( isset( $item['type'] ) && $item['type'] === 'separator' ) {
+					continue;
+				}
+
+				// Check for callback instead of action string
+				if ( empty( $item['callback'] ) || ! is_callable( $item['callback'] ) ) {
+					continue;
+				}
+
+				// Generate action name if not provided
+				$action = $item['action'] ?? uniqid( 'action_' );
+				$action = 'wp_flyout_action_' . $action;
+
+				// Check if already registered to avoid duplicates
+				if ( has_action( 'wp_ajax_' . $action ) ) {
+					continue;
+				}
+
+				// Register the AJAX handler
+				add_action( 'wp_ajax_' . $action, function () use ( $item, $config ) {
+					// Check nonce
+					if ( ! check_ajax_referer( 'wp_flyout_action_' . ( $item['action'] ?? '' ), '_wpnonce', false ) ) {
+						wp_send_json_error( 'Security check failed', 403 );
+					}
+
+					// Check capability
+					if ( ! current_user_can( $config['capability'] ) ) {
+						wp_send_json_error( 'Insufficient permissions', 403 );
+					}
+
+					// Call the callback
+					$result = call_user_func( $item['callback'], $_POST );
+
+					if ( is_wp_error( $result ) ) {
+						wp_send_json_error( $result->get_error_message() );
+					}
+
+					// If result is array with message, send as success
+					if ( is_array( $result ) && isset( $result['message'] ) ) {
+						wp_send_json_success( $result );
+					}
+
+					// Default success
+					wp_send_json_success( [ 'message' => 'Action completed successfully' ] );
+				} );
+			}
+		}
 	}
 
 	/**
@@ -390,13 +522,6 @@ class Manager {
 			? $config['actions']
 			: $this->get_default_actions( $config );
 
-		$flyout->set_footer( $this->render_actions( $actions ) );
-
-		// In build_flyout method
-		$actions = ! empty( $config['actions'] )
-			? $config['actions']
-			: $this->get_default_actions( $config );
-
 		// Only set footer if there are actions
 		if ( ! empty( $actions ) ) {
 			$flyout->set_footer( $this->render_actions( $actions ) );
@@ -464,6 +589,27 @@ class Manager {
 
 			$type = $field['type'] ?? 'text';
 
+			// Handle fields with AJAX actions - generate nonces
+			if ( $type === 'ajax_select' && ! empty( $field['ajax_search'] ) ) {
+				$nonce_action   = 'wp_flyout_component_' . sanitize_key( $field['name'] ?? $field_key ) . '_search';
+				$field['nonce'] = wp_create_nonce( $nonce_action );
+			}
+
+			if ( $type === 'notes' ) {
+				if ( ! empty( $field['ajax_add'] ) || ! empty( $field['ajax_delete'] ) ) {
+					$nonce_key      = 'wp_flyout_component_' . sanitize_key( $field['name'] ?? $field_key );
+					$field['nonce'] = wp_create_nonce( $nonce_key . '_add' );
+				}
+			}
+
+			if ( $type === 'line_items' ) {
+				if ( ! empty( $field['ajax_search'] ) ) {
+					$nonce_action   = 'wp_flyout_component_' . sanitize_key( $field['name'] ?? $field_key ) . '_search';
+					$field['nonce'] = wp_create_nonce( $nonce_action );
+				}
+			}
+
+			// Handle ajax_select options callback
 			if ( $type === 'ajax_select' ) {
 				if ( ! isset( $field['value'] ) && $data ) {
 					$field['value'] = Components::resolve_value( $field_key, $data );
@@ -520,103 +666,6 @@ class Manager {
 		}
 
 		$this->components = array_unique( $this->components );
-	}
-
-	/**
-	 * Register AJAX endpoints for components
-	 *
-	 * @param string $flyout_id Flyout identifier
-	 * @param array  $config    Flyout configuration
-	 *
-	 * @return void
-	 * @since 1.0.0
-	 */
-	private function register_component_endpoints( string $flyout_id, array $config ): void {
-		foreach ( $config['fields'] as $field ) {
-			foreach ( $field as $key => $value ) {
-				if ( str_starts_with( $key, 'ajax_' ) && is_string( $value ) ) {
-					$callback_key = str_replace( 'ajax_', '', $key ) . '_callback';
-					if ( isset( $field[ $callback_key ] ) && is_callable( $field[ $callback_key ] ) ) {
-						$action = 'wp_ajax_' . $value;
-						if ( ! has_action( $action ) ) {
-							add_action( $action, $field[ $callback_key ] );
-						}
-					}
-				}
-			}
-		}
-	}
-
-	/**
-	 * Register AJAX endpoints for action components (buttons and menus)
-	 *
-	 * @param string $flyout_id Flyout identifier
-	 * @param array  $config    Flyout configuration
-	 */
-	private function register_action_button_endpoints( string $flyout_id, array $config ): void {
-		foreach ( $config['fields'] as $field ) {
-			$type = $field['type'] ?? '';
-
-			// Get items array based on component type
-			$items = [];
-			if ( $type === 'action_buttons' ) {
-				$items = $field['buttons'] ?? [];
-			} elseif ( $type === 'action_menu' ) {
-				$items = $field['items'] ?? [];
-			} else {
-				continue;
-			}
-
-			foreach ( $items as $item ) {
-				// Skip separators (action_menu only)
-				if ( isset( $item['type'] ) && $item['type'] === 'separator' ) {
-					continue;
-				}
-
-				if ( empty( $item['action'] ) || empty( $item['callback'] ) ) {
-					continue;
-				}
-
-				$action = 'wp_flyout_action_' . $item['action'];
-
-				// Check if already registered to avoid duplicates
-				if ( has_action( 'wp_ajax_' . $action ) ) {
-					continue;
-				}
-
-				// Register the AJAX handler
-				add_action( 'wp_ajax_' . $action, function () use ( $item, $config ) {
-					// Check nonce
-					if ( ! check_ajax_referer( 'wp_flyout_action_' . $item['action'], '_wpnonce', false ) ) {
-						wp_send_json_error( 'Security check failed', 403 );
-					}
-
-					// Check capability
-					if ( ! current_user_can( $config['capability'] ) ) {
-						wp_send_json_error( 'Insufficient permissions', 403 );
-					}
-
-					// Call the callback
-					if ( is_callable( $item['callback'] ) ) {
-						$result = call_user_func( $item['callback'], $_POST );
-
-						if ( is_wp_error( $result ) ) {
-							wp_send_json_error( $result->get_error_message() );
-						}
-
-						// If result is array with message, send as success
-						if ( is_array( $result ) && isset( $result['message'] ) ) {
-							wp_send_json_success( $result );
-						}
-
-						// Default success
-						wp_send_json_success( [ 'message' => 'Action completed successfully' ] );
-					}
-
-					wp_send_json_error( 'Invalid callback' );
-				} );
-			}
-		}
 	}
 
 	/**
