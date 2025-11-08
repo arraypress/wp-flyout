@@ -137,13 +137,15 @@ class LineItems implements Renderable {
      * Render product selector
      */
     private function render_product_selector(): void {
-        $nonce = $this->config['nonce'] ?? '';
+        $nonce         = $this->config['nonce'] ?? '';  // Search nonce
+        $details_nonce = $this->config['details_nonce'] ?? '';  // Details nonce
         ?>
         <div class="line-items-selector">
             <select class="product-ajax-select"
                     data-ajax="<?php echo esc_attr( $this->config['ajax_search'] ); ?>"
                     data-placeholder="<?php echo esc_attr( $this->config['placeholder'] ); ?>"
-                    data-nonce="<?php echo esc_attr( $nonce ); ?>">
+                    data-nonce="<?php echo esc_attr( $nonce ); ?>"
+                    data-details-nonce="<?php echo esc_attr( $details_nonce ); ?>">
             </select>
             <button type="button" class="button button-primary" data-action="add-item">
                 <span class="dashicons dashicons-plus-alt"></span>

@@ -157,7 +157,7 @@
             const ajaxUrl = window.ajaxurl || '/wp-admin/admin-ajax.php';
             const detailsAction = $component.data('details-action');
             const $select = $component.find('.product-ajax-select');
-            const nonce = $select.data('nonce') || '';
+            const nonce = $select.data('details-nonce') || '';
 
             $component.trigger('lineitems:fetchstart', {itemId: itemId});
 
