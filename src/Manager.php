@@ -174,12 +174,11 @@ class Manager {
 				// Store action name in field config for frontend use
 				$field[ $ajax_key ] = $action_name;
 
-				// STANDARDIZED: Always use action name as nonce key
+				// Always use action name as nonce key
 				$field[ $ajax_key . '_nonce_key' ] = $action_name;
 
 				// Register the AJAX handler
 				add_action( 'wp_ajax_' . $action_name, function () use ( $field, $callback_key, $action_name, $config ) {
-					// STANDARDIZED: Always check _wpnonce with action name
 					if ( ! check_ajax_referer( $action_name, '_wpnonce', false ) ) {
 						wp_send_json_error( 'Security check failed', 403 );
 					}
