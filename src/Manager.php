@@ -177,9 +177,6 @@ class Manager {
 				// STANDARDIZED: Always use action name as nonce key
 				$field[ $ajax_key . '_nonce_key' ] = $action_name;
 
-				error_log("Set {$ajax_key}_nonce_key = {$action_name} for field {$field_name}");
-
-
 				// Register the AJAX handler
 				add_action( 'wp_ajax_' . $action_name, function () use ( $field, $callback_key, $action_name, $config ) {
 					// STANDARDIZED: Always check _wpnonce with action name
@@ -612,12 +609,7 @@ class Manager {
 				'ajax_details_nonce_key' => 'details_nonce'
 			];
 
-			error_log('Field keys for ' . $field_key . ': ' . print_r(array_keys($field), true));
-
-
 			foreach ( $nonce_mappings as $key_field => $nonce_field ) {
-
-
 				if ( ! empty( $field[ $key_field ] ) ) {
 					$field[ $nonce_field ] = wp_create_nonce( $field[ $key_field ] );
 				}
