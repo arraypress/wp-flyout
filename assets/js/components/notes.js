@@ -51,7 +51,7 @@
             // Get AJAX configuration from data attributes
             const ajaxAdd = $component.data('ajax-add');
             const objectType = $component.data('object-type');
-            const nonce = $component.data('nonce');
+            const nonce = $component.data('data-nonce');
 
             if (!ajaxAdd) {
                 console.error('Notes: No AJAX add action configured');
@@ -114,7 +114,7 @@
             const noteId = $note.data('note-id');
             const ajaxDelete = $component.data('ajax-delete');
             const objectType = $component.data('object-type');
-            const nonce = $component.data('nonce');
+            const nonce = $component.data('delete-nonce');
 
             if (!ajaxDelete) {
                 console.error('Notes: No AJAX delete action configured');

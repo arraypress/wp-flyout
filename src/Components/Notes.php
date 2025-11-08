@@ -49,17 +49,18 @@ class Notes implements Renderable {
      */
     private static function get_defaults(): array {
         return [
-                'id'          => '',
-                'name'        => 'notes',
-                'items'       => [],
-                'editable'    => true,
-                'placeholder' => __( 'Add a note...', 'arraypress' ),
-                'empty_text'  => __( 'No notes yet.', 'arraypress' ),
-                'object_type' => '',
-                'ajax_add'    => '',    // This gets set by Manager from add_callback
-                'ajax_delete' => '',    // This gets set by Manager from delete_callback
-                'nonce'       => '',    // Add this - Manager provides it
-                'class'       => ''
+                'id'           => '',
+                'name'         => 'notes',
+                'items'        => [],
+                'editable'     => true,
+                'placeholder'  => __( 'Add a note...', 'arraypress' ),
+                'empty_text'   => __( 'No notes yet.', 'arraypress' ),
+                'object_type'  => '',
+                'ajax_add'     => '',    // This gets set by Manager from add_callback
+                'ajax_delete'  => '',    // This gets set by Manager from delete_callback
+                'add_nonce'    => '',    // Add this - Manager provides it
+                'delete_nonce' => '',
+                'class'        => ''
         ];
     }
 
@@ -74,9 +75,6 @@ class Notes implements Renderable {
             $classes[] = $this->config['class'];
         }
 
-        // Generate nonce for AJAX actions
-        $nonce = $this->config['nonce'] ?? '';
-
         ob_start();
         ?>
         <div id="<?php echo esc_attr( $this->config['id'] ); ?>"
@@ -85,29 +83,30 @@ class Notes implements Renderable {
              data-object-type="<?php echo esc_attr( $this->config['object_type'] ); ?>"
              data-ajax-add="<?php echo esc_attr( $this->config['ajax_add'] ); ?>"
              data-ajax-delete="<?php echo esc_attr( $this->config['ajax_delete'] ); ?>"
-             data-nonce="<?php echo esc_attr( $nonce ); ?>">
+             data-add-nonce="<?php echo esc_attr( $this->config['add_nonce'] ?? '' ); ?>"
+             data-delete-nonce="<?php echo esc_attr( $this->config['delete_nonce'] ?? '' ); ?>"
 
-            <div class="notes-list">
-                <?php if ( empty( $this->config['items'] ) ) : ?>
-                    <p class="no-notes"><?php echo esc_html( $this->config['empty_text'] ); ?></p>
-                <?php else : ?>
-                    <?php foreach ( $this->config['items'] as $note ) : ?>
-                        <?php $this->render_note( $note ); ?>
-                    <?php endforeach; ?>
-                <?php endif; ?>
-            </div>
+        <div class="notes-list">
+            <?php if ( empty( $this->config['items'] ) ) : ?>
+                <p class="no-notes"><?php echo esc_html( $this->config['empty_text'] ); ?></p>
+            <?php else : ?>
+                <?php foreach ( $this->config['items'] as $note ) : ?>
+                    <?php $this->render_note( $note ); ?>
+                <?php endforeach; ?>
+            <?php endif; ?>
+        </div>
 
-            <?php if ( $this->config['editable'] && $this->config['ajax_add'] ) : ?>
-                <div class="note-add-form">
+        <?php if ( $this->config['editable'] && $this->config['ajax_add'] ) : ?>
+            <div class="note-add-form">
                     <textarea placeholder="<?php echo esc_attr( $this->config['placeholder'] ); ?>"
                               rows="3"></textarea>
-                    <p>
-                        <button type="button" class="button button-primary" data-action="add-note">
-                            Add Note
-                        </button>
-                    </p>
-                </div>
-            <?php endif; ?>
+                <p>
+                    <button type="button" class="button button-primary" data-action="add-note">
+                        Add Note
+                    </button>
+                </p>
+            </div>
+        <?php endif; ?>
         </div>
         <?php
         return ob_get_clean();

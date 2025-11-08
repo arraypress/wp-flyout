@@ -602,17 +602,28 @@ class Manager {
 			$type = $field['type'] ?? 'text';
 
 			// Generate nonces for components with AJAX actions
-			// STANDARDIZED: Use action name as nonce key
-			if ( ! empty( $field['ajax_search_nonce_key'] ) ) {
-				$field['nonce'] = wp_create_nonce( $field['ajax_search_nonce_key'] );
-			} elseif ( ! empty( $field['ajax_add_nonce_key'] ) ) {
-				$field['nonce'] = wp_create_nonce( $field['ajax_add_nonce_key'] );
-			} elseif ( ! empty( $field['ajax_delete_nonce_key'] ) ) {
-				$field['nonce'] = wp_create_nonce( $field['ajax_delete_nonce_key'] );
-			}
-
-			if ( ! empty( $field['ajax_details_nonce_key'] ) ) {
-				$field['details_nonce'] = wp_create_nonce( $field['ajax_details_nonce_key'] );
+			// Different components need different nonce handling
+			if ( $type === 'notes' ) {
+				// Notes needs separate nonces for add and delete
+				if ( ! empty( $field['ajax_add_nonce_key'] ) ) {
+					$field['add_nonce'] = wp_create_nonce( $field['ajax_add_nonce_key'] );
+				}
+				if ( ! empty( $field['ajax_delete_nonce_key'] ) ) {
+					$field['delete_nonce'] = wp_create_nonce( $field['ajax_delete_nonce_key'] );
+				}
+			} elseif ( $type === 'line_items' ) {
+				// Line items needs separate nonces for search and details
+				if ( ! empty( $field['ajax_search_nonce_key'] ) ) {
+					$field['nonce'] = wp_create_nonce( $field['ajax_search_nonce_key'] );
+				}
+				if ( ! empty( $field['ajax_details_nonce_key'] ) ) {
+					$field['details_nonce'] = wp_create_nonce( $field['ajax_details_nonce_key'] );
+				}
+			} else {
+				// Other components (ajax_select, etc.) use single nonce
+				if ( ! empty( $field['ajax_search_nonce_key'] ) ) {
+					$field['nonce'] = wp_create_nonce( $field['ajax_search_nonce_key'] );
+				}
 			}
 
 			// Handle ajax_select options callback
