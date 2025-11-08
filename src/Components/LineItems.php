@@ -66,8 +66,9 @@ class LineItems implements Renderable {
                 'editable_price'    => false,
                 'editable_quantity' => false,
                 'show_quantity'     => true,
-                'ajax_search'       => '',
-                'ajax_details'      => '',
+                'ajax_search'       => '',  // This gets set by Manager from search_callback
+                'ajax_details'      => '',  // This gets set by Manager from details_callback
+                'nonce'             => '',  // Add this - Manager provides it
                 'placeholder'       => __( 'Search for products...', 'wp-flyout' ),
                 'empty_text'        => __( 'No items added yet.', 'wp-flyout' ),
                 'add_text'          => __( 'Add Item', 'wp-flyout' ),
@@ -136,7 +137,7 @@ class LineItems implements Renderable {
      * Render product selector
      */
     private function render_product_selector(): void {
-        $nonce = wp_create_nonce( 'line_items_' . $this->config['ajax_search'] );
+        $nonce = $this->config['nonce'] ?? '';
         ?>
         <div class="line-items-selector">
             <select class="product-ajax-select"

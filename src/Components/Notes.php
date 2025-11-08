@@ -56,8 +56,9 @@ class Notes implements Renderable {
                 'placeholder' => __( 'Add a note...', 'arraypress' ),
                 'empty_text'  => __( 'No notes yet.', 'arraypress' ),
                 'object_type' => '',
-                'ajax_add'    => '',
-                'ajax_delete' => '',
+                'ajax_add'    => '',    // This gets set by Manager from add_callback
+                'ajax_delete' => '',    // This gets set by Manager from delete_callback
+                'nonce'       => '',    // Add this - Manager provides it
                 'class'       => ''
         ];
     }
@@ -74,14 +75,7 @@ class Notes implements Renderable {
         }
 
         // Generate nonce for AJAX actions
-        $nonce = '';
-        if ( $this->config['ajax_add'] || $this->config['ajax_delete'] ) {
-            $nonce_key = 'notes';
-            if ( $this->config['object_type'] ) {
-                $nonce_key .= '_' . $this->config['object_type'];
-            }
-            $nonce = wp_create_nonce( $nonce_key );
-        }
+        $nonce = $this->config['nonce'] ?? '';
 
         ob_start();
         ?>

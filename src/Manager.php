@@ -1,13 +1,13 @@
 <?php
 /**
- * WP Flyout Manager - Centralized Nonce Handling
+ * WP Flyout Manager - Standardized Implementation
  *
  * Manages flyout registration, AJAX handling, and automatic data mapping.
  *
  * @package     ArrayPress\WPFlyout
  * @copyright   Copyright (c) 2025, ArrayPress Limited
  * @license     GPL2+
- * @version     11.0.0
+ * @version     12.0.0
  * @author      David Sherlock
  */
 
@@ -23,6 +23,7 @@ use Exception;
  * Class Manager
  *
  * Orchestrates flyout operations with automatic data resolution.
+ * Uses standardized nonce handling where all components use action names as nonce keys.
  *
  * @since 1.0.0
  */
@@ -138,24 +139,16 @@ class Manager {
 	}
 
 	/**
-	 * Generate a consistent nonce key for any AJAX action
-	 *
-	 * @param string $action_name The AJAX action name
-	 * @return string The nonce key
-	 */
-	private function get_nonce_key( string $action_name ): string {
-		// Use the action name itself as the nonce key for consistency
-		return $action_name;
-	}
-
-	/**
 	 * Register AJAX endpoints for components
+	 *
+	 * Standardized approach: all components use action name as nonce key
+	 * and send _wpnonce parameter.
 	 *
 	 * @param string $flyout_id Flyout identifier
 	 * @param array  $config    Flyout configuration (passed by reference to update)
 	 *
 	 * @return void
-	 * @since 10.0.0
+	 * @since 12.0.0
 	 */
 	private function register_component_endpoints( string $flyout_id, array &$config ): void {
 		// Define callback to AJAX field mappings
@@ -169,7 +162,6 @@ class Manager {
 
 		foreach ( $config['fields'] as $field_key => &$field ) {
 			$field_name = $field['name'] ?? $field_key;
-			$type = $field['type'] ?? '';
 
 			foreach ( $callback_mappings as $callback_key => $ajax_key ) {
 				if ( ! isset( $field[ $callback_key ] ) || ! is_callable( $field[ $callback_key ] ) ) {
@@ -177,35 +169,18 @@ class Manager {
 				}
 
 				// Generate unique action name
-				$action_name = 'wp_flyout_' . $this->prefix . '_' . $flyout_id . '_' . sanitize_key( $field_name ) . '_' . str_replace('ajax_', '', $ajax_key);
+				$action_name = 'wp_flyout_' . $this->prefix . '_' . $flyout_id . '_' . sanitize_key( $field_name ) . '_' . str_replace( 'ajax_', '', $ajax_key );
 
 				// Store action name in field config for frontend use
 				$field[ $ajax_key ] = $action_name;
 
-				// Determine nonce key based on component type - this must match what the JS expects!
-				$nonce_key = '';
-				if ( $type === 'notes' && ($callback_key === 'add_callback' || $callback_key === 'delete_callback') ) {
-					// Notes component expects 'notes_[object_type]' as nonce key
-					$object_type = $field['object_type'] ?? '';
-					$nonce_key = 'notes' . ($object_type ? '_' . $object_type : '');
-				} elseif ( $type === 'ajax_select' && $callback_key === 'search_callback' ) {
-					// Ajax select expects the action name as nonce key
-					$nonce_key = $action_name;
-				} elseif ( $type === 'line_items' ) {
-					// Line items expects the action name as nonce key
-					$nonce_key = $action_name;
-				} else {
-					// Default: use action name
-					$nonce_key = $action_name;
-				}
-
-				// Store the nonce key for later nonce generation
-				$field[ $ajax_key . '_nonce_key' ] = $nonce_key;
+				// STANDARDIZED: Always use action name as nonce key
+				$field[ $ajax_key . '_nonce_key' ] = $action_name;
 
 				// Register the AJAX handler
-				add_action( 'wp_ajax_' . $action_name, function() use ( $field, $callback_key, $nonce_key, $config ) {
-					// All components now use _wpnonce for consistency
-					if ( ! check_ajax_referer( $nonce_key, '_wpnonce', false ) ) {
+				add_action( 'wp_ajax_' . $action_name, function () use ( $field, $callback_key, $action_name, $config ) {
+					// STANDARDIZED: Always check _wpnonce with action name
+					if ( ! check_ajax_referer( $action_name, '_wpnonce', false ) ) {
 						wp_send_json_error( 'Security check failed', 403 );
 					}
 
@@ -222,7 +197,7 @@ class Manager {
 					}
 
 					wp_send_json_success( $result );
-				});
+				} );
 			}
 		}
 	}
@@ -232,6 +207,9 @@ class Manager {
 	 *
 	 * @param string $flyout_id Flyout identifier
 	 * @param array  $config    Flyout configuration
+	 *
+	 * @return void
+	 * @since 1.0.0
 	 */
 	private function register_action_button_endpoints( string $flyout_id, array $config ): void {
 		foreach ( $config['fields'] as $field ) {
@@ -259,7 +237,7 @@ class Manager {
 				}
 
 				// Generate action name if not provided
-				$action = $item['action'] ?? uniqid( 'action_' );
+				$action      = $item['action'] ?? uniqid( 'action_' );
 				$action_name = 'wp_flyout_action_' . $action;
 
 				// Check if already registered to avoid duplicates
@@ -269,9 +247,8 @@ class Manager {
 
 				// Register the AJAX handler
 				add_action( 'wp_ajax_' . $action_name, function () use ( $item, $action_name, $config ) {
-					// Check nonce using consistent key
-					$nonce_key = $this->get_nonce_key( $action_name );
-					if ( ! check_ajax_referer( $nonce_key, '_wpnonce', false ) ) {
+					// STANDARDIZED: Always use action name as nonce key
+					if ( ! check_ajax_referer( $action_name, '_wpnonce', false ) ) {
 						wp_send_json_error( 'Security check failed', 403 );
 					}
 
@@ -302,6 +279,11 @@ class Manager {
 	/**
 	 * Normalize field configurations
 	 * Ensures all fields have proper 'name' attributes
+	 *
+	 * @param array $fields Field configurations
+	 *
+	 * @return array Normalized fields
+	 * @since 1.0.0
 	 */
 	private function normalize_fields( array $fields ): array {
 		// Apply pre-normalization filter
@@ -620,20 +602,16 @@ class Manager {
 			$type = $field['type'] ?? 'text';
 
 			// Generate nonces for components with AJAX actions
-			// Use the stored nonce key from registration
+			// STANDARDIZED: Use action name as nonce key
 			if ( ! empty( $field['ajax_search_nonce_key'] ) ) {
 				$field['nonce'] = wp_create_nonce( $field['ajax_search_nonce_key'] );
 			} elseif ( ! empty( $field['ajax_add_nonce_key'] ) ) {
 				$field['nonce'] = wp_create_nonce( $field['ajax_add_nonce_key'] );
 			} elseif ( ! empty( $field['ajax_delete_nonce_key'] ) ) {
-				// Notes component uses same nonce for add/delete
-				if ( empty( $field['nonce'] ) ) {
-					$field['nonce'] = wp_create_nonce( $field['ajax_delete_nonce_key'] );
-				}
+				$field['nonce'] = wp_create_nonce( $field['ajax_delete_nonce_key'] );
 			}
 
 			if ( ! empty( $field['ajax_details_nonce_key'] ) ) {
-				// Line items may need separate nonces for search and details
 				$field['details_nonce'] = wp_create_nonce( $field['ajax_details_nonce_key'] );
 			}
 

@@ -449,12 +449,9 @@ class FormField implements Renderable {
      * @since 5.0.0
      */
     private function render_ajax_select(): string {
-        // Create nonce based on the ajax action name
+        // Remove nonce generation - Manager provides it
         $ajax_action = $this->config['ajax'] ?? '';
-        $nonce       = '';
-        if ( $ajax_action ) {
-            $nonce = wp_create_nonce( 'ajax_select_' . $ajax_action );
-        }
+        $nonce       = $this->config['nonce'] ?? '';  // Use provided nonce
 
         ob_start();
         ?>
