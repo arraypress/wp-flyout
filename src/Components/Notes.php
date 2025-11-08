@@ -84,7 +84,7 @@ class Notes implements Renderable {
              data-ajax-add="<?php echo esc_attr( $this->config['ajax_add'] ); ?>"
              data-ajax-delete="<?php echo esc_attr( $this->config['ajax_delete'] ); ?>"
              data-add-nonce="<?php echo esc_attr( $this->config['add_nonce'] ?? '' ); ?>"
-             data-delete-nonce="<?php echo esc_attr( $this->config['delete_nonce'] ?? '' ); ?>"
+             data-delete-nonce="<?php echo esc_attr( $this->config['delete_nonce'] ?? '' ); ?>">
 
         <div class="notes-list">
             <?php if ( empty( $this->config['items'] ) ) : ?>
