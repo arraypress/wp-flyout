@@ -27,6 +27,7 @@ use ArrayPress\WPFlyout\Components\FileManager;
 use ArrayPress\WPFlyout\Components\Notes;
 use ArrayPress\WPFlyout\Components\LineItems;
 use ArrayPress\WPFlyout\Components\Accordion;
+use ArrayPress\WPFlyout\Components\Stats;
 use ArrayPress\WPFlyout\Components\Timeline;
 use ArrayPress\WPFlyout\Components\Header;
 use ArrayPress\WPFlyout\Components\Separator;
@@ -209,6 +210,13 @@ class Components {
 			'data_fields' => 'items',
 			'asset'       => 'articles',
 			'description' => 'Article cards with images and excerpts'
+		] );
+
+		self::register( 'stats', [
+			'class'       => Stats::class,
+			'data_fields' => 'items',
+			'asset'       => 'stats',
+			'description' => 'Statistical metric cards with trends'
 		] );
 
 		self::$initialized = true;

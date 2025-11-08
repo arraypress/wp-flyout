@@ -110,6 +110,11 @@ class Assets {
 			'style'  => 'css/components/articles.css',
 			'deps'   => []
 		],
+		'stats' => [
+			'script' => '',
+			'style'  => 'css/components/stats.css',
+			'deps'   => []
+		],
 	];
 
 	/**
