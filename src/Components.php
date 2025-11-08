@@ -18,6 +18,7 @@ namespace ArrayPress\WPFlyout;
 
 use ArrayPress\WPFlyout\Components\ActionButtons;
 use ArrayPress\WPFlyout\Components\ActionMenu;
+use ArrayPress\WPFlyout\Components\Articles;
 use ArrayPress\WPFlyout\Components\PaymentMethod;
 use ArrayPress\WPFlyout\Components\PriceSummary;
 use ArrayPress\WPFlyout\Components\CardChoice;
@@ -201,6 +202,13 @@ class Components {
 			'data_fields' => 'items',
 			'asset'       => 'action-menu',
 			'description' => 'Dropdown menu for multiple actions with AJAX support'
+		] );
+
+		self::register( 'articles', [
+			'class'       => Articles::class,
+			'data_fields' => 'items',
+			'asset'       => 'articles',
+			'description' => 'Article cards with images and excerpts'
 		] );
 
 		self::$initialized = true;

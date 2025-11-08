@@ -105,6 +105,11 @@ class Assets {
 			'style'  => 'css/components/action-menu.css',
 			'deps'   => []
 		],
+		'articles' => [
+			'script' => '',
+			'style'  => 'css/components/articles.css',
+			'deps'   => []
+		],
 	];
 
 	/**
