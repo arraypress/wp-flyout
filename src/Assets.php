@@ -105,12 +105,12 @@ class Assets {
 			'style'  => 'css/components/action-menu.css',
 			'deps'   => []
 		],
-		'articles' => [
+		'articles'       => [
 			'script' => '',
 			'style'  => 'css/components/articles.css',
 			'deps'   => []
 		],
-		'stats' => [
+		'stats'          => [
 			'script' => '',
 			'style'  => 'css/components/stats.css',
 			'deps'   => []
