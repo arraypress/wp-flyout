@@ -65,7 +65,7 @@ class Assets {
 		],
 		'key-value-list' => [
 			'script' => 'js/components/key-value-list.js',
-			'style'  => 'css/components/meta-key-value.css',
+			'style'  => 'css/components/key-value-list.css',
 			'deps'   => [ 'jquery-ui-sortable' ]
 		],
 
