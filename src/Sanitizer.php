@@ -98,10 +98,12 @@ class Sanitizer {
 	 */
 	private static function register_component_sanitizers(): void {
 		$sanitizers = [
-			'line_items'  => [ self::class, 'sanitize_line_items' ],
-			'files'       => [ self::class, 'sanitize_files' ],
-			'tags'        => [ self::class, 'sanitize_tags' ],
-			'card_choice' => [ self::class, 'sanitize_card_choice' ],
+			'line_items'     => [ self::class, 'sanitize_line_items' ],
+			'files'          => [ self::class, 'sanitize_files' ],
+			'tags'           => [ self::class, 'sanitize_tags' ],
+			'card_choice'    => [ self::class, 'sanitize_card_choice' ],
+			'feature_list'   => [ self::class, 'sanitize_feature_list' ],
+			'meta_key_value' => [ self::class, 'sanitize_meta_key_value' ]
 		];
 
 		// Allow early filtering before assignment
@@ -327,6 +329,86 @@ class Sanitizer {
 				'attachment_id' => $attachment_id,
 				'lookup_key'    => sanitize_key( $file['lookup_key'] ?? '' ),
 			];
+		}
+
+		return $sanitized;
+	}
+
+	/**
+	 * Sanitize MetaKeyValue component data
+	 *
+	 * Removes entries with empty keys and sanitizes both keys and values.
+	 * Keys are required and will be slugified for consistency.
+	 *
+	 * @param array|mixed $data Raw metadata array
+	 *
+	 * @return array Sanitized metadata array
+	 */
+	public static function sanitize_meta_key_value( $data ): array {
+		if ( ! is_array( $data ) ) {
+			return [];
+		}
+
+		$sanitized = [];
+
+		foreach ( $data as $item ) {
+			if ( ! is_array( $item ) ) {
+				continue;
+			}
+
+			// Get and sanitize key - required field
+			$key = isset( $item['key'] ) ? sanitize_key( $item['key'] ) : '';
+
+			// Skip if key is empty
+			if ( empty( $key ) ) {
+				continue;
+			}
+
+			// Sanitize value - can be empty
+			$value = isset( $item['value'] ) ? sanitize_text_field( $item['value'] ) : '';
+
+			$sanitized[] = [
+				'key'   => $key,
+				'value' => $value
+			];
+		}
+
+		return $sanitized;
+	}
+
+	/**
+	 * Sanitize FeatureList component data
+	 *
+	 * Removes empty items and sanitizes text values.
+	 *
+	 * @param array|mixed $data Raw features array
+	 *
+	 * @return array Sanitized features array
+	 */
+	public static function sanitize_feature_list( $data ): array {
+		if ( ! is_array( $data ) ) {
+			return [];
+		}
+
+		$sanitized = [];
+
+		foreach ( $data as $item ) {
+			// Handle both string and array formats
+			if ( is_array( $item ) ) {
+				$value = $item['value'] ?? $item['text'] ?? '';
+			} else {
+				$value = $item;
+			}
+
+			// Sanitize and trim
+			$value = sanitize_text_field( trim( $value ) );
+
+			// Skip empty values
+			if ( empty( $value ) ) {
+				continue;
+			}
+
+			$sanitized[] = $value;
 		}
 
 		return $sanitized;

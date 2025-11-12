@@ -19,6 +19,8 @@ namespace ArrayPress\WPFlyout;
 use ArrayPress\WPFlyout\Components\ActionButtons;
 use ArrayPress\WPFlyout\Components\ActionMenu;
 use ArrayPress\WPFlyout\Components\Articles;
+use ArrayPress\WPFlyout\Components\FeatureList;
+use ArrayPress\WPFlyout\Components\KeyValueList;
 use ArrayPress\WPFlyout\Components\PaymentMethod;
 use ArrayPress\WPFlyout\Components\PriceSummary;
 use ArrayPress\WPFlyout\Components\CardChoice;
@@ -35,6 +37,7 @@ use ArrayPress\WPFlyout\Components\EmptyState;
 use ArrayPress\WPFlyout\Components\DataTable;
 use ArrayPress\WPFlyout\Components\InfoGrid;
 use ArrayPress\WPFlyout\Components\Alert;
+use EDD\Vendor\Stripe\Entitlements\Feature;
 use InvalidArgumentException;
 
 /**
@@ -116,6 +119,20 @@ class Components {
 			'data_fields' => 'items',
 			'asset'       => 'file-manager',
 			'description' => 'File attachments with drag-drop sorting'
+		] );
+
+		self::register( 'feature_list', [
+			'class'       => FeatureList::class,
+			'data_fields' => 'items',
+			'asset'       => 'feature-list',
+			'description' => 'Feature list with drag-drop sorting'
+		] );
+
+		self::register( 'key_value_list', [
+			'class'       => KeyValueList::class,
+			'data_fields' => 'items',
+			'asset'       => 'key-value-list',
+			'description' => 'Key value list with drag-drop sorting'
 		] );
 
 		// Form Components

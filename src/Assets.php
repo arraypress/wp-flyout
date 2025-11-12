@@ -58,6 +58,16 @@ class Assets {
 			'style'  => 'css/components/line-items.css',
 			'deps'   => [ 'wp-flyout-ajax-select' ]
 		],
+		'feature-list'   => [
+			'script' => 'js/components/feature-list.js',
+			'style'  => 'css/components/feature-list.css',
+			'deps'   => [ 'jquery-ui-sortable' ]
+		],
+		'key-value-list' => [
+			'script' => 'js/components/key-value-list.js',
+			'style'  => 'css/components/meta-key-value.css',
+			'deps'   => [ 'jquery-ui-sortable' ]
+		],
 
 		// Optional Components (loaded on demand)
 		'ajax-select'    => [
