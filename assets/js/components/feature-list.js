@@ -182,11 +182,8 @@
          */
         updateEmptyState: function ($component) {
             const $container = $component.find('.feature-list-container');
-            const hasContent = $component.find('.feature-list-input').filter(function () {
-                return $(this).val().trim() !== '';
-            }).length > 0;
-
-            $container.toggleClass('is-empty', !hasContent);
+            const hasItems = $component.find('.feature-list-item').length > 0;
+            $container.toggleClass('is-empty', !hasItems);
         },
 
         /**

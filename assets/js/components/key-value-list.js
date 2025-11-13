@@ -222,13 +222,8 @@
          */
         updateEmptyState: function ($component) {
             const $list = $component.find('.meta-kv-list');
-            const hasContent = $component.find('.meta-kv-item').filter(function () {
-                const key = $(this).find('.meta-kv-key').val();
-                const value = $(this).find('.meta-kv-value').val();
-                return key || value;
-            }).length > 0;
-
-            $list.toggleClass('is-empty', !hasContent);
+            const hasItems = $component.find('.meta-kv-item').length > 0;
+            $list.toggleClass('is-empty', !hasItems);
         },
 
         /**
