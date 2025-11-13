@@ -196,6 +196,12 @@
     animation: fadeIn 0.3s;
 }
 
+.wp-flyout-tab-content .button {
+    display: inline-flex;
+    align-content: center;
+    align-items: center;
+}
+
 @keyframes fadeIn {
     from {
         opacity: 0;
