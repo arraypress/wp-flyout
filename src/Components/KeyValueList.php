@@ -3,7 +3,7 @@
  * KeyValueList Component
  *
  * Displays editable key-value pairs similar to Stripe's metadata interface.
- * Keys are required and the component automatically removes empty rows on save.
+ * Component automatically removes empty rows on save.
  *
  * @package     ArrayPress\WPFlyout\Components\Interactive
  * @copyright   Copyright (c) 2025, ArrayPress Limited
@@ -70,6 +70,7 @@ class KeyValueList implements Renderable {
                 'val_placeholder' => __( 'Enter value', 'wp-flyout' ),
                 'max_items'       => 0, // 0 = unlimited
                 'sortable'        => true,
+                'required_key'    => false, // Keys are optional by default
                 'class'           => ''
         ];
     }
@@ -98,7 +99,8 @@ class KeyValueList implements Renderable {
              data-max-items="<?php echo esc_attr( (string) $this->config['max_items'] ); ?>"
              data-key-placeholder="<?php echo esc_attr( $this->config['key_placeholder'] ); ?>"
              data-val-placeholder="<?php echo esc_attr( $this->config['val_placeholder'] ); ?>"
-             data-sortable="<?php echo esc_attr( $this->config['sortable'] ? 'true' : 'false' ); ?>">
+             data-sortable="<?php echo esc_attr( $this->config['sortable'] ? 'true' : 'false' ); ?>"
+             data-required-key="<?php echo esc_attr( $this->config['required_key'] ? 'true' : 'false' ); ?>">
 
             <div class="meta-kv-header">
                 <div class="meta-kv-labels">
@@ -164,7 +166,7 @@ class KeyValueList implements Renderable {
                        placeholder="<?php echo esc_attr( $this->config['key_placeholder'] ); ?>"
                        class="meta-kv-key"
                        data-field="key"
-                       required>
+                        <?php echo $this->config['required_key'] ? 'required' : ''; ?>>
 
                 <input type="text"
                        name="<?php echo esc_attr( $this->config['name'] ); ?>[<?php echo $index; ?>][value]"

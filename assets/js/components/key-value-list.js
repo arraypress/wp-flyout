@@ -1,8 +1,8 @@
 /**
  * MetaKeyValue Component JavaScript
  *
- * Handles dynamic key-value pairs with validation, sorting, and row management.
- * Keys are required and empty rows are automatically cleaned up.
+ * Handles dynamic key-value pairs with optional validation, sorting, and row management.
+ * Empty rows are automatically cleaned up on form submission.
  *
  * @package     ArrayPress\WPFlyout
  * @version     1.0.0
@@ -57,6 +57,9 @@
                 MetaKeyValue.initSortable();
                 MetaKeyValue.initializeComponents();
             });
+
+            // Clean up empty rows before form submission
+            $(document).on('submit', 'form', this.cleanupEmptyRows.bind(this));
         },
 
         /**
@@ -102,8 +105,9 @@
             const sortable = $component.data('sortable') === true || $component.data('sortable') === 'true';
             const keyPlaceholder = $component.data('key-placeholder') || 'Enter key';
             const valPlaceholder = $component.data('val-placeholder') || 'Enter value';
+            const requiredKey = $component.data('required-key') === true || $component.data('required-key') === 'true';
 
-            const html = this.getRowTemplate(name, index, '', '', sortable, keyPlaceholder, valPlaceholder);
+            const html = this.getRowTemplate(name, index, '', '', sortable, keyPlaceholder, valPlaceholder, requiredKey);
             const $newRow = $(html);
 
             $items.append($newRow);
@@ -165,37 +169,40 @@
         },
 
         /**
-         * Validate key field
+         * Validate key field (only if required)
          */
         validateKey: function (e) {
             const $input = $(e.currentTarget);
+            const $component = $input.closest('.wp-flyout-meta-key-value');
+            const requiredKey = $component.data('required-key') === true || $component.data('required-key') === 'true';
             const value = $input.val().trim();
 
             // Remove any previous error state
             $input.removeClass('error');
 
-            if (!value) {
+            // Only validate if required and empty
+            if (requiredKey && !value) {
                 $input.addClass('error');
-                // Optional: Show error message
                 return false;
             }
 
-            // Check for duplicate keys
-            const $component = $input.closest('.wp-flyout-meta-key-value');
-            const $otherKeys = $component.find('.meta-kv-key').not($input);
+            // Check for duplicate keys only if there's a value
+            if (value) {
+                const $otherKeys = $component.find('.meta-kv-key').not($input);
 
-            let isDuplicate = false;
-            $otherKeys.each(function () {
-                if ($(this).val().trim().toLowerCase() === value.toLowerCase()) {
-                    isDuplicate = true;
+                let isDuplicate = false;
+                $otherKeys.each(function () {
+                    if ($(this).val().trim().toLowerCase() === value.toLowerCase()) {
+                        isDuplicate = true;
+                        return false;
+                    }
+                });
+
+                if (isDuplicate) {
+                    $input.addClass('error');
+                    alert('This key already exists');
                     return false;
                 }
-            });
-
-            if (isDuplicate) {
-                $input.addClass('error');
-                alert('This key already exists');
-                return false;
             }
 
             return true;
@@ -222,6 +229,7 @@
          */
         updateEmptyState: function ($component) {
             const $list = $component.find('.meta-kv-list');
+            // Show empty state only when there are NO items at all
             const hasItems = $component.find('.meta-kv-item').length > 0;
             $list.toggleClass('is-empty', !hasItems);
         },
@@ -241,9 +249,34 @@
         },
 
         /**
+         * Clean up empty rows before form submission
+         */
+        cleanupEmptyRows: function (e) {
+            const $form = $(e.currentTarget);
+
+            $form.find('.wp-flyout-meta-key-value').each(function () {
+                const $component = $(this);
+
+                // Remove items where both key and value are empty
+                $component.find('.meta-kv-item').each(function () {
+                    const $item = $(this);
+                    const key = $item.find('.meta-kv-key').val().trim();
+                    const value = $item.find('.meta-kv-value').val().trim();
+
+                    if (!key && !value) {
+                        $item.remove();
+                    }
+                });
+
+                // Reindex remaining items
+                MetaKeyValue.reindexItems($component);
+            });
+        },
+
+        /**
          * Get row template HTML
          */
-        getRowTemplate: function (name, index, key, value, sortable, keyPlaceholder, valPlaceholder) {
+        getRowTemplate: function (name, index, key, value, sortable, keyPlaceholder, valPlaceholder, requiredKey) {
             let html = `<div class="meta-kv-item" data-index="${index}">`;
 
             if (sortable) {
@@ -261,7 +294,7 @@
                            placeholder="${keyPlaceholder}"
                            class="meta-kv-key"
                            data-field="key"
-                           required>
+                           ${requiredKey ? 'required' : ''}>
                     
                     <input type="text"
                            name="${name}[${index}][value]"
