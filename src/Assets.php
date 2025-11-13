@@ -125,6 +125,11 @@ class Assets {
 			'style'  => 'css/components/stats.css',
 			'deps'   => []
 		],
+		'progress-steps' => [
+			'script' => '',
+			'style'  => 'css/components/progress-steps.css',
+			'deps'   => []
+		],
 	];
 
 	/**

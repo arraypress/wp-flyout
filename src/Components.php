@@ -29,6 +29,7 @@ use ArrayPress\WPFlyout\Components\FileManager;
 use ArrayPress\WPFlyout\Components\Notes;
 use ArrayPress\WPFlyout\Components\LineItems;
 use ArrayPress\WPFlyout\Components\Accordion;
+use ArrayPress\WPFlyout\Components\ProgressSteps;
 use ArrayPress\WPFlyout\Components\Stats;
 use ArrayPress\WPFlyout\Components\Timeline;
 use ArrayPress\WPFlyout\Components\Header;
@@ -206,6 +207,13 @@ class Components {
 			'data_fields' => [ 'type', 'message', 'title' ],
 			'asset'       => null,
 			'description' => 'Alert messages with various styles'
+		] );
+
+		self::register( 'progress_steps', [
+			'class'       => ProgressSteps::class,
+			'data_fields' => [ 'steps', 'current', 'style', 'clickable' ],
+			'asset'       => 'progress-steps',
+			'description' => 'Step indicators for multi-step processes'
 		] );
 
 		self::register( 'action_buttons', [
