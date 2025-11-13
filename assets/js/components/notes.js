@@ -24,10 +24,11 @@
                     self.handleDelete(e);
                 })
                 .on('keydown', '.wp-flyout-notes textarea', function (e) {
-                    // Submit on Enter (without Shift)
-                    if (e.key === 'Enter' && !e.shiftKey) {
+                    // Submit on Shift + Enter (standard for multi-line inputs)
+                    if (e.key === 'Enter' && e.shiftKey) {
                         e.preventDefault();
-                        $(this).siblings('[data-action="add-note"]').click();
+                        // Find the button within the same form container
+                        $(this).closest('.note-add-form').find('[data-action="add-note"]').click();
                     }
                 });
         },
@@ -68,7 +69,7 @@
                     action: ajaxAdd,
                     content: content,
                     object_type: objectType,
-                    _wpnonce: nonce  // Uses _wpnonce consistently
+                    _wpnonce: nonce
                 },
                 success: function (response) {
                     if (response.success && response.data.note) {
@@ -131,7 +132,7 @@
                     action: ajaxDelete,
                     note_id: noteId,
                     object_type: objectType,
-                    _wpnonce: nonce  // Uses _wpnonce consistently
+                    _wpnonce: nonce
                 },
                 success: function (response) {
                     if (response.success) {

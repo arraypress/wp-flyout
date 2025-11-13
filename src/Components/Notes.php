@@ -53,12 +53,12 @@ class Notes implements Renderable {
                 'name'         => 'notes',
                 'items'        => [],
                 'editable'     => true,
-                'placeholder'  => __( 'Add a note...', 'arraypress' ),
+                'placeholder'  => __( 'Add a note... (Shift+Enter to submit)', 'arraypress' ),
                 'empty_text'   => __( 'No notes yet.', 'arraypress' ),
                 'object_type'  => '',
-                'ajax_add'     => '',    // This gets set by Manager from add_callback
-                'ajax_delete'  => '',    // This gets set by Manager from delete_callback
-                'add_nonce'    => '',    // Add this - Manager provides it
+                'ajax_add'     => '',
+                'ajax_delete'  => '',
+                'add_nonce'    => '',
                 'delete_nonce' => '',
                 'class'        => ''
         ];
@@ -86,27 +86,27 @@ class Notes implements Renderable {
              data-add-nonce="<?php echo esc_attr( $this->config['add_nonce'] ?? '' ); ?>"
              data-delete-nonce="<?php echo esc_attr( $this->config['delete_nonce'] ?? '' ); ?>">
 
-        <div class="notes-list">
-            <?php if ( empty( $this->config['items'] ) ) : ?>
-                <p class="no-notes"><?php echo esc_html( $this->config['empty_text'] ); ?></p>
-            <?php else : ?>
-                <?php foreach ( $this->config['items'] as $note ) : ?>
-                    <?php $this->render_note( $note ); ?>
-                <?php endforeach; ?>
-            <?php endif; ?>
-        </div>
+            <div class="notes-list">
+                <?php if ( empty( $this->config['items'] ) ) : ?>
+                    <p class="no-notes"><?php echo esc_html( $this->config['empty_text'] ); ?></p>
+                <?php else : ?>
+                    <?php foreach ( $this->config['items'] as $note ) : ?>
+                        <?php $this->render_note( $note ); ?>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </div>
 
-        <?php if ( $this->config['editable'] && $this->config['ajax_add'] ) : ?>
-            <div class="note-add-form">
+            <?php if ( $this->config['editable'] && $this->config['ajax_add'] ) : ?>
+                <div class="note-add-form">
                     <textarea placeholder="<?php echo esc_attr( $this->config['placeholder'] ); ?>"
                               rows="3"></textarea>
-                <p>
-                    <button type="button" class="button button-primary" data-action="add-note">
-                        Add Note
-                    </button>
-                </p>
-            </div>
-        <?php endif; ?>
+                    <p>
+                        <button type="button" class="button button-primary" data-action="add-note">
+                            Add Note
+                        </button>
+                    </p>
+                </div>
+            <?php endif; ?>
         </div>
         <?php
         return ob_get_clean();

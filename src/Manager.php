@@ -99,6 +99,7 @@ class Manager {
 	public function register_flyout( string $id, array $config ): self {
 		$defaults = [
 			'title'       => '',
+			'subtitle'    => '',
 			'size'        => 'medium',
 			'panels'      => [],
 			'fields'      => [],
@@ -246,7 +247,7 @@ class Manager {
 
 				// Register the AJAX handler
 				add_action( 'wp_ajax_' . $action_name, function () use ( $item, $action_name, $config ) {
-					// STANDARDIZED: Always use action name as nonce key
+					// Always use action name as nonce key
 					if ( ! check_ajax_referer( $action_name, '_wpnonce', false ) ) {
 						wp_send_json_error( 'Security check failed', 403 );
 					}
@@ -510,6 +511,7 @@ class Manager {
 		$flyout             = new Flyout( $flyout_instance_id );
 
 		$flyout->set_title( $config['title'] );
+		$flyout->set_subtitle( $config['subtitle'] );
 		$flyout->set_size( $config['size'] );
 
 		// Apply filter to modify flyout instance

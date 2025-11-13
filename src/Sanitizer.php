@@ -103,7 +103,7 @@ class Sanitizer {
 			'tags'           => [ self::class, 'sanitize_tags' ],
 			'card_choice'    => [ self::class, 'sanitize_card_choice' ],
 			'feature_list'   => [ self::class, 'sanitize_feature_list' ],
-			'meta_key_value' => [ self::class, 'sanitize_meta_key_value' ]
+			'meta_key_value' => [ self::class, 'sanitize_key_value_list' ]
 		];
 
 		// Allow early filtering before assignment
@@ -344,7 +344,7 @@ class Sanitizer {
 	 *
 	 * @return array Sanitized metadata array
 	 */
-	public static function sanitize_meta_key_value( $data ): array {
+	public static function sanitize_key_value_list( $data ): array {
 		if ( ! is_array( $data ) ) {
 			return [];
 		}
