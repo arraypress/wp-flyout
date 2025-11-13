@@ -581,10 +581,18 @@ class Manager {
 	/**
 	 * Render fields from configuration
 	 *
+	 * Processes field configurations and renders them with support for:
+	 * - Conditional field dependencies
+	 * - Component resolution
+	 * - AJAX endpoint nonce generation
+	 * - Data value resolution from objects/arrays
+	 *
 	 * @param array $fields Field configurations
-	 * @param mixed $data   Data object or array
+	 * @param mixed $data   Data object or array for field population
 	 *
 	 * @return string Generated HTML
+	 * @since 12.1.0 Added conditional field support
+	 *
 	 * @since 1.0.0
 	 */
 	private function render_fields( array $fields, $data ): string {
@@ -596,6 +604,11 @@ class Manager {
 		$normalized_fields = $this->normalize_fields( $fields );
 
 		foreach ( $normalized_fields as $field_key => $field ) {
+			// Process conditional dependencies
+			if ( isset( $field['depends'] ) ) {
+				$field = $this->process_field_dependencies( $field, $field_key );
+			}
+
 			// Apply field-specific filter
 			$field = apply_filters( 'wp_flyout_render_field', $field, $field_key, $data, $this->prefix );
 			$field = apply_filters( "wp_flyout_render_field_{$field_key}", $field, $data, $this->prefix );
@@ -634,6 +647,10 @@ class Manager {
 				}
 			}
 
+			// Initialize field output variable
+			$field_output = '';
+
+			// Render field based on type
 			if ( Components::is_component( $type ) ) {
 				$resolved_data = Components::resolve_data( $type, $field_key, $data );
 
@@ -643,20 +660,114 @@ class Manager {
 					}
 				}
 
-				$component = Components::create( $type, $field );
-				$output    .= $component ? $component->render() : '';
+				$component    = Components::create( $type, $field );
+				$field_output = $component ? $component->render() : '';
 			} else {
 				if ( ! isset( $field['value'] ) && $data ) {
 					$field['value'] = Components::resolve_value( $field_key, $data );
 				}
 
-				$form_field = new FormField( $field );
-				$output     .= $form_field->render();
+				$form_field   = new FormField( $field );
+				$field_output = $form_field->render();
 			}
+
+			// Wrap field output if has dependencies
+			if ( isset( $field['wrapper_attrs'] ) && ! empty( $field['wrapper_attrs'] ) ) {
+				$wrapper_attrs = $field['wrapper_attrs'];
+				$attrs_string  = '';
+
+				foreach ( $wrapper_attrs as $attr => $value ) {
+					if ( $attr === 'data-depends' && is_array( $value ) ) {
+						$value = htmlspecialchars( wp_json_encode( $value ), ENT_QUOTES, 'UTF-8' );
+					}
+					$attrs_string .= sprintf( ' %s="%s"', esc_attr( $attr ), esc_attr( $value ) );
+				}
+
+				$field_output = sprintf(
+					'<div class="wp-flyout-field-wrapper conditional-field"%s>%s</div>',
+					$attrs_string,
+					$field_output
+				);
+			}
+
+			$output .= $field_output;
 		}
 
 		// Apply filter after rendering
 		return apply_filters( 'wp_flyout_after_render_fields', $output, $fields, $data, $this->prefix );
+	}
+
+	/**
+	 * Process field dependencies for conditional display
+	 *
+	 * Adds data attributes to fields that have dependencies configured.
+	 * Supports three dependency patterns:
+	 * - Simple truthy check: 'depends' => 'field_name'
+	 * - Value match: 'depends' => ['field' => 'name', 'value' => 'x']
+	 * - Contains check: 'depends' => ['field' => 'name', 'contains' => 'x']
+	 *
+	 * @param array  $field     Field configuration
+	 * @param string $field_key Field identifier
+	 *
+	 * @return array Modified field configuration with dependency data
+	 * @since  12.1.0
+	 * @access private
+	 *
+	 */
+	private function process_field_dependencies( array $field, string $field_key ): array {
+		if ( ! isset( $field['depends'] ) ) {
+			return $field;
+		}
+
+		$depends = $field['depends'];
+
+		// Build dependency data attribute
+		$dependency_data = null;
+
+		if ( is_string( $depends ) ) {
+			// Simple truthy check
+			$dependency_data = $depends;
+		} elseif ( is_array( $depends ) ) {
+			// Complex dependency
+			if ( isset( $depends['field'] ) ) {
+				$dependency_data = [
+					'field' => $depends['field']
+				];
+
+				if ( isset( $depends['value'] ) ) {
+					$dependency_data['value'] = $depends['value'];
+				} elseif ( isset( $depends['contains'] ) ) {
+					$dependency_data['contains'] = $depends['contains'];
+				}
+			}
+		}
+
+		// Add wrapper attributes for the field
+		if ( $dependency_data ) {
+			if ( ! isset( $field['wrapper_attrs'] ) ) {
+				$field['wrapper_attrs'] = [];
+			}
+
+			// Add data-depends attribute
+			$field['wrapper_attrs']['data-depends'] = $dependency_data;
+
+			// Add unique ID if not present
+			if ( empty( $field['wrapper_attrs']['id'] ) ) {
+				$field['wrapper_attrs']['id'] = 'field-' . sanitize_key( $field_key );
+			}
+
+			// Start hidden if dependency exists (JS will show if condition met)
+			$field['wrapper_attrs']['style'] = 'display: none;';
+
+			// Add class for styling
+			if ( ! empty( $field['wrapper_attrs']['class'] ) ) {
+				$field['wrapper_attrs']['class'] .= ' has-dependency';
+			} else {
+				$field['wrapper_attrs']['class'] = 'has-dependency';
+			}
+		}
+
+		return $field;
 	}
 
 	/**

@@ -30,10 +30,11 @@ class Assets {
 	 * @var array
 	 */
 	private static array $core_scripts = [
-		'js/wp-flyout.js',          // Core flyout functionality
-		'js/core/forms.js',         // Form utilities
-		'js/core/manager.js',       // Manager integration
-		'js/core/alert.js'          // Alert component
+		'js/wp-flyout.js',                  // Core flyout functionality
+		'js/core/forms.js',                 // Form utilities
+		'js/core/manager.js',               // Manager integration
+		'js/core/alert.js',                 // Alert component
+		'js/core/conditional-fields.js'     // Conditional fields
 	];
 
 	/**

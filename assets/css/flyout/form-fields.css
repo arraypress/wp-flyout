@@ -232,3 +232,24 @@
 .wp-flyout-field textarea.error {
     border-color: #d63638 !important;
 }
+
+/**
+ * Conditional Fields
+ *
+ * Smooth transitions for conditional field visibility
+ */
+.wp-flyout-field-wrapper.conditional-field {
+    overflow: hidden;
+    transition: opacity 0.2s ease;
+}
+
+.wp-flyout-field-wrapper.conditional-field[style*="display: none"] {
+    opacity: 0;
+}
+
+/* Disabled state for hidden conditional fields */
+/*.wp-flyout-field-wrapper.conditional-field:not(:visible) input,*/
+/*.wp-flyout-field-wrapper.conditional-field:not(:visible) select,*/
+/*.wp-flyout-field-wrapper.conditional-field:not(:visible) textarea {*/
+/*    pointer-events: none;*/
+/*}*/
