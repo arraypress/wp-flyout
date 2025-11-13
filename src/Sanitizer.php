@@ -103,7 +103,7 @@ class Sanitizer {
 			'tags'           => [ self::class, 'sanitize_tags' ],
 			'card_choice'    => [ self::class, 'sanitize_card_choice' ],
 			'feature_list'   => [ self::class, 'sanitize_feature_list' ],
-			'meta_key_value' => [ self::class, 'sanitize_key_value_list' ]
+			'key_value_list' => [ self::class, 'sanitize_key_value_list' ]
 		];
 
 		// Allow early filtering before assignment
