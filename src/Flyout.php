@@ -40,7 +40,7 @@ class Flyout {
      * @since 1.0.0
      * @var array<string>
      */
-    const VALID_SIZES = ['small', 'medium', 'large', 'full'];
+    const VALID_SIZES = [ 'small', 'medium', 'large', 'full' ];
 
     /**
      * Valid flyout position options
@@ -48,7 +48,7 @@ class Flyout {
      * @since 1.0.0
      * @var array<string>
      */
-    const VALID_POSITIONS = ['left', 'right'];
+    const VALID_POSITIONS = [ 'left', 'right' ];
 
     /**
      * Flyout configuration
@@ -56,6 +56,7 @@ class Flyout {
      * @since 1.0.0
      * @var array{
      *     title: string,
+     *     subtitle: string,
      *     size: string,
      *     position: string,
      *     classes: array<string>
@@ -63,6 +64,7 @@ class Flyout {
      */
     private array $config = [
             'title'    => '',
+            'subtitle' => '',      // Add subtitle support
             'size'     => 'medium', // small, medium, large, full
             'position' => 'right',  // right or left
             'classes'  => [],
@@ -141,12 +143,37 @@ class Flyout {
     }
 
     /**
+     * Set flyout subtitle
+     *
+     * @param string $subtitle Subtitle to display in header
+     *
+     * @return self Returns instance for method chaining
+     * @since 1.0.0
+     */
+    public function set_subtitle( string $subtitle ): self {
+        $this->config['subtitle'] = $subtitle;
+
+        return $this;
+    }
+
+    /**
+     * Get flyout subtitle
+     *
+     * @return string Current subtitle
+     * @since 1.0.0
+     */
+    public function get_subtitle(): string {
+        return $this->config['subtitle'];
+    }
+
+    /**
      * Set flyout size
      *
+     * @param string $size Flyout size: 'small', 'medium', 'large', or 'full'
+     *
+     * @return self Returns instance for method chaining
      * @since 1.0.0
      *
-     * @param string $size Flyout size: 'small', 'medium', 'large', or 'full'
-     * @return self Returns instance for method chaining
      */
     public function set_size( string $size ): self {
         if ( in_array( $size, self::VALID_SIZES, true ) ) {
@@ -169,10 +196,11 @@ class Flyout {
     /**
      * Set flyout position
      *
+     * @param string $position Position: 'left' or 'right'
+     *
+     * @return self Returns instance for method chaining
      * @since 1.0.0
      *
-     * @param string $position Position: 'left' or 'right'
-     * @return self Returns instance for method chaining
      */
     public function set_position( string $position ): self {
         if ( in_array( $position, self::VALID_POSITIONS, true ) ) {
@@ -409,12 +437,16 @@ class Flyout {
      * @return void
      * @since  1.0.0
      * @access private
-     *
      */
     private function render_header(): void {
         ?>
         <div class="wp-flyout-header">
-            <h2><?php echo esc_html( $this->config['title'] ); ?></h2>
+            <div class="wp-flyout-header-content">
+                <h2 class="wp-flyout-title"><?php echo esc_html( $this->config['title'] ); ?></h2>
+                <?php if ( ! empty( $this->config['subtitle'] ) ) : ?>
+                    <p class="wp-flyout-subtitle"><?php echo esc_html( $this->config['subtitle'] ); ?></p>
+                <?php endif; ?>
+            </div>
             <button type="button" class="wp-flyout-close" aria-label="<?php esc_attr_e( 'Close', 'wp-flyout' ); ?>">
                 <span class="dashicons dashicons-no-alt"></span>
             </button>

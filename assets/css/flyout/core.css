@@ -102,13 +102,31 @@
     flex-shrink: 0;
 }
 
-.wp-flyout-header h2 {
+/* Header content wrapper for title and subtitle */
+.wp-flyout-header-content {
+    flex: 1;
+    min-width: 0; /* Prevent text overflow */
+}
+
+/* Title styling - now more specific */
+.wp-flyout-header h2,
+.wp-flyout-title {
     margin: 0;
     font-size: 20px;
     font-weight: 500;
     color: var(--wp-flyout-text);
+    line-height: 1.3;
 }
 
+/* Subtitle styling */
+.wp-flyout-subtitle {
+    margin: 4px 0 0;
+    font-size: 13px;
+    line-height: 1.4;
+    color: var(--wp-flyout-text-muted);
+}
+
+/* Close button */
 .wp-flyout-close {
     background: none;
     border: none;
@@ -122,6 +140,8 @@
     cursor: pointer;
     transition: all 0.2s;
     border-radius: 4px;
+    flex-shrink: 0;
+    margin-left: 12px;
 }
 
 .wp-flyout-close:hover {
@@ -244,6 +264,15 @@
     .wp-flyout-tab-nav {
         padding: 0 20px;
         overflow-x: auto;
+    }
+
+    /* Adjust title and subtitle for mobile */
+    .wp-flyout-title {
+        font-size: 18px;
+    }
+
+    .wp-flyout-subtitle {
+        font-size: 12px;
     }
 }
 
