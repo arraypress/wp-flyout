@@ -215,19 +215,27 @@
 
             $form.find('.wp-flyout-feature-list').each(function () {
                 const $component = $(this);
+                const name = $component.data('name');
 
-                // Remove items with empty values
+                // Remove items with empty values completely
                 $component.find('.feature-list-item').each(function () {
                     const $item = $(this);
                     const value = $item.find('.feature-list-input').val().trim();
 
                     if (!value) {
+                        // Remove input to prevent submission
+                        $item.find('input').remove();
                         $item.remove();
                     }
                 });
 
                 // Reindex remaining items
-                FeatureList.updateIndexes($component);
+                $component.find('.feature-list-item').each(function (index) {
+                    const $item = $(this);
+                    $item.attr('data-index', index);
+                    // Update the name to have correct index
+                    $item.find('.feature-list-input').attr('name', `${name}[${index}]`);
+                });
             });
         },
 

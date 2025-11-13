@@ -50,6 +50,14 @@ class KeyValueList implements Renderable {
         if ( ! is_array( $this->config['items'] ) ) {
             $this->config['items'] = [];
         }
+
+        // Clean up any malformed items (but this should rarely be needed)
+        $this->config['items'] = array_filter( $this->config['items'], function ( $item ) {
+            return is_array( $item ) && ( ! empty( $item['key'] ) || ! empty( $item['value'] ) );
+        } );
+
+        // Reindex
+        $this->config['items'] = array_values( $this->config['items'] );
     }
 
     /**

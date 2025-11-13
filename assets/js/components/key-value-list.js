@@ -256,20 +256,29 @@
 
             $form.find('.wp-flyout-meta-key-value').each(function () {
                 const $component = $(this);
+                const name = $component.data('name');
 
-                // Remove items where both key and value are empty
+                // Remove ALL existing items from the DOM
                 $component.find('.meta-kv-item').each(function () {
                     const $item = $(this);
                     const key = $item.find('.meta-kv-key').val().trim();
                     const value = $item.find('.meta-kv-value').val().trim();
 
+                    // Remove items where BOTH are empty
                     if (!key && !value) {
+                        // Remove all inputs to prevent submission
+                        $item.find('input').remove();
                         $item.remove();
                     }
                 });
 
-                // Reindex remaining items
-                MetaKeyValue.reindexItems($component);
+                // Reindex remaining items with sequential indexes
+                $component.find('.meta-kv-item').each(function (index) {
+                    const $item = $(this);
+                    $item.attr('data-index', index);
+                    $item.find('.meta-kv-key').attr('name', `${name}[${index}][key]`);
+                    $item.find('.meta-kv-value').attr('name', `${name}[${index}][value]`);
+                });
             });
         },
 
