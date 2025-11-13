@@ -674,13 +674,11 @@ class Manager {
 			// Wrap field output if has dependencies
 			if ( isset( $field['wrapper_attrs'] ) && ! empty( $field['wrapper_attrs'] ) ) {
 				$wrapper_attrs = $field['wrapper_attrs'];
-				$attrs_string  = '';
+				$attrs_string = '';
 
 				foreach ( $wrapper_attrs as $attr => $value ) {
-					if ( $attr === 'data-depends' && is_array( $value ) ) {
-						$value = htmlspecialchars( wp_json_encode( $value ), ENT_QUOTES, 'UTF-8' );
-					}
-					$attrs_string .= sprintf( ' %s="%s"', esc_attr( $attr ), esc_attr( $value ) );
+					// Don't re-encode, we already did it in process_field_dependencies
+					$attrs_string .= sprintf( ' %s="%s"', esc_attr( $attr ), $value );
 				}
 
 				$field_output = sprintf(
@@ -706,13 +704,13 @@ class Manager {
 	 * - Value match: 'depends' => ['field' => 'name', 'value' => 'x']
 	 * - Contains check: 'depends' => ['field' => 'name', 'contains' => 'x']
 	 *
+	 * @since 12.1.0
+	 * @access private
+	 *
 	 * @param array  $field     Field configuration
 	 * @param string $field_key Field identifier
 	 *
 	 * @return array Modified field configuration with dependency data
-	 * @since  12.1.0
-	 * @access private
-	 *
 	 */
 	private function process_field_dependencies( array $field, string $field_key ): array {
 		if ( ! isset( $field['depends'] ) ) {
@@ -748,8 +746,12 @@ class Manager {
 				$field['wrapper_attrs'] = [];
 			}
 
-			// Add data-depends attribute
-			$field['wrapper_attrs']['data-depends'] = $dependency_data;
+			// Add data-depends attribute - properly encode if array
+			if ( is_array( $dependency_data ) ) {
+				$field['wrapper_attrs']['data-depends'] = htmlspecialchars( wp_json_encode( $dependency_data ), ENT_QUOTES, 'UTF-8' );
+			} else {
+				$field['wrapper_attrs']['data-depends'] = $dependency_data;
+			}
 
 			// Add unique ID if not present
 			if ( empty( $field['wrapper_attrs']['id'] ) ) {
