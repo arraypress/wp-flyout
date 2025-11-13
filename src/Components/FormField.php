@@ -243,30 +243,37 @@ class FormField implements Renderable {
                 $this->config['wrapper_class']
         ];
 
-        // Build wrapper attributes
+        // Build wrapper attributes from config
         $wrapper_attrs = $this->config['wrapper_attrs'] ?? [];
 
-        // Add ID if specified
-        if ( ! empty( $wrapper_attrs['id'] ) ) {
-            $id_attr = sprintf( ' id="%s"', esc_attr( $wrapper_attrs['id'] ) );
-        } else {
-            $id_attr = '';
+        // Handle classes
+        if ( ! empty( $wrapper_attrs['class'] ) ) {
+            $wrapper_classes[] = $wrapper_attrs['class'];
+            unset( $wrapper_attrs['class'] );
         }
 
-        // Add other attributes
-        $attrs_string = '';
+        // Build attribute string
+        $attrs_html = '';
+
+        // Add ID
+        if ( ! empty( $wrapper_attrs['id'] ) ) {
+            $attrs_html .= sprintf( ' id="%s"', esc_attr( $wrapper_attrs['id'] ) );
+            unset( $wrapper_attrs['id'] );
+        }
+
+        // Add remaining attributes
         foreach ( $wrapper_attrs as $attr => $value ) {
-            if ( $attr === 'id' ) continue; // Already handled
-            if ( $attr === 'class' ) {
-                $wrapper_classes[] = $value;
-                continue;
+            // Special handling for data-depends - it's already JSON encoded
+            if ( $attr === 'data-depends' ) {
+                $attrs_html .= sprintf( ' %s=\'%s\'', $attr, $value );
+            } else {
+                $attrs_html .= sprintf( ' %s="%s"', esc_attr( $attr ), esc_attr( $value ) );
             }
-            $attrs_string .= sprintf( ' %s="%s"', esc_attr( $attr ), esc_attr( $value ) );
         }
 
         ob_start();
         ?>
-        <div<?php echo $id_attr; ?> class="<?php echo esc_attr( implode( ' ', array_filter( $wrapper_classes ) ) ); ?>"<?php echo $attrs_string; ?>>
+        <div class="<?php echo esc_attr( implode( ' ', array_filter( $wrapper_classes ) ) ); ?>"<?php echo $attrs_html; ?>>
             <?php if ( ! in_array( $this->config['type'], [ 'toggle', 'radio' ], true ) && $this->config['label'] ) : ?>
                 <label for="<?php echo esc_attr( $this->config['id'] ); ?>">
                     <?php echo esc_html( $this->config['label'] ); ?>

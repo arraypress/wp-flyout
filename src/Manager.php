@@ -647,9 +647,6 @@ class Manager {
 				}
 			}
 
-			// Initialize field output variable
-			$field_output = '';
-
 			// Render field based on type
 			if ( Components::is_component( $type ) ) {
 				$resolved_data = Components::resolve_data( $type, $field_key, $data );
@@ -663,29 +660,18 @@ class Manager {
 				$component    = Components::create( $type, $field );
 				$field_output = $component ? $component->render() : '';
 			} else {
+				// Pass wrapper_attrs to FormField
+				if ( isset( $field['wrapper_attrs'] ) ) {
+					// FormField needs these as part of its config
+					$field['wrapper_attrs'] = $field['wrapper_attrs'];
+				}
+
 				if ( ! isset( $field['value'] ) && $data ) {
 					$field['value'] = Components::resolve_value( $field_key, $data );
 				}
 
 				$form_field   = new FormField( $field );
 				$field_output = $form_field->render();
-			}
-
-			// Wrap field output if has dependencies
-			if ( isset( $field['wrapper_attrs'] ) && ! empty( $field['wrapper_attrs'] ) ) {
-				$wrapper_attrs = $field['wrapper_attrs'];
-				$attrs_string = '';
-
-				foreach ( $wrapper_attrs as $attr => $value ) {
-					// Don't re-encode, we already did it in process_field_dependencies
-					$attrs_string .= sprintf( ' %s="%s"', esc_attr( $attr ), $value );
-				}
-
-				$field_output = sprintf(
-					'<div class="wp-flyout-field-wrapper conditional-field"%s>%s</div>',
-					$attrs_string,
-					$field_output
-				);
 			}
 
 			$output .= $field_output;
@@ -704,13 +690,13 @@ class Manager {
 	 * - Value match: 'depends' => ['field' => 'name', 'value' => 'x']
 	 * - Contains check: 'depends' => ['field' => 'name', 'contains' => 'x']
 	 *
-	 * @since 12.1.0
-	 * @access private
-	 *
 	 * @param array  $field     Field configuration
 	 * @param string $field_key Field identifier
 	 *
 	 * @return array Modified field configuration with dependency data
+	 * @since  12.1.0
+	 * @access private
+	 *
 	 */
 	private function process_field_dependencies( array $field, string $field_key ): array {
 		if ( ! isset( $field['depends'] ) ) {
