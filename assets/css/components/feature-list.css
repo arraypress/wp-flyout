@@ -146,24 +146,6 @@
 }
 
 /* ==========================================
-   ICON
-   ========================================== */
-
-.feature-list-icon {
-    flex-shrink: 0;
-    color: #2271b1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.feature-list-icon .dashicons {
-    font-size: 18px;
-    width: 18px;
-    height: 18px;
-}
-
-/* ==========================================
    INPUT
    ========================================== */
 
@@ -269,11 +251,6 @@
     font-size: 12px;
 }
 
-/* No icon variant */
-.wp-flyout-feature-list.no-icon .feature-list-icon {
-    display: none;
-}
-
 /* ==========================================
    RESPONSIVE
    ========================================== */
@@ -291,10 +268,6 @@
         padding: 4px 0;
         margin-bottom: 8px;
         border-bottom: 1px solid #f0f0f1;
-    }
-
-    .feature-list-icon {
-        order: 0;
     }
 
     .feature-list-input {

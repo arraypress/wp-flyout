@@ -68,7 +68,6 @@ class FeatureList implements Renderable {
                 'placeholder' => __( 'Enter item', 'wp-flyout' ),
                 'max_items'   => 0, // 0 = unlimited
                 'sortable'    => true,
-                'icon'        => 'yes', // Icon to show for each item
                 'class'       => ''
         ];
     }
@@ -96,7 +95,6 @@ class FeatureList implements Renderable {
              data-name="<?php echo esc_attr( $this->config['name'] ); ?>"
              data-max-items="<?php echo esc_attr( (string) $this->config['max_items'] ); ?>"
              data-placeholder="<?php echo esc_attr( $this->config['placeholder'] ); ?>"
-             data-icon="<?php echo esc_attr( $this->config['icon'] ); ?>"
              data-sortable="<?php echo esc_attr( $this->config['sortable'] ? 'true' : 'false' ); ?>">
 
             <?php if ( ! empty( $this->config['label'] ) ) : ?>
@@ -156,12 +154,6 @@ class FeatureList implements Renderable {
             <?php if ( $this->config['sortable'] ) : ?>
                 <span class="feature-list-handle" title="<?php esc_attr_e( 'Drag to reorder', 'wp-flyout' ); ?>">
 					<span class="dashicons dashicons-menu"></span>
-				</span>
-            <?php endif; ?>
-
-            <?php if ( ! empty( $this->config['icon'] ) ) : ?>
-                <span class="feature-list-icon">
-					<span class="dashicons dashicons-<?php echo esc_attr( $this->config['icon'] ); ?>"></span>
 				</span>
             <?php endif; ?>
 
