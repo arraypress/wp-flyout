@@ -96,10 +96,14 @@
         addEmptyRow: function ($component) {
             const $items = $component.find('.meta-kv-items');
             const index = $items.find('.meta-kv-item').length;
-            const name = $component.data('name');
-            const sortable = $component.hasClass('is-sortable');
 
-            const html = this.getRowTemplate(name, index, '', '', sortable);
+            // Get configuration from data attributes
+            const name = $component.data('name');
+            const sortable = $component.data('sortable') === true || $component.data('sortable') === 'true';
+            const keyPlaceholder = $component.data('key-placeholder') || 'Enter key';
+            const valPlaceholder = $component.data('val-placeholder') || 'Enter value';
+
+            const html = this.getRowTemplate(name, index, '', '', sortable, keyPlaceholder, valPlaceholder);
             const $newRow = $(html);
 
             $items.append($newRow);
@@ -244,7 +248,7 @@
         /**
          * Get row template HTML
          */
-        getRowTemplate: function (name, index, key, value, sortable) {
+        getRowTemplate: function (name, index, key, value, sortable, keyPlaceholder, valPlaceholder) {
             let html = `<div class="meta-kv-item" data-index="${index}">`;
 
             if (sortable) {
@@ -259,7 +263,7 @@
                     <input type="text"
                            name="${name}[${index}][key]"
                            value="${key}"
-                           placeholder="Enter key"
+                           placeholder="${keyPlaceholder}"
                            class="meta-kv-key"
                            data-field="key"
                            required>
@@ -267,7 +271,7 @@
                     <input type="text"
                            name="${name}[${index}][value]"
                            value="${value}"
-                           placeholder="Enter value"
+                           placeholder="${valPlaceholder}"
                            class="meta-kv-value"
                            data-field="value">
                 </div>

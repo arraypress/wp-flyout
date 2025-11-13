@@ -95,7 +95,10 @@ class KeyValueList implements Renderable {
         <div id="<?php echo esc_attr( $this->config['id'] ); ?>"
              class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>"
              data-name="<?php echo esc_attr( $this->config['name'] ); ?>"
-             data-max-items="<?php echo esc_attr( (string) $this->config['max_items'] ); ?>">
+             data-max-items="<?php echo esc_attr( (string) $this->config['max_items'] ); ?>"
+             data-key-placeholder="<?php echo esc_attr( $this->config['key_placeholder'] ); ?>"
+             data-val-placeholder="<?php echo esc_attr( $this->config['val_placeholder'] ); ?>"
+             data-sortable="<?php echo esc_attr( $this->config['sortable'] ? 'true' : 'false' ); ?>">
 
             <div class="meta-kv-header">
                 <div class="meta-kv-labels">

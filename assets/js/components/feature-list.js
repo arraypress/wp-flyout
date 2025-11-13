@@ -100,12 +100,14 @@
         addEmptyItem: function ($component) {
             const $items = $component.find('.feature-list-items');
             const index = $items.find('.feature-list-item').length;
-            const name = $component.data('name');
-            const sortable = $component.hasClass('is-sortable');
-            const icon = $component.find('.feature-list-icon .dashicons').attr('class');
-            const iconName = icon ? icon.replace('dashicons dashicons-', '') : '';
 
-            const html = this.getItemTemplate(name, index, '', sortable, iconName);
+            // Get configuration from data attributes
+            const name = $component.data('name');
+            const sortable = $component.data('sortable') === true || $component.data('sortable') === 'true';
+            const icon = $component.data('icon');
+            const placeholder = $component.data('placeholder') || 'Enter item';
+
+            const html = this.getItemTemplate(name, index, '', sortable, icon, placeholder);
             const $newItem = $(html);
 
             $items.append($newItem);
@@ -235,7 +237,7 @@
         /**
          * Get item template HTML
          */
-        getItemTemplate: function (name, index, value, sortable, icon) {
+        getItemTemplate: function (name, index, value, sortable, icon, placeholder) {
             let html = `<div class="feature-list-item" data-index="${index}">`;
 
             if (sortable) {
@@ -256,7 +258,7 @@
                 <input type="text"
                        name="${name}[]"
                        value="${value}"
-                       placeholder="Enter item"
+                       placeholder="${placeholder}"
                        class="feature-list-input">
                 
                 <button type="button"
