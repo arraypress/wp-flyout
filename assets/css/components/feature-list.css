@@ -231,7 +231,7 @@
 }
 
 .feature-list-add {
-    display: inline-flex;
+    display: inline-flex !important;
     align-items: center;
     gap: 6px;
 }
