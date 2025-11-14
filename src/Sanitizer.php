@@ -100,6 +100,7 @@ class Sanitizer {
 		$sanitizers = [
 			'line_items'     => [ self::class, 'sanitize_line_items' ],
 			'files'          => [ self::class, 'sanitize_files' ],
+			'image_gallery'  => [ self::class, 'sanitize_image_gallery' ],
 			'tags'           => [ self::class, 'sanitize_tags' ],
 			'card_choice'    => [ self::class, 'sanitize_card_choice' ],
 			'feature_list'   => [ self::class, 'sanitize_feature_list' ],
@@ -332,6 +333,47 @@ class Sanitizer {
 		}
 
 		return $sanitized;
+	}
+
+	/**
+	 * Sanitize image gallery data
+	 *
+	 * Ensures only valid attachment IDs are stored.
+	 * Accepts both simple array of IDs and legacy format with attachment_id/id keys.
+	 *
+	 * @param array|mixed $data Raw gallery data
+	 *
+	 * @return array Sanitized array of attachment IDs
+	 */
+	public static function sanitize_image_gallery( $data ): array {
+		if ( ! is_array( $data ) ) {
+			return [];
+		}
+
+		$sanitized = [];
+
+		foreach ( $data as $item ) {
+			$attachment_id = 0;
+
+			if ( is_numeric( $item ) ) {
+				// Simple ID format (preferred)
+				$attachment_id = absint( $item );
+			} elseif ( is_array( $item ) ) {
+				// Legacy format with attachment_id or id key
+				if ( isset( $item['attachment_id'] ) ) {
+					$attachment_id = absint( $item['attachment_id'] );
+				} elseif ( isset( $item['id'] ) ) {
+					$attachment_id = absint( $item['id'] );
+				}
+			}
+
+			// Verify it's a valid attachment
+			if ( $attachment_id > 0 && wp_attachment_is_image( $attachment_id ) ) {
+				$sanitized[] = $attachment_id;
+			}
+		}
+
+		return array_values( $sanitized ); // Reset array keys
 	}
 
 	/**
