@@ -39,9 +39,10 @@ class ImageGallery implements Renderable {
     /**
      * Constructor
      *
+     * @param array $config Configuration options
+     *
      * @since 1.0.0
      *
-     * @param array $config Configuration options
      */
     public function __construct( array $config = [] ) {
         $this->config = wp_parse_args( $config, self::get_defaults() );
@@ -63,9 +64,9 @@ class ImageGallery implements Renderable {
     /**
      * Get default configuration
      *
+     * @return array Default configuration values
      * @since 1.0.0
      *
-     * @return array Default configuration values
      */
     private static function get_defaults(): array {
         return [
@@ -87,37 +88,22 @@ class ImageGallery implements Renderable {
     /**
      * Normalize items to simple array of IDs
      *
-     * @since 1.0.0
-     *
      * @param array $items Items array
      *
      * @return array Array of attachment IDs
+     * @since 1.0.0
+     *
      */
     private function normalize_items( array $items ): array {
-        $normalized = [];
-
-        foreach ( $items as $item ) {
-            if ( is_numeric( $item ) ) {
-                // Simple ID
-                $normalized[] = (int) $item;
-            } elseif ( is_array( $item ) && isset( $item['attachment_id'] ) ) {
-                // Legacy format with attachment_id
-                $normalized[] = (int) $item['attachment_id'];
-            } elseif ( is_array( $item ) && isset( $item['id'] ) ) {
-                // Legacy format with id
-                $normalized[] = (int) $item['id'];
-            }
-        }
-
-        return array_filter( $normalized ); // Remove any zeros
+        return array_values( array_filter( array_map( 'intval', $items ) ) );
     }
 
     /**
      * Render the component
      *
+     * @return string Generated HTML
      * @since 1.0.0
      *
-     * @return string Generated HTML
      */
     public function render(): string {
         $classes = [ 'wp-flyout-image-gallery' ];
@@ -183,13 +169,13 @@ class ImageGallery implements Renderable {
     /**
      * Render single image item
      *
-     * @since 1.0.0
-     * @access private
-     *
      * @param int $attachment_id Attachment ID
      * @param int $index         Item index
      *
      * @return void
+     * @since  1.0.0
+     * @access private
+     *
      */
     private function render_image_item( int $attachment_id, int $index ): void {
         // Get thumbnail URL
@@ -203,7 +189,8 @@ class ImageGallery implements Renderable {
             $thumbnail = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2RkZCIvPjx0ZXh0IHRleHQtYW5jaG9yPSJtaWRkbGUiIHg9IjUwIiB5PSI1MCIgc3R5bGU9ImZpbGw6I2FhYTtmb250LXdlaWdodDpib2xkO2ZvbnQtc2l6ZToxM3B4O2ZvbnQtZmFtaWx5OkFyaWFsLEhlbHZldGljYSxzYW5zLXNlcmlmO2RvbWluYW50LWJhc2VsaW5lOmNlbnRyYWwiPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==';
         }
         ?>
-        <div class="gallery-item" data-index="<?php echo esc_attr( (string) $index ); ?>" data-attachment-id="<?php echo esc_attr( (string) $attachment_id ); ?>">
+        <div class="gallery-item" data-index="<?php echo esc_attr( (string) $index ); ?>"
+             data-attachment-id="<?php echo esc_attr( (string) $attachment_id ); ?>">
             <?php if ( $this->config['sortable'] ) : ?>
                 <div class="gallery-item-handle">
                     <span class="dashicons dashicons-move"></span>
