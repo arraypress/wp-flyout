@@ -1,6 +1,7 @@
 /**
  * WP Flyout Image Gallery Component JavaScript
  * Handles media library integration, drag-drop sorting, and gallery management
+ * Simplified to only manage attachment IDs
  */
 (function ($) {
     'use strict';
@@ -43,7 +44,7 @@
                                 // Re-index items after sorting
                                 $(this).find('.gallery-item').each(function (index) {
                                     $(this).attr('data-index', index);
-                                    $(this).find('input').each(function () {
+                                    $(this).find('input[type="hidden"]').each(function () {
                                         const name = $(this).attr('name');
                                         if (name) {
                                             $(this).attr('name', name.replace(/\[\d+\]/, '[' + index + ']'));
@@ -88,9 +89,9 @@
 
             // Create media frame
             const frame = wp.media({
-                title: isEdit ? 'Edit Image' : 'Select Images',
+                title: isEdit ? 'Replace Image' : 'Select Images',
                 button: {
-                    text: isEdit ? 'Update' : 'Add to Gallery'
+                    text: isEdit ? 'Replace' : 'Add to Gallery'
                 },
                 library: {
                     type: 'image'
@@ -102,7 +103,7 @@
             if (isEdit) {
                 frame.on('open', function () {
                     const selection = frame.state().get('selection');
-                    const attachmentId = $item.find('[data-field="attachment_id"]').val();
+                    const attachmentId = $item.data('attachment-id');
                     if (attachmentId) {
                         const attachment = wp.media.attachment(attachmentId);
                         attachment.fetch();
@@ -116,7 +117,7 @@
                 const selection = frame.state().get('selection');
 
                 if (isEdit) {
-                    // Update existing item
+                    // Replace existing item
                     const attachment = selection.first().toJSON();
                     self.updateImageItem($item, attachment);
                 } else {
@@ -136,29 +137,27 @@
             const $grid = $gallery.find('.gallery-grid');
             const name = $gallery.data('name');
             const index = $grid.find('.gallery-item').length;
-            const showCaption = $gallery.data('show-caption');
-            const showAlt = $gallery.data('show-alt');
             const size = $gallery.data('size') || 'thumbnail';
 
             // Get the appropriate thumbnail URL
             const thumbnail = attachment.sizes && attachment.sizes[size] ?
                 attachment.sizes[size].url : attachment.url;
 
-            // Build HTML
-            let html = '<div class="gallery-item" data-index="' + index + '">';
+            // Build HTML for new item
+            let html = '<div class="gallery-item" data-index="' + index + '" data-attachment-id="' + attachment.id + '">';
 
-            // Handle
+            // Sortable handle
             if ($gallery.hasClass('is-sortable')) {
                 html += '<div class="gallery-item-handle">' +
                     '<span class="dashicons dashicons-move"></span>' +
                     '</div>';
             }
 
-            // Preview
+            // Image preview with overlay
             html += '<div class="gallery-item-preview">' +
                 '<img src="' + thumbnail + '" alt="' + (attachment.alt || '') + '" class="gallery-thumbnail">' +
                 '<div class="gallery-item-overlay">' +
-                '<button type="button" class="gallery-item-edit" data-action="edit" title="Edit image details">' +
+                '<button type="button" class="gallery-item-edit" data-action="edit" title="Change image">' +
                 '<span class="dashicons dashicons-edit"></span>' +
                 '</button>' +
                 '<button type="button" class="gallery-item-remove" data-action="remove" title="Remove image">' +
@@ -167,34 +166,10 @@
                 '</div>' +
                 '</div>';
 
-            // Fields
-            html += '<div class="gallery-item-fields">';
+            // Hidden input with just the attachment ID
+            html += '<input type="hidden" name="' + name + '[' + index + ']" value="' + attachment.id + '">';
 
-            if (showCaption) {
-                html += '<input type="text" ' +
-                    'name="' + name + '[' + index + '][caption]" ' +
-                    'value="' + (attachment.caption || '') + '" ' +
-                    'placeholder="Caption" ' +
-                    'class="gallery-caption-input">';
-            }
-
-            if (showAlt) {
-                html += '<input type="text" ' +
-                    'name="' + name + '[' + index + '][alt]" ' +
-                    'value="' + (attachment.alt || '') + '" ' +
-                    'placeholder="Alt text" ' +
-                    'class="gallery-alt-input">';
-            }
-
-            // Hidden fields
-            html += '<input type="hidden" name="' + name + '[' + index + '][attachment_id]" ' +
-                'value="' + attachment.id + '" data-field="attachment_id">' +
-                '<input type="hidden" name="' + name + '[' + index + '][url]" ' +
-                'value="' + attachment.url + '" data-field="url">' +
-                '<input type="hidden" name="' + name + '[' + index + '][thumbnail]" ' +
-                'value="' + thumbnail + '" data-field="thumbnail">';
-
-            html += '</div></div>';
+            html += '</div>';
 
             // Add to grid
             const $newItem = $(html);
@@ -217,18 +192,15 @@
             const thumbnail = attachment.sizes && attachment.sizes[size] ?
                 attachment.sizes[size].url : attachment.url;
 
-            // Update preview
+            // Update preview image
             $item.find('.gallery-thumbnail').attr({
                 'src': thumbnail,
                 'alt': attachment.alt || ''
             });
 
-            // Update fields
-            $item.find('[data-field="attachment_id"]').val(attachment.id);
-            $item.find('[data-field="url"]').val(attachment.url);
-            $item.find('[data-field="thumbnail"]').val(thumbnail);
-            $item.find('.gallery-caption-input').val(attachment.caption || '');
-            $item.find('.gallery-alt-input').val(attachment.alt || '');
+            // Update data attribute and hidden input
+            $item.attr('data-attachment-id', attachment.id);
+            $item.find('input[type="hidden"]').val(attachment.id);
         },
 
         updateUI: function (e) {
