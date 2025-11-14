@@ -7,7 +7,7 @@
  * @package     ArrayPress\WPFlyout
  * @copyright   Copyright (c) 2025, ArrayPress Limited
  * @license     GPL2+
- * @version     12.0.0
+ * @version     1.0.0
  * @author      David Sherlock
  */
 
@@ -28,6 +28,10 @@ use Exception;
  * @since 1.0.0
  */
 class Manager {
+
+	// =========================================================================
+	// PROPERTIES
+	// =========================================================================
 
 	/**
 	 * Unique prefix for this manager instance
@@ -69,6 +73,10 @@ class Manager {
 	 */
 	private bool $assets_enqueued = false;
 
+	// =========================================================================
+	// CONSTRUCTOR & INITIALIZATION
+	// =========================================================================
+
 	/**
 	 * Constructor
 	 *
@@ -86,6 +94,10 @@ class Manager {
 		// Auto-enqueue assets on admin pages
 		add_action( 'admin_enqueue_scripts', [ $this, 'maybe_enqueue_assets' ] );
 	}
+
+	// =========================================================================
+	// FLYOUT REGISTRATION
+	// =========================================================================
 
 	/**
 	 * Register a flyout with declarative configuration
@@ -139,6 +151,10 @@ class Manager {
 		return $this;
 	}
 
+	// =========================================================================
+	// AJAX ENDPOINT REGISTRATION
+	// =========================================================================
+
 	/**
 	 * Register AJAX endpoints for components
 	 *
@@ -149,7 +165,7 @@ class Manager {
 	 * @param array  $config    Flyout configuration (passed by reference to update)
 	 *
 	 * @return void
-	 * @since 12.0.0
+	 * @since 1.0.0
 	 */
 	private function register_component_endpoints( string $flyout_id, array &$config ): void {
 		// Define callback to AJAX field mappings
@@ -276,36 +292,9 @@ class Manager {
 		}
 	}
 
-	/**
-	 * Normalize field configurations
-	 * Ensures all fields have proper 'name' attributes
-	 *
-	 * @param array $fields Field configurations
-	 *
-	 * @return array Normalized fields
-	 * @since 1.0.0
-	 */
-	private function normalize_fields( array $fields ): array {
-		// Apply pre-normalization filter
-		$fields = apply_filters( 'wp_flyout_before_normalize_fields', $fields, $this->prefix );
-
-		$normalized = [];
-
-		foreach ( $fields as $field_key => $field ) {
-			if ( is_numeric( $field_key ) ) {
-				$field_key = $field['name'] ?? 'field_' . $field_key;
-			}
-
-			if ( ! isset( $field['name'] ) ) {
-				$field['name'] = $field_key;
-			}
-
-			$normalized[ $field_key ] = $field;
-		}
-
-		// Apply post-normalization filter
-		return apply_filters( 'wp_flyout_after_normalize_fields', $normalized, $this->prefix );
-	}
+	// =========================================================================
+	// AJAX REQUEST HANDLING
+	// =========================================================================
 
 	/**
 	 * Central AJAX handler with security checks
@@ -496,6 +485,10 @@ class Manager {
 		] );
 	}
 
+	// =========================================================================
+	// FLYOUT BUILDING
+	// =========================================================================
+
 	/**
 	 * Build flyout interface
 	 *
@@ -579,6 +572,54 @@ class Manager {
 	}
 
 	/**
+	 * Render action buttons for footer
+	 *
+	 * @param array $actions Action button configurations
+	 *
+	 * @return string Generated HTML
+	 * @since 1.0.0
+	 */
+	private function render_actions( array $actions ): string {
+		$action_bar = new ActionBar( [ 'actions' => $actions ] );
+
+		return $action_bar->render();
+	}
+
+	/**
+	 * Get default action buttons based on configuration
+	 *
+	 * @param array $config Flyout configuration
+	 *
+	 * @return array Default action buttons
+	 * @since 1.0.0
+	 */
+	private function get_default_actions( array $config ): array {
+		$actions = [];
+
+		if ( ! empty( $config['save'] ) ) {
+			$actions[] = [
+				'text'  => __( 'Save', 'wp-flyout' ),
+				'style' => 'primary',
+				'class' => 'wp-flyout-save'
+			];
+		}
+
+		if ( ! empty( $config['delete'] ) ) {
+			$actions[] = [
+				'text'  => __( 'Delete', 'wp-flyout' ),
+				'style' => 'link-delete',
+				'class' => 'wp-flyout-delete'
+			];
+		}
+
+		return $actions;
+	}
+
+	// =========================================================================
+	// FIELD RENDERING
+	// =========================================================================
+
+	/**
 	 * Render fields from configuration
 	 *
 	 * Processes field configurations and renders them with support for:
@@ -591,8 +632,7 @@ class Manager {
 	 * @param mixed $data   Data object or array for field population
 	 *
 	 * @return string Generated HTML
-	 * @since 12.1.0 Added conditional field support
-	 *
+	 * @since 12.1.0 Added conditional field support and simplified AJAX handling
 	 * @since 1.0.0
 	 */
 	private function render_fields( array $fields, $data ): string {
@@ -609,48 +649,22 @@ class Manager {
 				$field = $this->process_field_dependencies( $field, $field_key );
 			}
 
-			// Apply field-specific filter
+			// Apply field-specific filters
 			$field = apply_filters( 'wp_flyout_render_field', $field, $field_key, $data, $this->prefix );
 			$field = apply_filters( "wp_flyout_render_field_{$field_key}", $field, $data, $this->prefix );
 
+			// Normalize AJAX fields (handles nonces, ajax_select, etc.)
+			$field = $this->normalize_ajax_fields( $field, $field_key, $data );
+
+			// Get field type
 			$type = $field['type'] ?? 'text';
-
-			// Generate all nonce keys that exist
-			$nonce_mappings = [
-				'ajax_search_nonce_key'  => 'nonce',
-				'ajax_add_nonce_key'     => 'add_nonce',
-				'ajax_delete_nonce_key'  => 'delete_nonce',
-				'ajax_details_nonce_key' => 'details_nonce'
-			];
-
-			foreach ( $nonce_mappings as $key_field => $nonce_field ) {
-				if ( ! empty( $field[ $key_field ] ) ) {
-					$field[ $nonce_field ] = wp_create_nonce( $field[ $key_field ] );
-				}
-			}
-
-			// Map ajax_search to ajax for ajax_select compatibility
-			if ( $type === 'ajax_select' && ! empty( $field['ajax_search'] ) ) {
-				$field['ajax'] = $field['ajax_search'];
-			}
-
-			// Handle ajax_select options callback
-			if ( $type === 'ajax_select' ) {
-				if ( ! isset( $field['value'] ) && $data ) {
-					$field['value'] = Components::resolve_value( $field_key, $data );
-				}
-
-				if ( ! empty( $field['value'] ) && empty( $field['options'] ) ) {
-					if ( ! empty( $field['options_callback'] ) && is_callable( $field['options_callback'] ) ) {
-						$field['options'] = call_user_func( $field['options_callback'], $field['value'], $data );
-					}
-				}
-			}
 
 			// Render field based on type
 			if ( Components::is_component( $type ) ) {
+				// Component rendering
 				$resolved_data = Components::resolve_data( $type, $field_key, $data );
 
+				// Merge resolved data with field config (field config takes precedence)
 				foreach ( $resolved_data as $key => $value ) {
 					if ( ! isset( $field[ $key ] ) && $value !== null ) {
 						$field[ $key ] = $value;
@@ -660,12 +674,7 @@ class Manager {
 				$component    = Components::create( $type, $field );
 				$field_output = $component ? $component->render() : '';
 			} else {
-				// Pass wrapper_attrs to FormField
-				if ( isset( $field['wrapper_attrs'] ) ) {
-					// FormField needs these as part of its config
-					$field['wrapper_attrs'] = $field['wrapper_attrs'];
-				}
-
+				// Standard field rendering
 				if ( ! isset( $field['value'] ) && $data ) {
 					$field['value'] = Components::resolve_value( $field_key, $data );
 				}
@@ -679,6 +688,91 @@ class Manager {
 
 		// Apply filter after rendering
 		return apply_filters( 'wp_flyout_after_render_fields', $output, $fields, $data, $this->prefix );
+	}
+
+	/**
+	 * Normalize field configurations
+	 * Ensures all fields have proper 'name' attributes
+	 *
+	 * @param array $fields Field configurations
+	 *
+	 * @return array Normalized fields
+	 * @since 1.0.0
+	 */
+	private function normalize_fields( array $fields ): array {
+		// Apply pre-normalization filter
+		$fields = apply_filters( 'wp_flyout_before_normalize_fields', $fields, $this->prefix );
+
+		$normalized = [];
+
+		foreach ( $fields as $field_key => $field ) {
+			if ( is_numeric( $field_key ) ) {
+				$field_key = $field['name'] ?? 'field_' . $field_key;
+			}
+
+			if ( ! isset( $field['name'] ) ) {
+				$field['name'] = $field_key;
+			}
+
+			$normalized[ $field_key ] = $field;
+		}
+
+		// Apply post-normalization filter
+		return apply_filters( 'wp_flyout_after_normalize_fields', $normalized, $this->prefix );
+	}
+
+	/**
+	 * Normalize AJAX field configurations
+	 *
+	 * Centralizes AJAX-related field processing including nonce generation
+	 * and ajax_select specific handling.
+	 *
+	 * @param array  $field     Field configuration
+	 * @param string $field_key Field identifier
+	 * @param mixed  $data      Data source for value resolution
+	 *
+	 * @return array Normalized field configuration
+	 * @since 12.1.0
+	 */
+	private function normalize_ajax_fields( array $field, string $field_key, $data ): array {
+		$type = $field['type'] ?? 'text';
+
+		// Generate nonces for any AJAX actions
+		$ajax_actions = [
+			'ajax_search'  => 'nonce',
+			'ajax_add'     => 'add_nonce',
+			'ajax_delete'  => 'delete_nonce',
+			'ajax_details' => 'details_nonce'
+		];
+
+		foreach ( $ajax_actions as $action => $nonce_field ) {
+			$nonce_key = $action . '_nonce_key';
+			if ( ! empty( $field[ $nonce_key ] ) ) {
+				$field[ $nonce_field ] = wp_create_nonce( $field[ $nonce_key ] );
+			}
+		}
+
+		// Special handling for ajax_select fields
+		if ( $type === 'ajax_select' ) {
+			// Map ajax_search to ajax for compatibility
+			if ( ! empty( $field['ajax_search'] ) && empty( $field['ajax'] ) ) {
+				$field['ajax'] = $field['ajax_search'];
+			}
+
+			// Resolve value if not already set
+			if ( ! isset( $field['value'] ) && $data ) {
+				$field['value'] = Components::resolve_value( $field_key, $data );
+			}
+
+			// Load options if we have a value but no options
+			if ( ! empty( $field['value'] ) && empty( $field['options'] ) ) {
+				if ( ! empty( $field['options_callback'] ) && is_callable( $field['options_callback'] ) ) {
+					$field['options'] = call_user_func( $field['options_callback'], $field['value'], $data );
+				}
+			}
+		}
+
+		return $field;
 	}
 
 	/**
@@ -696,7 +790,6 @@ class Manager {
 	 * @return array Modified field configuration with dependency data
 	 * @since  12.1.0
 	 * @access private
-	 *
 	 */
 	private function process_field_dependencies( array $field, string $field_key ): array {
 		if ( ! isset( $field['depends'] ) ) {
@@ -758,6 +851,10 @@ class Manager {
 		return $field;
 	}
 
+	// =========================================================================
+	// COMPONENT DETECTION
+	// =========================================================================
+
 	/**
 	 * Detect and register required components from configuration
 	 *
@@ -779,49 +876,9 @@ class Manager {
 		$this->components = array_unique( $this->components );
 	}
 
-	/**
-	 * Render action buttons for footer
-	 *
-	 * @param array $actions Action button configurations
-	 *
-	 * @return string Generated HTML
-	 * @since 1.0.0
-	 */
-	private function render_actions( array $actions ): string {
-		$action_bar = new ActionBar( [ 'actions' => $actions ] );
-
-		return $action_bar->render();
-	}
-
-	/**
-	 * Get default action buttons based on configuration
-	 *
-	 * @param array $config Flyout configuration
-	 *
-	 * @return array Default action buttons
-	 * @since 1.0.0
-	 */
-	private function get_default_actions( array $config ): array {
-		$actions = [];
-
-		if ( ! empty( $config['save'] ) ) {
-			$actions[] = [
-				'text'  => __( 'Save', 'wp-flyout' ),
-				'style' => 'primary',
-				'class' => 'wp-flyout-save'
-			];
-		}
-
-		if ( ! empty( $config['delete'] ) ) {
-			$actions[] = [
-				'text'  => __( 'Delete', 'wp-flyout' ),
-				'style' => 'link-delete',
-				'class' => 'wp-flyout-delete'
-			];
-		}
-
-		return $actions;
-	}
+	// =========================================================================
+	// ASSET MANAGEMENT
+	// =========================================================================
 
 	/**
 	 * Maybe enqueue assets based on current admin page
@@ -889,6 +946,10 @@ class Manager {
 
 		$this->assets_enqueued = true;
 	}
+
+	// =========================================================================
+	// TRIGGER GENERATION (BUTTONS & LINKS)
+	// =========================================================================
 
 	/**
 	 * Render a trigger button
@@ -998,23 +1059,9 @@ class Manager {
 		return $attrs;
 	}
 
-	/**
-	 * Check if current user can access flyout
-	 *
-	 * @param string $flyout_id Flyout identifier
-	 *
-	 * @return bool True if user has required capability
-	 * @since 1.0.0
-	 */
-	private function can_access( string $flyout_id ): bool {
-		if ( ! isset( $this->flyouts[ $flyout_id ] ) ) {
-			return false;
-		}
-
-		$config = $this->flyouts[ $flyout_id ];
-
-		return current_user_can( $config['capability'] );
-	}
+	// =========================================================================
+	// PUBLIC ACCESSOR METHODS
+	// =========================================================================
 
 	/**
 	 * Get all registered flyouts
@@ -1046,6 +1093,28 @@ class Manager {
 	 */
 	public function get_prefix(): string {
 		return $this->prefix;
+	}
+
+	// =========================================================================
+	// PRIVATE UTILITY METHODS
+	// =========================================================================
+
+	/**
+	 * Check if current user can access flyout
+	 *
+	 * @param string $flyout_id Flyout identifier
+	 *
+	 * @return bool True if user has required capability
+	 * @since 1.0.0
+	 */
+	private function can_access( string $flyout_id ): bool {
+		if ( ! isset( $this->flyouts[ $flyout_id ] ) ) {
+			return false;
+		}
+
+		$config = $this->flyouts[ $flyout_id ];
+
+		return current_user_can( $config['capability'] );
 	}
 
 }

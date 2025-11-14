@@ -8,7 +8,7 @@
  * @package     ArrayPress\WPFlyout
  * @copyright   Copyright (c) 2025, ArrayPress Limited
  * @license     GPL2+
- * @version     2.1.0
+ * @version     1.0.0
  * @author      David Sherlock
  */
 
@@ -20,6 +20,7 @@ use ArrayPress\WPFlyout\Components\ActionButtons;
 use ArrayPress\WPFlyout\Components\ActionMenu;
 use ArrayPress\WPFlyout\Components\Articles;
 use ArrayPress\WPFlyout\Components\FeatureList;
+use ArrayPress\WPFlyout\Components\ImageGallery;
 use ArrayPress\WPFlyout\Components\KeyValueList;
 use ArrayPress\WPFlyout\Components\PaymentMethod;
 use ArrayPress\WPFlyout\Components\PriceSummary;
@@ -38,7 +39,6 @@ use ArrayPress\WPFlyout\Components\EmptyState;
 use ArrayPress\WPFlyout\Components\DataTable;
 use ArrayPress\WPFlyout\Components\InfoGrid;
 use ArrayPress\WPFlyout\Components\Alert;
-use EDD\Vendor\Stripe\Entitlements\Feature;
 use InvalidArgumentException;
 
 /**
@@ -47,6 +47,10 @@ use InvalidArgumentException;
  * Manages registration and instantiation of flyout components.
  */
 class Components {
+
+	// =========================================================================
+	// PROPERTIES
+	// =========================================================================
 
 	/**
 	 * Registered component configurations
@@ -62,6 +66,10 @@ class Components {
 	 */
 	private static bool $initialized = false;
 
+	// =========================================================================
+	// INITIALIZATION
+	// =========================================================================
+
 	/**
 	 * Initialize default components
 	 *
@@ -72,7 +80,261 @@ class Components {
 			return;
 		}
 
-		// Domain Components
+		self::register_display_components();
+		self::register_interactive_components();
+		self::register_form_components();
+		self::register_layout_components();
+		self::register_data_components();
+		self::register_utility_components();
+
+		self::$initialized = true;
+
+		do_action( 'wp_flyout_components_init', self::$components );
+	}
+
+	// =========================================================================
+	// COMPONENT REGISTRATION BY CATEGORY
+	// =========================================================================
+
+	/**
+	 * Register display components
+	 *
+	 * Components that primarily display information without user interaction
+	 *
+	 * @return void
+	 * @since 1.0.0
+	 */
+	private static function register_display_components(): void {
+		// ---- Headers & Titles ----
+		self::register( 'header', [
+			'class'       => Header::class,
+			'data_fields' => [ 'title', 'subtitle', 'image', 'icon', 'badges', 'meta', 'description' ],
+			'asset'       => null,
+			'category'    => 'display',
+			'description' => 'Unified header for any entity'
+		] );
+
+		// ---- Alerts & Messages ----
+		self::register( 'alert', [
+			'class'       => Alert::class,
+			'data_fields' => [ 'type', 'message', 'title' ],
+			'asset'       => null,
+			'category'    => 'display',
+			'description' => 'Alert messages with various styles'
+		] );
+
+		self::register( 'empty_state', [
+			'class'       => EmptyState::class,
+			'data_fields' => [ 'icon', 'title', 'description', 'action_text' ],
+			'asset'       => null,
+			'category'    => 'display',
+			'description' => 'Empty state messages'
+		] );
+
+		// ---- Progress Indicators ----
+		self::register( 'progress_steps', [
+			'class'       => ProgressSteps::class,
+			'data_fields' => [ 'steps', 'current', 'style', 'clickable' ],
+			'asset'       => 'progress-steps',
+			'category'    => 'display',
+			'description' => 'Step indicators for multi-step processes'
+		] );
+
+		// ---- Content Lists ----
+		self::register( 'articles', [
+			'class'       => Articles::class,
+			'data_fields' => 'items',
+			'asset'       => 'articles',
+			'category'    => 'display',
+			'description' => 'Article cards with images and excerpts'
+		] );
+
+		self::register( 'timeline', [
+			'class'       => Timeline::class,
+			'data_fields' => 'items',
+			'asset'       => 'timeline',
+			'category'    => 'display',
+			'description' => 'Chronological event timeline'
+		] );
+
+		// ---- Statistics & Metrics ----
+		self::register( 'stats', [
+			'class'       => Stats::class,
+			'data_fields' => 'items',
+			'asset'       => 'stats',
+			'category'    => 'display',
+			'description' => 'Statistical metric cards with trends'
+		] );
+	}
+
+	/**
+	 * Register interactive components
+	 *
+	 * Components that allow user interaction and data manipulation
+	 *
+	 * @return void
+	 * @since 1.0.0
+	 */
+	private static function register_interactive_components(): void {
+		// ---- Action Components ----
+		self::register( 'action_buttons', [
+			'class'       => ActionButtons::class,
+			'data_fields' => 'buttons',
+			'asset'       => 'action-buttons',
+			'category'    => 'interactive',
+			'description' => 'Action buttons with AJAX callbacks for operations like refunds'
+		] );
+
+		self::register( 'action_menu', [
+			'class'       => ActionMenu::class,
+			'data_fields' => 'items',
+			'asset'       => 'action-menu',
+			'category'    => 'interactive',
+			'description' => 'Dropdown menu for multiple actions with AJAX support'
+		] );
+
+		// ---- List Management ----
+		self::register( 'notes', [
+			'class'       => Notes::class,
+			'data_fields' => 'items',
+			'asset'       => 'notes',
+			'category'    => 'interactive',
+			'description' => 'Notes/comments with add/delete functionality'
+		] );
+
+		self::register( 'files', [
+			'class'       => FileManager::class,
+			'data_fields' => 'items',
+			'asset'       => 'file-manager',
+			'category'    => 'interactive',
+			'description' => 'File attachments with drag-drop sorting'
+		] );
+
+		self::register( 'feature_list', [
+			'class'       => FeatureList::class,
+			'data_fields' => 'items',
+			'asset'       => 'feature-list',
+			'category'    => 'interactive',
+			'description' => 'Feature list with drag-drop sorting'
+		] );
+
+		self::register( 'key_value_list', [
+			'class'       => KeyValueList::class,
+			'data_fields' => 'items',
+			'asset'       => 'key-value-list',
+			'category'    => 'interactive',
+			'description' => 'Key value list with drag-drop sorting'
+		] );
+
+		// ---- Commerce Components ----
+		self::register( 'line_items', [
+			'class'       => LineItems::class,
+			'data_fields' => 'items',
+			'asset'       => 'line-items',
+			'category'    => 'interactive',
+			'description' => 'Order line items with quantities and pricing'
+		] );
+
+		self::register( 'image_gallery', [
+			'class'       => ImageGallery::class,
+			'data_fields' => 'items',
+			'asset'       => 'image-gallery',
+			'category'    => 'interactive',
+			'description' => 'Image upload with gallery preview and reordering'
+		] );
+	}
+
+	/**
+	 * Register form components
+	 *
+	 * Components specifically for form input and selection
+	 *
+	 * @return void
+	 * @since 1.0.0
+	 */
+	private static function register_form_components(): void {
+		// ---- Selection Components ----
+		self::register( 'card_choice', [
+			'class'       => CardChoice::class,
+			'data_fields' => [ 'options', 'value' ],
+			'asset'       => 'card-choice',
+			'category'    => 'form',
+			'description' => 'Card-style radio/checkbox selections'
+		] );
+
+		// ---- Special Input Types (that need assets) ----
+		self::register( 'tags', [
+			'class'       => FormField::class,
+			'data_fields' => 'value',
+			'asset'       => 'tags',
+			'category'    => 'form',
+			'description' => 'Tag input field'
+		] );
+
+		self::register( 'ajax_select', [
+			'class'       => FormField::class,
+			'data_fields' => 'value',
+			'asset'       => 'ajax-select',
+			'category'    => 'form',
+			'description' => 'AJAX-powered select field'
+		] );
+	}
+
+	/**
+	 * Register layout components
+	 *
+	 * Components that organize and structure content
+	 *
+	 * @return void
+	 * @since 1.0.0
+	 */
+	private static function register_layout_components(): void {
+		// ---- Collapsible Content ----
+		self::register( 'accordion', [
+			'class'       => Accordion::class,
+			'data_fields' => 'items',
+			'asset'       => 'accordion',
+			'category'    => 'layout',
+			'description' => 'Collapsible content sections'
+		] );
+
+		// ---- Visual Separators ----
+		self::register( 'separator', [
+			'class'       => Separator::class,
+			'data_fields' => [ 'text', 'icon' ],
+			'asset'       => null,
+			'category'    => 'layout',
+			'description' => 'Visual dividers with optional text'
+		] );
+	}
+
+	/**
+	 * Register data display components
+	 *
+	 * Components for structured data presentation
+	 *
+	 * @return void
+	 * @since 1.0.0
+	 */
+	private static function register_data_components(): void {
+		// ---- Tables & Grids ----
+		self::register( 'data_table', [
+			'class'       => DataTable::class,
+			'data_fields' => [ 'columns', 'data' ],
+			'asset'       => null,
+			'category'    => 'data',
+			'description' => 'Structured data table display'
+		] );
+
+		self::register( 'info_grid', [
+			'class'       => InfoGrid::class,
+			'data_fields' => 'items',
+			'asset'       => null,
+			'category'    => 'data',
+			'description' => 'Information grid layout'
+		] );
+
+		// ---- Domain-Specific Data ----
 		self::register( 'payment_method', [
 			'class'       => PaymentMethod::class,
 			'data_fields' => [
@@ -83,6 +345,7 @@ class Components {
 				'stripe_risk_level'
 			],
 			'asset'       => 'payment-method',
+			'category'    => 'data',
 			'description' => 'Displays payment method with card brand icons and risk indicators'
 		] );
 
@@ -90,164 +353,25 @@ class Components {
 			'class'       => PriceSummary::class,
 			'data_fields' => [ 'items', 'subtotal', 'tax', 'discount', 'total', 'currency' ],
 			'asset'       => 'price-summary',
+			'category'    => 'data',
 			'description' => 'Price summary with line items and totals'
 		] );
-
-		self::register( 'header', [
-			'class'       => Header::class,
-			'data_fields' => [ 'title', 'subtitle', 'image', 'icon', 'badges', 'meta', 'description' ],
-			'asset'       => null,
-			'description' => 'Unified header for any entity'
-		] );
-
-		// Interactive Components
-		self::register( 'line_items', [
-			'class'       => LineItems::class,
-			'data_fields' => 'items',
-			'asset'       => 'line-items',
-			'description' => 'Order line items with quantities and pricing'
-		] );
-
-		self::register( 'notes', [
-			'class'       => Notes::class,
-			'data_fields' => 'items',
-			'asset'       => 'notes',
-			'description' => 'Notes/comments with add/delete functionality'
-		] );
-
-		self::register( 'files', [
-			'class'       => FileManager::class,
-			'data_fields' => 'items',
-			'asset'       => 'file-manager',
-			'description' => 'File attachments with drag-drop sorting'
-		] );
-
-		self::register( 'feature_list', [
-			'class'       => FeatureList::class,
-			'data_fields' => 'items',
-			'asset'       => 'feature-list',
-			'description' => 'Feature list with drag-drop sorting'
-		] );
-
-		self::register( 'key_value_list', [
-			'class'       => KeyValueList::class,
-			'data_fields' => 'items',
-			'asset'       => 'key-value-list',
-			'description' => 'Key value list with drag-drop sorting'
-		] );
-
-		// Form Components
-		self::register( 'card_choice', [
-			'class'       => CardChoice::class,
-			'data_fields' => [ 'options', 'value' ],
-			'asset'       => 'card-choice',
-			'description' => 'Card-style radio/checkbox selections'
-		] );
-
-		// Layout Components
-		self::register( 'accordion', [
-			'class'       => Accordion::class,
-			'data_fields' => 'items',
-			'asset'       => 'accordion',
-			'description' => 'Collapsible content sections'
-		] );
-
-		self::register( 'timeline', [
-			'class'       => Timeline::class,
-			'data_fields' => 'items',
-			'asset'       => 'timeline',
-			'description' => 'Chronological event timeline'
-		] );
-
-		// Special form field types that need assets
-		self::register( 'tags', [
-			'class'       => FormField::class,
-			'data_fields' => 'value',
-			'asset'       => 'tags',
-			'description' => 'Tag input field'
-		] );
-
-		self::register( 'ajax_select', [
-			'class'       => FormField::class,
-			'data_fields' => 'value',
-			'asset'       => 'ajax-select',
-			'description' => 'AJAX-powered select field'
-		] );
-
-		self::register( 'separator', [
-			'class'       => Separator::class,
-			'data_fields' => [ 'text', 'icon' ],
-			'asset'       => null,
-			'description' => 'Visual dividers with optional text'
-		] );
-
-		self::register( 'empty_state', [
-			'class'       => EmptyState::class,
-			'data_fields' => [ 'icon', 'title', 'description', 'action_text' ],
-			'asset'       => null,
-			'description' => 'Empty state messages'
-		] );
-
-		self::register( 'data_table', [
-			'class'       => DataTable::class,
-			'data_fields' => [ 'columns', 'data' ],
-			'asset'       => null,
-			'description' => 'Structured data table display'
-		] );
-
-		self::register( 'info_grid', [
-			'class'       => InfoGrid::class,
-			'data_fields' => 'items',
-			'asset'       => null,
-			'description' => 'Information grid layout'
-		] );
-
-		self::register( 'alert', [
-			'class'       => Alert::class,
-			'data_fields' => [ 'type', 'message', 'title' ],
-			'asset'       => null,
-			'description' => 'Alert messages with various styles'
-		] );
-
-		self::register( 'progress_steps', [
-			'class'       => ProgressSteps::class,
-			'data_fields' => [ 'steps', 'current', 'style', 'clickable' ],
-			'asset'       => 'progress-steps',
-			'description' => 'Step indicators for multi-step processes'
-		] );
-
-		self::register( 'action_buttons', [
-			'class'       => ActionButtons::class,
-			'data_fields' => 'buttons',
-			'asset'       => 'action-buttons',
-			'description' => 'Action buttons with AJAX callbacks for operations like refunds'
-		] );
-
-		self::register( 'action_menu', [
-			'class'       => ActionMenu::class,
-			'data_fields' => 'items',
-			'asset'       => 'action-menu',
-			'description' => 'Dropdown menu for multiple actions with AJAX support'
-		] );
-
-		self::register( 'articles', [
-			'class'       => Articles::class,
-			'data_fields' => 'items',
-			'asset'       => 'articles',
-			'description' => 'Article cards with images and excerpts'
-		] );
-
-		self::register( 'stats', [
-			'class'       => Stats::class,
-			'data_fields' => 'items',
-			'asset'       => 'stats',
-			'description' => 'Statistical metric cards with trends'
-		] );
-
-		self::$initialized = true;
-
-		do_action( 'wp_flyout_components_init', self::$components );
 	}
+
+	/**
+	 * Register utility components
+	 *
+	 * Helper components for specific use cases
+	 *
+	 * @return void
+	 * @since 1.0.0
+	 */
+	private static function register_utility_components(): void {
+	}
+
+	// =========================================================================
+	// REGISTRATION & MANAGEMENT
+	// =========================================================================
 
 	/**
 	 * Register a custom component
@@ -291,6 +415,10 @@ class Components {
 		return false;
 	}
 
+	// =========================================================================
+	// COMPONENT RETRIEVAL
+	// =========================================================================
+
 	/**
 	 * Get component configuration
 	 *
@@ -329,6 +457,26 @@ class Components {
 	}
 
 	/**
+	 * Get components by category
+	 *
+	 * @param string $category Category name (display, interactive, form, layout, data, utility)
+	 *
+	 * @return array Components in that category
+	 * @since 1.0.0
+	 */
+	public static function get_by_category( string $category ): array {
+		self::ensure_initialized();
+
+		return array_filter( self::$components, function ( $component ) use ( $category ) {
+			return isset( $component['category'] ) && $component['category'] === $category;
+		} );
+	}
+
+	// =========================================================================
+	// COMPONENT INSTANTIATION
+	// =========================================================================
+
+	/**
 	 * Create component instance
 	 *
 	 * @param string $type   Component type
@@ -352,8 +500,17 @@ class Components {
 		return new $class( $config );
 	}
 
+	// =========================================================================
+	// DATA RESOLUTION
+	// =========================================================================
+
 	/**
 	 * Resolve component data from a data source
+	 *
+	 * Attempts to resolve data for a component from various sources:
+	 * 1. Looks for a method that returns the complete data structure (field_key_data)
+	 * 2. Tries to get a pre-built array/object at field_key
+	 * 3. Falls back to resolving individual fields
 	 *
 	 * @param string $type      Component type
 	 * @param string $field_key Field identifier
@@ -410,7 +567,15 @@ class Components {
 	}
 
 	/**
-	 * Resolve a single value from data source (PUBLIC)
+	 * Resolve a single value from data source
+	 *
+	 * Resolution order (optimized for explicit data methods first):
+	 * 1. Explicit data method (field_data()) - Most specific, returns complete data
+	 * 2. Array key access - Direct array access (fast, no method calls)
+	 * 3. Getter method (get_field()) - Standard getter pattern
+	 * 4. Direct property access - Public property check
+	 * 5. Direct method call (field()) - Method with field name
+	 * 6. CamelCase for underscore properties - Legacy compatibility
 	 *
 	 * @param string $key  Property/method name to resolve
 	 * @param mixed  $data Data source (object or array)
@@ -422,17 +587,21 @@ class Components {
 			return null;
 		}
 
-		// 1. Direct property access
-		if ( is_object( $data ) && property_exists( $data, $key ) ) {
-			return $data->$key;
+		// 1. Try explicit data method first (field_data())
+		// This is the most explicit "I'm providing data for this field" convention
+		if ( is_object( $data ) ) {
+			$data_method = $key . '_data';
+			if ( method_exists( $data, $data_method ) ) {
+				return $data->$data_method();
+			}
 		}
 
-		// 2. Array key access
+		// 2. Array key access (fast, no method calls needed)
 		if ( is_array( $data ) && isset( $data[ $key ] ) ) {
 			return $data[ $key ];
 		}
 
-		// Only try methods if we have an object
+		// Only try remaining methods if we have an object
 		if ( ! is_object( $data ) ) {
 			return null;
 		}
@@ -443,15 +612,14 @@ class Components {
 			return $data->$getter();
 		}
 
-		// 4. Direct method call (field())
-		if ( method_exists( $data, $key ) ) {
-			return $data->$key();
+		// 4. Direct property access
+		if ( property_exists( $data, $key ) ) {
+			return $data->$key;
 		}
 
-		// 5. Try with _data suffix (field_data())
-		$data_method = $key . '_data';
-		if ( method_exists( $data, $data_method ) ) {
-			return $data->$data_method();
+		// 5. Direct method call (field())
+		if ( method_exists( $data, $key ) ) {
+			return $data->$key();
 		}
 
 		// 6. For underscore properties, try camelCase
@@ -464,6 +632,10 @@ class Components {
 
 		return null;
 	}
+
+	// =========================================================================
+	// ASSET MANAGEMENT
+	// =========================================================================
 
 	/**
 	 * Get required asset for component
@@ -495,6 +667,40 @@ class Components {
 
 		return array_unique( $assets );
 	}
+
+	// =========================================================================
+	// COMPONENT INFORMATION
+	// =========================================================================
+
+	/**
+	 * Get component description
+	 *
+	 * @param string $type Component type
+	 *
+	 * @return string|null Component description or null if not found
+	 * @since 1.0.0
+	 */
+	public static function get_description( string $type ): ?string {
+		self::ensure_initialized();
+
+		$component = self::get( $type );
+
+		return $component['description'] ?? null;
+	}
+
+	/**
+	 * Get available categories
+	 *
+	 * @return array List of available categories
+	 * @since 1.0.0
+	 */
+	public static function get_categories(): array {
+		return [ 'display', 'interactive', 'form', 'layout', 'data', 'utility' ];
+	}
+
+	// =========================================================================
+	// UTILITY METHODS
+	// =========================================================================
 
 	/**
 	 * Ensure components are initialized

@@ -49,6 +49,11 @@ class Assets {
 			'style'  => 'css/components/file-manager.css',
 			'deps'   => [ 'jquery-ui-sortable' ]
 		],
+		'image-gallery'  => [
+			'script' => 'js/components/image-gallery.js',
+			'style'  => 'css/components/image-gallery.css',
+			'deps'   => [ 'jquery-ui-sortable', 'wp-mediaelement' ]
+		],
 		'notes'          => [
 			'script' => 'js/components/notes.js',
 			'style'  => 'css/components/notes.css',
